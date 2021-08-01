@@ -1,5 +1,7 @@
 # fabricate
 
+> n. To create quickly and easily.
+
 A tiny vanilla JS webapp framework with a fluent API and zero dependencies,
 intended for small apps with relatively simply layouts.
 
@@ -133,8 +135,41 @@ Button()
   });
 ```
 
-set text/html
+### Set text/HTML
 
-ismobile
+For simple elements, set their `innerHTML` or `innerText`:
 
-app
+```js
+Button()
+  .addStyles({ backgroundColor: 'red' })
+  .setText('Cancel');
+```
+
+### Other features
+
+`fabricate` itself has some helpers:
+
+```js
+// Detect a very narrow device, or mobile device
+Text()
+  .addStyles({
+    fontSize: fabricate.isMobile() ? '1rem' : '1.8rem',
+  })
+```
+
+Use `app()` to start an app from the document body:
+
+```js
+const page = PageContainer()
+  .addChildren([
+    Title('My New App'),
+    NavBar(),
+    MainContent()
+      .addChildren([
+        HeroImage(),
+        Introduction(article.body),
+      ]),
+  ]);
+
+fabricate.app(PageContainer());
+```
