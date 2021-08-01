@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test page</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <style>
+      * {
+        font-family: sans-serif;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../fabricate.js"></script>
+
+    <script>
+      const Button = () => fabricate('div')
+        .asFlex('column')
+        .addStyles({
+          width: '100px',
+          height: '20px',
+          color: 'white',
+          backgroundColor: 'black',
+          borderRadius: '50px',
+          padding: '8px 10px',
+          margin: '5px',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          cursor: 'pointer',
+        })
+        .onHover({
+          start: el => el.addStyles({ filter: 'brightness(0.8)' }),
+          end: el => el.addStyles({ filter: 'brightness(1)' }),
+        });
+
+      const SubmitButton = () => Button()
+        .setText('Submit')
+        .addStyles({ backgroundColor: 'green' })
+        .onClick(() => alert('Success!'));
+
+      const CancelButton = () => Button()
+        .setText('Cancel')
+        .addStyles({ backgroundColor: 'red' })
+        .onClick(() => alert('Cancelled!'));
+
+      const Container = () => fabricate('div')
+        .asFlex('column')
+        .addStyles({ padding: '10px' })
+        .addChildren([
+          Button().setText('Normal'),
+          SubmitButton(),
+          CancelButton(),
+        ]);
+
+      fabricate.app(Container());
+    </script>
+  </body>
+</html>
