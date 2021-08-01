@@ -83,7 +83,7 @@ Just include in your HTML file, such as in a `lib` directory:
 To create a component, simply specify the tag name:
 
 ```js
-fabricate('div');
+const EmptyDivComponent = () => fabricate('div');
 ```
 
 ### Use flex box
@@ -91,8 +91,8 @@ fabricate('div');
 To quickly set basic `display: flex` and `flexDirection`:
 
 ```js
-fabricate('div')
-  .asFlex('column')
+const Column = () => fabricate('div')
+  .asFlex('column');
 ```
 
 ### Add styles and attributes
