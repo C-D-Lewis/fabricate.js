@@ -24,12 +24,12 @@
 
       const Container = () => fabricate('div')
         .asFlex('column')
-        .addStyles({ padding: '10px' });
+        .withStyles({ padding: '10px' });
 
       const page = Container()
         .addChildren([
           Text('Hello, world!')
-            .addStyles({ fontSize: '1.1rem' }),
+            .withStyles({ fontSize: '1.1rem' }),
         ]);
 
       // Use as the root app element

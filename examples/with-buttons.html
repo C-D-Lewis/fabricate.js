@@ -22,7 +22,7 @@
     <script>
       const Button = () => fabricate('div')
         .asFlex('column')
-        .addStyles({
+        .withStyles({
           width: '100px',
           height: '20px',
           color: 'white',
@@ -36,23 +36,23 @@
           cursor: 'pointer',
         })
         .onHover({
-          start: el => el.addStyles({ filter: 'brightness(0.8)' }),
-          end: el => el.addStyles({ filter: 'brightness(1)' }),
+          start: el => el.withStyles({ filter: 'brightness(0.8)' }),
+          end: el => el.withStyles({ filter: 'brightness(1)' }),
         });
 
       const SubmitButton = () => Button()
         .setText('Submit')
-        .addStyles({ backgroundColor: 'green' })
+        .withStyles({ backgroundColor: 'green' })
         .onClick(() => alert('Success!'));
 
       const CancelButton = () => Button()
         .setText('Cancel')
-        .addStyles({ backgroundColor: 'red' })
+        .withStyles({ backgroundColor: 'red' })
         .onClick(() => alert('Cancelled!'));
 
       const Container = () => fabricate('div')
         .asFlex('column')
-        .addStyles({ padding: '10px' })
+        .withStyles({ padding: '10px' })
         .addChildren([
           Button().setText('Normal'),
           SubmitButton(),

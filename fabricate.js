@@ -17,10 +17,13 @@ const fabricate = (tagName) => {
    * @param {object} newStyles - New styles to apply.
    * @returns {HTMLElement}
    */
-  el.addStyles = (newStyles) => {
+  el.withStyles = (newStyles) => {
     Object.assign(el.style, newStyles);
     return el;
   };
+
+  // Alias addStyles => withStyles for semantics
+  el.addStyles = el.withStyles;
 
   /**
    * Augment existing attributes with new ones.
@@ -28,7 +31,7 @@ const fabricate = (tagName) => {
    * @param {object} newAttributes - New attributes to apply.
    * @returns {HTMLElement}
    */
-  el.addAttributes = (newAttributes) => {
+  el.withAttributes = (newAttributes) => {
     Object.assign(el, newAttributes);
     return el;
   };
@@ -47,10 +50,18 @@ const fabricate = (tagName) => {
   /**
    * Convenience method for start and end of hover.
    *
-   * @param {object} handlers - start and end of hover handlers. Each handler is given el.
+   * @param {object} opts - start and end of hover handlers, or a callback.
    * @returns {HTMLElement}
    */
-  el.onHover = ({ start, end }) => {
+  el.onHover = (opts) => {
+    // cb(isHovered) style
+    if (typeof opts === 'function') {
+      el.addEventListener('mouseenter', () => opts(el, true));
+      el.addEventListener('mouseleave', () => opts(el, false));
+      return el;
+    }
+
+    const { start, end } = opts;
     el.addEventListener('mouseenter', () => start(el));
     el.addEventListener('mouseleave', () => end(el));
     return el;
@@ -63,7 +74,7 @@ const fabricate = (tagName) => {
    * @returns {HTMLElement}
    */
   el.asFlex = (flexDirection = 'row') => {
-    el.addStyles({
+    el.withStyles({
       display: 'flex',
       flexDirection,
     });
@@ -112,6 +123,16 @@ const fabricate = (tagName) => {
    */
    el.setText = (text) => {
     el.innerText = text;
+    return el;
+  };
+
+  /**
+   * Clear all content.
+   *
+   * @returns {HTMLElement}
+   */
+  el.clear = () => {
+    el.innerHTML = '';
     return el;
   };
 

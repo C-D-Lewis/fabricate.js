@@ -22,14 +22,14 @@
     <script>
       const Container = () => fabricate('div')
         .asFlex('column')
-        .addStyles({
+        .withStyles({
           width: '100vw',
           height: '100vh',
         });
 
       const NavBar = () => fabricate('div')
         .asFlex('row')
-        .addStyles({
+        .withStyles({
           display: 'flex',
           padding: '10px 20px',
           width: '100%',
@@ -39,7 +39,7 @@
         })
         .addChildren([
           fabricate('h1')
-            .addStyles({
+            .withStyles({
               color: 'white',
               fontWeight: 'bold',
               fontSize: '1.2rem',
@@ -48,14 +48,14 @@
         ]);
 
       const Text = () => fabricate('span')
-        .addStyles({
+        .withStyles({
           margin: '8px 0px',
           color: '#222',
         });
 
       const Button = () => fabricate('div')
         .asFlex('column')
-        .addStyles({
+        .withStyles({
           justifyContent: 'center',
           backgroundColor: '#222',
           width: '120px',
@@ -68,13 +68,13 @@
           marginTop: '5px',
         })
         .onHover({
-          start: el => el.addStyles({ backgroundColor: '#444' }),
-          end: el => el.addStyles({ backgroundColor: '#222' }),
+          start: el => el.withStyles({ backgroundColor: '#444' }),
+          end: el => el.withStyles({ backgroundColor: '#222' }),
         });
 
       const pageContainer = Container();
       const contentContainer = Container()
-        .addStyles({ padding: '15px' })
+        .withStyles({ padding: '15px' })
         .addChildren([
           Text().setText('Here is some example text on the page'),
           Text().setText(`Your device appears to be a ${fabricate.isMobile() ? 'mobile' : 'desktop'} device.`),

@@ -23,12 +23,12 @@ const Text = (text) => fabricate('span').setText(text);
 
 const Container = () => fabricate('div')
   .asFlex('column')
-  .addStyles({ padding: '10px' });
+  .withStyles({ padding: '10px' });
 
 const page = Container()
   .addChildren([
     Text('Hello, world!')
-      .addStyles({ fontSize: '1.1rem' }),
+      .withStyles({ fontSize: '1.1rem' }),
   ]);
 
 // Use as the root app element
@@ -40,7 +40,7 @@ Components can be extended after they are created, for example a button:
 ```js
 const Button = fabricate('div')
   .asFlex('column')
-  .addStyles({
+  .withStyles({
     padding: '8px 10px',
     color: 'white',
     backgroundColor: 'black',
@@ -50,18 +50,18 @@ const Button = fabricate('div')
     cursor: 'pointer',
   })
   .onHover({
-    start: el => el.addStyles({ filter: 'brightness(1.1)' }),
-    end: el => el.addStyles({ filter: 'brightness(1)' }),
+    start: el => el.withStyles({ filter: 'brightness(1.1)' }),
+    end: el => el.withStyles({ filter: 'brightness(1)' }),
   });
 
 const SubmitButton = Button()
   .setText('Submit')
-  .addStyles({ backgroundColor: 'green' })
+  .withStyles({ backgroundColor: 'green' })
   .onClick(() => alert('Success!'));
 
 const CancelButton = Button()
   .setText('Cancel')
-  .addStyles({ backgroundColor: 'red' })
+  .withStyles({ backgroundColor: 'red' })
   .onClick(() => alert('Cancelled!'));
 ```
 
@@ -101,12 +101,21 @@ Use more method chaining to flesh out the component:
 
 ```js
 const Banner = (src) => fabricate('img')
-  .addStyles({
+  .withStyles({
     width: '800px',
     height: 'auto',
     borderRadius: '10px',
   })
-  .addAttributes({ src })
+  .withAttributes({ src })
+```
+
+A semantic alias is also available:
+
+```js
+const HoverButton = Button()
+  .onHover(
+    (el, hovering) => el.addStyles({ backgroundColor: hovering ? 'green' : 'grey' })
+  );
 ```
 
 ### Add children
@@ -135,13 +144,23 @@ Button()
   });
 ```
 
+Hovering can also be implemented with just a callback if preferred:
+
+```js
+Button()
+  .onClick(el => alert('Clicked!'))
+  .onHover(
+    (el, hovering) => console.log(`I ${hovering ? 'may' : 'may not'} be of interest`)
+  );
+```
+
 ### Set text/HTML
 
 For simple elements, set their `innerHTML` or `innerText`:
 
 ```js
 Button()
-  .addStyles({ backgroundColor: 'red' })
+  .withStyles({ backgroundColor: 'red' })
   .setText('Cancel');
 ```
 
@@ -152,7 +171,7 @@ Button()
 ```js
 // Detect a very narrow device, or mobile device
 Text()
-  .addStyles({
+  .withStyles({
     fontSize: fabricate.isMobile() ? '1rem' : '1.8rem',
   })
 ```
