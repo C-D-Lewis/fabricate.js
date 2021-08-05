@@ -1,15 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Test page</title>
-
+    <title>fabricate.js example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
     <style>
-      * {
-        font-family: sans-serif;
-      }
-
+      * { font-family: sans-serif; }
       html, body {
         margin: 0;
         padding: 0;
@@ -72,8 +67,8 @@
           end: el => el.withStyles({ backgroundColor: '#222' }),
         });
 
-      const pageContainer = Container();
-      const contentContainer = Container()
+      const PageContainer = Container();
+      const ContentContainer = Container()
         .withStyles({ padding: '15px' })
         .addChildren([
           Text().setText('Here is some example text on the page'),
@@ -83,12 +78,12 @@
             .onClick(() => alert('Thank you for clicking me!')),
         ]);
 
-      pageContainer.addChildren([
+      PageContainer.addChildren([
         NavBar(),
-        contentContainer,
+        ContentContainer,
       ]);
 
-      fabricate.app(pageContainer);
+      fabricate.app(PageContainer);
     </script>
   </body>
 </html>

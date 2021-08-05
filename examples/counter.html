@@ -15,6 +15,18 @@
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
+      const increment = prev => prev + 1;
+
+      const Text = (text) => fabricate('span').setText(text);
+
+      const Container = () => fabricate('div')
+        .asFlex('column')
+        .withStyles({ padding: '10px' });
+      
+      const CounterView = () => Text('')
+        .withStyles({ fontSize: '2rem' })
+        .watchState('counter', (el, value) => el.setText(`counter now ${value}`));
+
       const Button = () => fabricate('div')
         .asFlex('column')
         .withStyles({
@@ -29,34 +41,24 @@
           fontWeight: 'bold',
           textAlign: 'center',
           cursor: 'pointer',
-        })
-        .onHover({
-          start: el => el.withStyles({ filter: 'brightness(0.8)' }),
-          end: el => el.withStyles({ filter: 'brightness(1)' }),
         });
 
-      const SubmitButton = () => Button()
-        .setText('Submit')
-        .withStyles({ backgroundColor: 'green' })
-        .onClick(() => alert('Success!'));
-
-      const CancelButton = () => Button()
-        .setText('Cancel')
-        .withStyles({ backgroundColor: 'red' })
-        .onClick(() => alert('Cancelled!'));
-
-      const Container = () => fabricate('div')
-        .asFlex('column')
-        .withStyles({ padding: '10px' })
+      const PageContainer = Container()
         .addChildren([
-          Button().setText('Normal'),
-          SubmitButton(),
-          CancelButton(),
+          Text('The counter below updates once a second:'),
+          CounterView(),
+          Button()
+            .setText('Increment')
+            .onClick(() => fabricate.updateState('counter', increment)),
         ]);
 
-      const PageContainer = Container();
+      // Use as the root app element
+      fabricate.app(PageContainer, { counter: 0 });
 
-      fabricate.app(PageContainer);
+      // Start counting
+      setInterval(() => {
+        fabricate.updateState('counter', increment);
+      }, 1000);
     </script>
   </body>
 </html>

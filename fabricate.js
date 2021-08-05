@@ -1,5 +1,10 @@
 /** Max mobile width. */
 const MOBILE_MAX_WIDTH = 1000;
+/** Interval between state update checks */
+const STATE_WATCH_INTERVAL_MS = 100;
+
+let state = {};
+let stateWatchers = [];
 
 /**
  * Create an element of a given tag type, with fluent methods for continuing
@@ -136,6 +141,30 @@ const fabricate = (tagName) => {
     return el;
   };
 
+  /**
+   * Watch some state value for changes.
+   *
+   * @param {string} key - Key to watch for.
+   * @param {function} cb - Callback to be notified.
+   * @returns {HTMLElement}
+   */
+  el.watchState = (key, cb) => {
+    stateWatchers.push({ key, el, cb });
+    return el;
+  };
+
+  /**
+   * Convenience method to run some statements when a component is constructed
+   * using only these chainable methods.
+   *
+   * @param {function} f - Function to run immediately.
+   * @returns {HTMLElement}
+   */
+  el.then = (f) => {
+    f();
+    return el;
+  };
+
   return el;
 };
 
@@ -150,5 +179,35 @@ fabricate.isMobile = () => window.innerWidth < MOBILE_MAX_WIDTH;
  * Begin a component hierarchy from the body.
  *
  * @param {HTMLElement} root - First element in the app tree.
+ * @param {object} [initialState] - Optional, initial state.
  */
-fabricate.app = (root) => document.body.appendChild(root);
+fabricate.app = (root, initialState) => {
+  state = initialState || {};
+  document.body.appendChild(root);
+};
+
+/**
+ * Add a state update that will happen very soon.
+ *
+ * @param {string} key - State key.
+ * @param {function} update - Callback that gets the previous value and returns new value.
+ */
+fabricate.updateState = (key, update) => {
+  if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
+  if (typeof update !== 'function') throw new Error('State update must be function(previous) { }');
+
+  state[key] = update(state[key]);
+
+  // Update elements watching this key
+  stateWatchers
+    .filter(p => p.key === key)
+    .forEach(({ el, cb }) => cb(el, state[key]));
+};
+
+/**
+ * Get some state by key.
+ *
+ * @param {string} key - Key to get.
+ * @returns {any} The value stored, if any.
+ */
+fabricate.getState = (key) => state[key];

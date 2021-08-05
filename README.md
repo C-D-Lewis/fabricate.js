@@ -8,6 +8,7 @@ intended for small apps with relatively simply layouts.
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [API](#api)
+- [Other features](#other-features)
 
 
 ## Introduction
@@ -164,9 +165,11 @@ Button()
   .setText('Cancel');
 ```
 
-### Other features
+## Other features
 
-`fabricate` itself has some helpers:
+`fabricate` itself has some helpers as detailed below.
+
+### Detect mobile devices
 
 ```js
 // Detect a very narrow device, or mobile device
@@ -175,6 +178,8 @@ Text()
     fontSize: fabricate.isMobile() ? '1rem' : '1.8rem',
   })
 ```
+
+### Begin an app from document body
 
 Use `app()` to start an app from the document body:
 
@@ -191,4 +196,24 @@ const page = PageContainer()
   ]);
 
 fabricate.app(PageContainer());
+```
+
+### Use global state
+
+A few methods are available to make it easy to maintain some basic global state
+and to update components when those states change. See the
+[counter](examples/counter.html) example for a full example.
+
+```js
+// View can watch some state
+const View = fabricate('div')
+  .watchState('displayText', (el, value) => el.setText(value));
+
+// Initialise first state
+fabricate.app(View, { displayText: 'hello, world' });
+
+// Update the state using the previous value
+setTimeout(() => {
+  fabricate.updateState('displayText', prev => "Now it's updated!");
+}, 5000);
 ```

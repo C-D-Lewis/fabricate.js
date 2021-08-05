@@ -1,15 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Test page</title>
-
+    <title>fabricate.js example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
     <style>
-      * {
-        font-family: sans-serif;
-      }
-
+      * { font-family: sans-serif; }
       html, body {
         margin: 0;
         padding: 0;
@@ -22,18 +17,18 @@
     <script>
       const Text = (text) => fabricate('span').setText(text);
 
-      const Container = () => fabricate('div')
+      const FlexContainer = () => fabricate('div')
         .asFlex('column')
         .withStyles({ padding: '10px' });
 
-      const page = Container()
+      const PageContainer = FlexContainer()
         .addChildren([
           Text('Hello, world!')
             .withStyles({ fontSize: '1.1rem' }),
         ]);
 
       // Use as the root app element
-      fabricate.app(page);
+      fabricate.app(PageContainer);
     </script>
   </body>
 </html>
