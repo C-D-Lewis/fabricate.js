@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../fabricate.js"></script>
+
+    <script>
+      const { Button, Column, app } = fabricate;
+
+      const SubmitButton = () => Button({
+        text: 'Submit',
+        color: 'green',
+      })
+        .onClick(() => alert('Success!'));
+
+      const CancelButton = () => Button({
+        text: 'Cancel',
+        color: 'red',
+      })
+        .onClick(() => alert('Cancelled!'));
+
+      const Container = () => Column()
+        .withStyles({ padding: '10px' })
+        .addChildren([
+          Button({ text: 'Normal' }),
+          SubmitButton(),
+          CancelButton(),
+        ]);
+
+      const pageContainer = Container();
+
+      app(pageContainer);
+    </script>
+  </body>
+</html>

@@ -17,7 +17,7 @@ The aim of `fabricate` is to allow a quick and expressive way to set up UI
 with a fluent API based on method chaining. This allows creating elements with
 styles, attributes, handlers, and child elements in an easy fashion.
 
-For example, a text element:
+For example, a text element in a padded container:
 
 ```js
 const Text = (text) => fabricate('span').setText(text);
@@ -39,15 +39,14 @@ fabricate.app(page);
 Components can be extended after they are created, for example a button:
 
 ```js
-const Button = fabricate('div')
+const Button = () => fabricate('div')
   .asFlex('column')
   .withStyles({
     padding: '8px 10px',
     color: 'white',
     backgroundColor: 'black',
-    borderRadius: '50px',
+    borderRadius: '5px',
     justifyContent: 'center',
-    fontWeight: 'bold',
     cursor: 'pointer',
   })
   .onHover({
@@ -55,18 +54,28 @@ const Button = fabricate('div')
     end: el => el.withStyles({ filter: 'brightness(1)' }),
   });
 
-const SubmitButton = Button()
+const SubmitButton = () => Button()
   .setText('Submit')
   .withStyles({ backgroundColor: 'green' })
   .onClick(() => alert('Success!'));
 
-const CancelButton = Button()
+const CancelButton = () => Button()
   .setText('Cancel')
   .withStyles({ backgroundColor: 'red' })
   .onClick(() => alert('Cancelled!'));
 ```
 
 See `examples` for more.
+
+Some basic components are available to quickly build UI:
+
+* `Column`- A stylable flex column.
+* `Row` - A stylable flex row.
+* `Text` - A stylable text span.
+* `Button` - A stylable button.
+* `NavBar` - A stylable navbar.
+
+See [`fabricate.js`](./fabricate.js) for all of these and their options.
 
 
 ## Installation
@@ -96,39 +105,38 @@ const Column = () => fabricate('div')
   .asFlex('column');
 ```
 
+> The `Row` and `Column` basic components included can help with these.
+
 ### Add styles and attributes
 
 Use more method chaining to flesh out the component:
 
 ```js
-const Banner = (src) => fabricate('img')
+const BannerImage = (src) => fabricate('img')
   .withStyles({
     width: '800px',
     height: 'auto',
     borderRadius: '10px',
   })
-  .withAttributes({ src })
+  .withAttributes({ src });
 ```
 
-A semantic alias is also available:
-
-```js
-const HoverButton = Button()
-  .onHover(
-    (el, hovering) => el.addStyles({ backgroundColor: hovering ? 'green' : 'grey' })
-  );
-```
+A semantic alias `addStyles()` is also available.
 
 ### Add children
 
 Add other components as children to a parent:
 
 ```js
-Container()
+const { Row, app } = fabricate;
+
+const buttonRow = Row()
   .addChildren([
     Button('Submit')
     Button('Cancel')
   ]);
+
+app(buttonRow);
 ```
 
 ### Add behaviors
@@ -195,7 +203,7 @@ const page = PageContainer()
       ]),
   ]);
 
-fabricate.app(PageContainer());
+fabricate.app(page);
 ```
 
 ### Use global state
@@ -205,15 +213,17 @@ and to update components when those states change. See the
 [counter](examples/counter.html) example for a full example.
 
 ```js
+const { app, Text, updateState } = fabricate;
+
 // View can watch some state
-const View = fabricate('div')
-  .watchState('displayText', (el, value) => el.setText(value));
+const counterView = Text()
+  .watchState('counter', value => el.setText(value));
 
 // Initialise first state
-fabricate.app(View, { displayText: 'hello, world' });
+app(counterView, { counter: 0 });
 
 // Update the state using the previous value
-setTimeout(() => {
-  fabricate.updateState('displayText', prev => "Now it's updated!");
-}, 5000);
+setInterval(() => {
+  updateState('counter', prev => prev + 1);
+}, 1000);
 ```

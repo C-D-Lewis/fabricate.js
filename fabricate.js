@@ -1,7 +1,5 @@
 /** Max mobile width. */
 const MOBILE_MAX_WIDTH = 1000;
-/** Interval between state update checks */
-const STATE_WATCH_INTERVAL_MS = 100;
 
 let state = {};
 let stateWatchers = [];
@@ -126,7 +124,7 @@ const fabricate = (tagName) => {
    * @param {string} text - Text to set.
    * @returns {HTMLElement}
    */
-   el.setText = (text) => {
+   el.setText = (text = '') => {
     el.innerText = text;
     return el;
   };
@@ -157,16 +155,18 @@ const fabricate = (tagName) => {
    * Convenience method to run some statements when a component is constructed
    * using only these chainable methods.
    *
-   * @param {function} f - Function to run immediately.
+   * @param {function} f - Function to run immediately, with this element.
    * @returns {HTMLElement}
    */
   el.then = (f) => {
-    f();
+    f(el);
     return el;
   };
 
   return el;
 };
+
+////////////////////////////////////////////// Helpers /////////////////////////////////////////////
 
 /**
  * Determine if a mobile device is being used which has a narrow screen.
@@ -186,17 +186,19 @@ fabricate.app = (root, initialState) => {
   document.body.appendChild(root);
 };
 
+/////////////////////////////////////////////// State //////////////////////////////////////////////
+
 /**
  * Add a state update that will happen very soon.
  *
  * @param {string} key - State key.
- * @param {function} update - Callback that gets the previous value and returns new value.
+ * @param {function} updateCb - Callback that gets the previous value and returns new value.
  */
-fabricate.updateState = (key, update) => {
+fabricate.updateState = (key, updateCb) => {
   if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
-  if (typeof update !== 'function') throw new Error('State update must be function(previous) { }');
+  if (typeof updateCb !== 'function') throw new Error('State update must be function(previous) { }');
 
-  state[key] = update(state[key]);
+  state[key] = updateCb(state[key]);
 
   // Update elements watching this key
   stateWatchers
@@ -211,3 +213,103 @@ fabricate.updateState = (key, update) => {
  * @returns {any} The value stored, if any.
  */
 fabricate.getState = (key) => state[key];
+
+///////////////////////////////////////// Basic Components /////////////////////////////////////////
+
+/**
+ * Basic Row component.
+ *
+ * @returns {HTMLElement}
+ */
+fabricate.Row = () => fabricate('div')
+  .asFlex('row');
+
+/**
+ * Basic Column component.
+ *
+ * @returns {HTMLElement}
+ */
+fabricate.Column = () => fabricate('div')
+  .asFlex('column');
+
+/**
+ * Basic Text component.
+ *
+ * @param {object} props - Component props.
+ * @param {string} [props.text] - Text to show.
+ * @returns {HTMLElement}
+ */
+fabricate.Text = ({ text }) => fabricate('span')
+  .withStyles({
+    fontSize: '1.1rem',
+    margin: '5px',
+  })
+  .setText(text);
+
+/**
+ * Basic Button component with rounded corners and highlight on hover.
+ *
+ * @param {object} props - Component props.
+ * @param {string} [props.text] - Button text.
+ * @param {string} [props.backgroundColor] - Button background color.
+ * @param {string} [props.color] - Button text and border color.
+ * @returns {HTMLElement}
+ */
+fabricate.Button = ({
+  text = 'Button',
+  backgroundColor = 'white',
+  color = '#444',
+} = {}) => fabricate.Column()
+  .withStyles({
+    minWidth: '100px',
+    width: 'max-content',
+    height: '20px',
+    color,
+    backgroundColor,
+    border: `solid 1px ${color}`,
+    borderRadius: '5px',
+    padding: '8px 10px',
+    margin: '5px',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    cursor: 'pointer',
+  })
+  .onHover((el, hovering) => {
+    el.addStyles({
+      color: hovering ? backgroundColor : color,
+      backgroundColor: hovering ? color : backgroundColor,
+    });
+  })
+  .setText(text);
+
+/**
+ * Basic NavBar component with colors and title.
+ *
+ * @param {object} props - Component props.
+ * @param {string} [props.title] - NavBar title text.
+ * @param {string} [props.backgroundColor] - NavBar background color.
+ * @param {string} [props.color] - NavBar text color.
+ * @returns {HTMLElement}
+ */
+fabricate.NavBar = ({
+  title = 'NavBar Title',
+  color = 'white',
+  backgroundColor = 'forestgreen',
+} = {}) => Row()
+  .withStyles({
+    padding: '10px 20px',
+    height: '50px',
+    backgroundColor,
+    alignItems: 'center',
+  })
+  .addChildren([
+    fabricate('h1')
+      .withStyles({
+        color,
+        fontWeight: 'bold',
+        fontSize: '1.2rem',
+        cursor: 'default',
+      })
+      .setText(title),
+  ]);

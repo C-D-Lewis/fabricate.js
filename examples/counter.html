@@ -5,60 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <style>
       * { font-family: sans-serif; }
-      html, body {
-        margin: 0;
-        padding: 0;
-      }
     </style>
   </head>
   <body>
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const increment = prev => prev + 1;
+      const { Column, Text, Button, app, updateState } = fabricate;
 
-      const Text = (text) => fabricate('span').setText(text);
-
-      const Container = () => fabricate('div')
-        .asFlex('column')
-        .withStyles({ padding: '10px' });
-      
-      const CounterView = () => Text('')
+      const CounterView = () => Text({ text: 'counter now 0' })
         .withStyles({ fontSize: '2rem' })
         .watchState('counter', (el, value) => el.setText(`counter now ${value}`));
 
-      const Button = () => fabricate('div')
-        .asFlex('column')
-        .withStyles({
-          width: '100px',
-          height: '20px',
-          color: 'white',
-          backgroundColor: 'black',
-          borderRadius: '50px',
-          padding: '8px 10px',
-          margin: '5px',
-          justifyContent: 'center',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          cursor: 'pointer',
-        });
-
-      const PageContainer = Container()
+      const pageContainer =  Column()
+        .withStyles({ padding: '10px' })
         .addChildren([
-          Text('The counter below updates once a second:'),
+          Text({ text: 'The counter below counts button clicks:' }),
           CounterView(),
-          Button()
-            .setText('Increment')
-            .onClick(() => fabricate.updateState('counter', increment)),
+          Button({ text: 'Increment' })
+            .onClick(() => updateState('counter', val => val + 1)),
         ]);
 
       // Use as the root app element
-      fabricate.app(PageContainer, { counter: 0 });
-
-      // Start counting
-      setInterval(() => {
-        fabricate.updateState('counter', increment);
-      }, 1000);
+      app(pageContainer, { counter: 0 });
     </script>
   </body>
 </html>

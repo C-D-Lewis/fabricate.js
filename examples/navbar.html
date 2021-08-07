@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../fabricate.js"></script>
+
+    <script>
+      const { Column, Row, Text, Button, NavBar, app } = fabricate;
+
+      const pageContainer = Column();
+
+      const contentContainer = Column()
+        .withStyles({ padding: '15px' })
+        .addChildren([
+          Text({ text: 'Here is some example text on the page' }),
+          Text({ text: `Your device appears to be a ${fabricate.isMobile() ? 'mobile' : 'desktop'} device.` }),
+          Button({ text: 'Clickme!'})
+            .onClick(() => alert('Thank you for clicking me!')),
+        ]);
+
+      pageContainer.addChildren([
+        NavBar({ title: 'Fabricate example app'}),
+        contentContainer,
+      ]);
+
+      app(pageContainer);
+    </script>
+  </body>
+</html>
