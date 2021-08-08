@@ -11,11 +11,11 @@
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const { app, updateState, conditional, Column, Text } = fabricate;
+      const { app, updateState, when, Column, Text } = fabricate;
 
       const pageContainer =  Column()
         .addChildren([
-          conditional(state => state.showText, () => Text({ text: 'Now you see me!'})),
+          when(state => state.showText, () => Text({ text: 'Now you see me!'})),
         ]);
 
       // Use as the root app element

@@ -51,6 +51,17 @@ const fabricate = (tagName) => {
   };
 
   /**
+   * Convenience method for adding an input handler.
+   *
+   * @param {function} handler - Function to call when text input happens.
+   * @returns {HTMLElement}
+   */
+  el.onChange = (handler) => {
+    el.addEventListener('input', ({ target }) => handler(el, target.value));
+    return el;
+  };
+
+  /**
    * Convenience method for start and end of hover.
    *
    * @param {object} opts - start and end of hover handlers, or a callback.
@@ -192,10 +203,9 @@ fabricate.app = (root, initialState) => {
  * @param {function} builderCb - Callback that should return the element to show.
  * @returns {HTMLElement}
  */
-fabricate.conditional = (stateTestCb, builderCb) => fabricate('div')
+fabricate.when = (stateTestCb, builderCb) => fabricate('div')
   .watchState((el, state) => {
     el.clear();
-
     if (!stateTestCb(state)) return;
 
     // Render with builderCb
@@ -260,6 +270,26 @@ fabricate.Text = ({ text }) => fabricate('span')
     margin: '5px',
   })
   .setText(text);
+
+/**
+ * Basic Image component.
+ *
+ * @param {object} props - Component props.
+ * @param {string} [props.src] - Image URL to show.
+ * @param {number} [props.width] - Image width.
+ * @param {number} [props.height] - Image height.
+ * @returns {HTMLElement}
+ */
+fabricate.Image = ({
+  src = '',
+  width = '256px',
+  height = '256px',
+} = {}) => fabricate('img')
+  .withStyles({
+    width,
+    height,
+  })
+  .withAttributes({ src });
 
 /**
  * Basic Button component with rounded corners and highlight on hover.
@@ -328,3 +358,26 @@ fabricate.NavBar = ({
       })
       .setText(title),
   ]);
+
+/**
+ * Basic TextInput component with placeholder
+ *
+ * @param {object} props - Component props.
+ * @param {string} [props.title] - TextInput placeholder text.
+ * @returns {HTMLElement}
+ */
+fabricate.TextInput = ({
+  placeholder = 'Enter value',
+} = {}) => fabricate('input')
+  .asFlex('row')
+  .withStyles({
+    width: 'max-content',
+    border: 'solid 1px #444',
+    borderRadius: '5px',
+    padding: '3px 5px',
+    fontSize: '1.1rem',
+  })
+  .withAttributes({
+    type: 'text',
+    placeholder,
+  });

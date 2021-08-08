@@ -15,25 +15,40 @@
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const { Column, Row, Text, Button, NavBar, app } = fabricate;
+      const { Column, Row, Text, Button, NavBar, Image, TextInput, app, updateState, getState } = fabricate;
 
       const pageContainer = Column();
 
       const contentContainer = Column()
         .withStyles({ padding: '15px' })
         .addChildren([
-          Text({ text: 'Here is some example text on the page' }),
           Text({ text: `Your device appears to be a ${fabricate.isMobile() ? 'mobile' : 'desktop'} device.` }),
-          Button({ text: 'Clickme!'})
-            .onClick(() => alert('Thank you for clicking me!')),
-        ]);
+          
+          TextInput({ placeholder: 'Enter your name' })
+            .withStyles({
+              marginLeft: '5px',
+              marginTop: '20px',
+            })
+            .onChange((el, newValue) => updateState('name', () => newValue)),
+          Button({ text: 'Submit'})
+            .onClick(() => alert(`Thank you for clicking me, ${getState('name')}`)),
+          
+          Text({ text: 'An image component is shown below:' })
+            .withStyles({ marginTop: '20px' }),
+          Image({
+            src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png',
+            width: '135px',
+            height: '155px',
+          })
+            .withStyles({ margin: '10px' }),
+          ]);
 
       pageContainer.addChildren([
         NavBar({ title: 'Fabricate example app'}),
         contentContainer,
       ]);
 
-      app(pageContainer);
+      app(pageContainer, { name: 'Unknown' });
     </script>
   </body>
 </html>

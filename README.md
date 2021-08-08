@@ -74,6 +74,8 @@ Some basic components are available to quickly build UI:
 * `Text` - A stylable text span.
 * `Button` - A stylable button.
 * `NavBar` - A stylable navbar.
+* `Image` - An image.
+* `TextInput` - A text input with placeholder.
 
 See [`fabricate.js`](./fabricate.js) for all of these and their options.
 
@@ -226,4 +228,25 @@ app(counterView, { counter: 0 });
 setInterval(() => {
   updateState('counter', prev => prev + 1);
 }, 1000);
+```
+
+### Conditional rendering
+
+Conditionally add or remove a component (or tree of components) using the `when`
+method:
+
+```js
+const { app, updateState, when, Column, Text } = fabricate;
+
+const pageContainer =  Column()
+  .addChildren([
+    // Check some state, and provide a function to build the component to show
+    when(state => state.showText, () => Text({ text: 'Now you see me!'})),
+  ]);
+
+// Use as the root app element
+app(pageContainer, { showText: false });
+
+// Later, add the text
+setInterval(() => updateState('showText', state => !state.showText), 2000);
 ```
