@@ -130,12 +130,12 @@ A semantic alias `addStyles()` is also available.
 Add other components as children to a parent:
 
 ```js
-const { Row, app } = fabricate;
+const { Row, Button, app } = fabricate;
 
 const buttonRow = Row()
   .addChildren([
-    Button('Submit')
-    Button('Cancel')
+    Button({ text: 'Submit'}),
+    Button({ text: 'Cancel'}),
   ]);
 
 app(buttonRow);
@@ -147,7 +147,7 @@ Add click and hover behaviors, which are provided the same element to allow
 updating styles and attributes etc:
 
 ```js
-Button()
+Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover({
     start: el => console.log('maybe clicked'),
@@ -158,7 +158,7 @@ Button()
 Hovering can also be implemented with just a callback if preferred:
 
 ```js
-Button()
+Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover(
     (el, hovering) => console.log(`I ${hovering ? 'may' : 'may not'} be of interest`)
@@ -170,9 +170,8 @@ Button()
 For simple elements, set their `innerHTML` or `innerText`:
 
 ```js
-Button()
+Button({ text: 'Cancel' })
   .withStyles({ backgroundColor: 'red' })
-  .setText('Cancel');
 ```
 
 ## Other features
@@ -226,7 +225,7 @@ app(counterView, { counter: 0 });
 
 // Update the state using the previous value
 setInterval(() => {
-  updateState('counter', prev => prev + 1);
+  updateState('counter', state => state.counter + 1);
 }, 1000);
 ```
 
