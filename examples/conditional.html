@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../fabricate.js"></script>
+
+    <script>
+      const { app, updateState, conditional, Column, Text } = fabricate;
+
+      const pageContainer =  Column()
+        .addChildren([
+          conditional(state => state.showText, () => Text({ text: 'Now you see me!'})),
+        ]);
+
+      // Use as the root app element
+      app(pageContainer, { showText: false });
+
+      // Later, add the text
+      setInterval(() => updateState('showText', state => !state.showText), 2000);
+    </script>
+  </body>
+</html>

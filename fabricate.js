@@ -140,14 +140,13 @@ const fabricate = (tagName) => {
   };
 
   /**
-   * Watch some state value for changes.
+   * Watch the state for changes.
    *
-   * @param {string} key - Key to watch for.
    * @param {function} cb - Callback to be notified.
    * @returns {HTMLElement}
    */
-  el.watchState = (key, cb) => {
-    stateWatchers.push({ key, el, cb });
+  el.watchState = (cb) => {
+    stateWatchers.push({ el, cb });
     return el;
   };
 
@@ -186,24 +185,40 @@ fabricate.app = (root, initialState) => {
   document.body.appendChild(root);
 };
 
+/**
+ * Conditionally render a child in response to state update.
+ *
+ * @param {function} stateTestCb - Callback to test the state.
+ * @param {function} builderCb - Callback that should return the element to show.
+ * @returns {HTMLElement}
+ */
+fabricate.conditional = (stateTestCb, builderCb) => fabricate('div')
+  .watchState((el, state) => {
+    el.clear();
+
+    if (!stateTestCb(state)) return;
+
+    // Render with builderCb
+    el.addChildren([builderCb()]);
+  });
+
 /////////////////////////////////////////////// State //////////////////////////////////////////////
 
 /**
- * Add a state update that will happen very soon.
+ * Update the state.
  *
- * @param {string} key - State key.
+ * @param {string} key - State key to update.
  * @param {function} updateCb - Callback that gets the previous value and returns new value.
  */
 fabricate.updateState = (key, updateCb) => {
   if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
   if (typeof updateCb !== 'function') throw new Error('State update must be function(previous) { }');
 
-  state[key] = updateCb(state[key]);
+  state[key] = updateCb(state);
 
   // Update elements watching this key
   stateWatchers
-    .filter(p => p.key === key)
-    .forEach(({ el, cb }) => cb(el, state[key]));
+    .forEach(({ el, cb }) => cb(el, state));
 };
 
 /**

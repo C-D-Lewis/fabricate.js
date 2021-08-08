@@ -15,7 +15,7 @@
 
       const CounterView = () => Text({ text: 'counter now 0' })
         .withStyles({ fontSize: '2rem' })
-        .watchState('counter', (el, value) => el.setText(`counter now ${value}`));
+        .watchState((el, state) => el.setText(`counter now ${state.counter}`));
 
       const pageContainer =  Column()
         .withStyles({ padding: '10px' })

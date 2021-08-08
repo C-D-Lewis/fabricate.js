@@ -217,7 +217,7 @@ const { app, Text, updateState } = fabricate;
 
 // View can watch some state
 const counterView = Text()
-  .watchState('counter', value => el.setText(value));
+  .watchState(state => el.setText(state.counter));
 
 // Initialise first state
 app(counterView, { counter: 0 });
