@@ -76,6 +76,8 @@ Some basic components are available to quickly build UI:
 * `NavBar` - A stylable navbar.
 * `Image` - An image.
 * `TextInput` - A text input with placeholder.
+* `Loader` - A spinning stylable loader.
+* `Card` - A Material-esque card.
 
 See [`fabricate.js`](./fabricate.js) for all of these and their options.
 
@@ -249,3 +251,6 @@ app(pageContainer, { showText: false });
 // Later, add the text
 setInterval(() => updateState('showText', state => !state.showText), 2000);
 ```
+
+See [`examples/login.html`](examples/login.html) for a more complex example of
+conditional rendering in action.

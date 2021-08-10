@@ -203,14 +203,40 @@ fabricate.app = (root, initialState) => {
  * @param {function} builderCb - Callback that should return the element to show.
  * @returns {HTMLElement}
  */
-fabricate.when = (stateTestCb, builderCb) => fabricate('div')
-  .watchState((el, state) => {
+fabricate.when = (stateTestCb, builderCb) => {
+  let lastResult = false;
+
+  /**
+   * When the state updates.
+   *
+   * @param {HTMLElement} el - The host element.
+   * @param {object} stateNow - State object.
+   * @returns {void}
+   */
+  const onStateUpdate = (el, stateNow) => {
+    const newResult = stateTestCb(stateNow);
+
+    // Only re-render if a new result from the test callback
+    if (newResult === lastResult) return;
+    lastResult = newResult;
+
     el.clear();
-    if (!stateTestCb(state)) return;
+
+    // Should not be shown
+    if (!newResult) return;
 
     // Render with builderCb
     el.addChildren([builderCb()]);
-  });
+  };
+  
+  const host = fabricate('div')
+    .watchState(onStateUpdate);
+
+  // Test immediately
+  onStateUpdate(host, state);
+
+  return host;
+};
 
 /////////////////////////////////////////////// State //////////////////////////////////////////////
 
@@ -363,21 +389,102 @@ fabricate.NavBar = ({
  * Basic TextInput component with placeholder
  *
  * @param {object} props - Component props.
+ * @param {string} [props.backgroundColor] - TextInput background color.
+ * @param {string} [props.color] - TextInput text color.
  * @param {string} [props.title] - TextInput placeholder text.
  * @returns {HTMLElement}
  */
 fabricate.TextInput = ({
   placeholder = 'Enter value',
+  color = 'black',
+  backgroundColor = '#f5f5f5',
 } = {}) => fabricate('input')
   .asFlex('row')
   .withStyles({
     width: 'max-content',
-    border: 'solid 1px #444',
+    border: 'solid 1px white',
+    color,
+    backgroundColor,
     borderRadius: '5px',
     padding: '3px 5px',
     fontSize: '1.1rem',
+    margin: '5px auto',
   })
   .withAttributes({
     type: 'text',
     placeholder,
   });
+
+/**
+ * Basic Loader component.
+ *
+ * @param {object} props - Component props.
+ * @param {number} [props.size] - Loader size.
+ * @param {number} [props.lineWidth] - Stroke width.
+ * @param {string} [props.color] - Color.
+ * @returns {HTMLElement}
+ */
+fabricate.Loader = ({
+  size = 48,
+  lineWidth = 5,
+  color = 'red',
+} = {}) => {
+  const container = fabricate('div')
+    .asFlex('column')
+    .withStyles({
+      margin: '10px',
+      width: `${size}px`,
+      height: `${size}px`,
+    });
+
+  const canvas = fabricate('canvas')
+    .withStyles({
+      width: `${size}px`,
+      height: `${size}px`,
+      animation: 'spin 0.7s linear infinite',
+    })
+    .withAttributes({
+      width: size,
+      height: size,
+    });
+
+  // Get context and draw arcs
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 3, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#ddd';
+  ctx.stroke(); 
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 3, 0, 1);
+  ctx.strokeStyle = color;
+  ctx.stroke(); 
+
+  container.addChildren([canvas]);
+
+  return container;
+};
+
+/**
+ * Basic Card component.
+ *
+ * @returns {HTMLElement}
+ */
+fabricate.Card = () => fabricate('div')
+  .withStyles({
+    width: 'max-content',
+    padding: '10px',
+    borderRadius: '5px',
+    boxShadow: '2px 2px 3px 1px #5555',
+  });
+
+////////////////////////////////////////////// Styles //////////////////////////////////////////////
+
+const stylesHtml = `
+  @keyframes spin {
+    100% {
+      transform:rotate(360deg);
+    }
+  }
+`;
+document.head.appendChild(fabricate('style').setHtml(stylesHtml));

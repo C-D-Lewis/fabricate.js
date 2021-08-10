@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../fabricate.js"></script>
+
+    <script>
+      const { Column, Text, Button, TextInput, app, updateState, getState, Card, Loader, Image, when } = fabricate;
+
+      /**
+       * Login form with email, password, and submit button.
+       * 
+       * @returns {HTMLElement}
+       */
+      const LoginForm = () => fabricate('div')
+        .addChildren([
+          TextInput({ placeholder: 'Email' })
+            .onChange((el, value) => updateState('email', () => value)),
+          TextInput({ placeholder: 'Password' })
+            .onChange((el, value) => updateState('password', () => value)),
+
+          Button({ text: 'Submit' })
+            .withStyles({ margin: '15px auto' })
+            .onClick(() => {
+              if (!getState('email') || !getState('password')) {
+                alert('Please enter your details');
+                return;
+              }
+
+              // Mock login
+              updateState('isLoading', () => true);
+              setTimeout(() => {
+                updateState('isLoading', () => false);
+                updateState('isCompleted', () => true);
+              }, 3000);
+            }),
+        ]);
+
+      /**
+       * Login box with title, image, LoginForm and Loader.
+       * 
+       * @returns {HTMLElement}
+       */
+      const LoginBox = () => Card()
+        .asFlex('column')
+        .withStyles({
+          minWidth: '420px',
+          minHeight: '300px',
+          margin: 'auto',
+          textAlign: 'center',
+        })
+        .addChildren([
+          Text({ text: 'Login' })
+            .withStyles({
+              fontWeight: 'bold',
+              fontSize: '1.5rem',
+            }),
+          Image({
+            src: './assets/account.png',
+            width: '100px',
+            height: '100px',
+          })
+            .withStyles({ margin: '5px auto' }),
+
+          when(state => !state.isLoading, () => LoginForm()),
+          when(
+            state => state.isLoading && !state.isCompleted,
+            () => Loader().withStyles({ margin: '20px auto' }),
+          ),
+        ]);
+
+      const pageContainer = Column()
+        .withStyles({ padding: '40px' })
+        .addChildren([
+          when(state => !state.isCompleted, () => LoginBox()),
+          when(state => state.isCompleted, () => Text({ text: 'Login completed!' })),
+        ]);
+
+      const initialState = {
+        email: undefined,
+        password: undefined,
+        isLoading: false,
+        isCompleted: false,
+      };
+      app(pageContainer, initialState);
+    </script>
+  </body>
+</html>
