@@ -23,7 +23,7 @@
           Text({ text: 'The counter below counts button clicks:' }),
           CounterView(),
           Button({ text: 'Increment' })
-            .onClick(() => updateState('counter', val => val + 1)),
+            .onClick(() => updateState('counter', state => state.counter + 1)),
         ]);
 
       // Use as the root app element
