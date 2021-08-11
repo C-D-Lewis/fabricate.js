@@ -15,7 +15,7 @@
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const { Column, Text, Button, TextInput, app, updateState, getState, Card, Loader, Image, when } = fabricate;
+      const { app, when, updateState, getState, Text, Button, TextInput, Card, Loader, Image, Column, Fader } = fabricate;
 
       /**
        * Login form with email, password, and submit button.
@@ -52,7 +52,6 @@
        * @returns {HTMLElement}
        */
       const LoginBox = () => Card()
-        .asFlex('column')
         .withStyles({
           minWidth: '420px',
           minHeight: '300px',
@@ -82,7 +81,7 @@
       const pageContainer = Column()
         .withStyles({ padding: '40px' })
         .addChildren([
-          when(state => !state.isCompleted, () => LoginBox()),
+          when(state => !state.isCompleted, () => Fader().addChildren([LoginBox()])),
           when(state => state.isCompleted, () => Text({ text: 'Login completed!' })),
         ]);
 

@@ -471,11 +471,41 @@ fabricate.Loader = ({
  * @returns {HTMLElement}
  */
 fabricate.Card = () => fabricate('div')
+  .asFlex('column')
   .withStyles({
     width: 'max-content',
     padding: '10px',
     borderRadius: '5px',
     boxShadow: '2px 2px 3px 1px #5555',
+  });
+
+/**
+ * Basic Fader component.
+ *
+ * @param {object} props - Component props.
+ * @param {number} [props.durationS] - Duration in seconds of the fade-in.
+ * @param {number} [props.delayMs] - Delay in milliseconds before fade begins.
+ * @returns {HTMLElement}
+ */
+fabricate.Fader = ({
+  durationS = '0.6',
+  delayMs = 300,
+} = {}) => fabricate('div')
+  .withStyles({
+    opacity: 0,
+    transition: `opacity ${durationS}s`,
+  })
+  .then((el) => {
+    setTimeout(() => el.addStyles({ opacity: 1 }), delayMs);
+  });
+
+fabricate.Select = ({
+  options = ['foo', 'bar', 'baz'],
+}) => fabricate('select')
+  .then((el) => {
+    options.forEach((option) => {
+      el.add(new Option(option, option));
+    });
   });
 
 ////////////////////////////////////////////// Styles //////////////////////////////////////////////

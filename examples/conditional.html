@@ -11,11 +11,16 @@
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const { app, updateState, when, Column, Text } = fabricate;
+      const { app, updateState, when, Column, Text, Fader } = fabricate;
+
+      const Content = () => Fader()
+        .addChildren([
+          Text({ text: 'Now you see me!'}),
+        ]);
 
       const pageContainer =  Column()
         .addChildren([
-          when(state => state.showText, () => Text({ text: 'Now you see me!'})),
+          when(state => state.showText, () => Content()),
         ]);
 
       // Use as the root app element

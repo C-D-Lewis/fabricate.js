@@ -78,6 +78,7 @@ Some basic components are available to quickly build UI:
 * `TextInput` - A text input with placeholder.
 * `Loader` - A spinning stylable loader.
 * `Card` - A Material-esque card.
+* `Fader` - A fade-in wrapper.
 
 See [`fabricate.js`](./fabricate.js) for all of these and their options.
 
