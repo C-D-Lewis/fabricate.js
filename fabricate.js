@@ -226,7 +226,10 @@ fabricate.when = (stateTestCb, builderCb) => {
     if (!newResult) return;
 
     // Render with builderCb
-    el.addChildren([builderCb()]);
+    const child = builderCb();
+    const watcher = stateWatchers.find(p => p.el === child);
+    if (watcher) watcher.cb(child, state);
+    el.addChildren([child]);
   };
   
   const host = fabricate('div')
@@ -324,12 +327,14 @@ fabricate.Image = ({
  * @param {string} [props.text] - Button text.
  * @param {string} [props.backgroundColor] - Button background color.
  * @param {string} [props.color] - Button text and border color.
+ * @param {boolean} [props.highlight] - True to enable highlight colors on hover.
  * @returns {HTMLElement}
  */
 fabricate.Button = ({
   text = 'Button',
   backgroundColor = 'white',
   color = '#444',
+  highlight = true,
 } = {}) => fabricate.Column()
   .withStyles({
     minWidth: '100px',
@@ -337,7 +342,7 @@ fabricate.Button = ({
     height: '20px',
     color,
     backgroundColor,
-    border: `solid 1px ${color}`,
+    border: highlight ? `solid 1px ${color}` : 'none',
     borderRadius: '5px',
     padding: '8px 10px',
     margin: '5px',
@@ -347,6 +352,8 @@ fabricate.Button = ({
     cursor: 'pointer',
   })
   .onHover((el, hovering) => {
+    if (!highlight) return;
+
     el.addStyles({
       color: hovering ? backgroundColor : color,
       backgroundColor: hovering ? color : backgroundColor,
@@ -367,10 +374,10 @@ fabricate.NavBar = ({
   title = 'NavBar Title',
   color = 'white',
   backgroundColor = 'forestgreen',
-} = {}) => Row()
+} = {}) => fabricate.Row()
   .withStyles({
     padding: '10px 20px',
-    height: '50px',
+    height: '40px',
     backgroundColor,
     alignItems: 'center',
   })
@@ -432,7 +439,6 @@ fabricate.Loader = ({
   const container = fabricate('div')
     .asFlex('column')
     .withStyles({
-      margin: '10px',
       width: `${size}px`,
       height: `${size}px`,
     });
@@ -450,13 +456,15 @@ fabricate.Loader = ({
 
   // Get context and draw arcs
   const ctx = canvas.getContext('2d');
+  const center = size / 2;
+  const radius = 0.8 * (size / 2);
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
-  ctx.arc(size / 2, size / 2, size / 3, 0, 2 * Math.PI);
+  ctx.arc(center, center, radius, 0, 2 * Math.PI);
   ctx.strokeStyle = '#ddd';
   ctx.stroke(); 
   ctx.beginPath();
-  ctx.arc(size / 2, size / 2, size / 3, 0, 1);
+  ctx.arc(center, center, radius, 0, 1);
   ctx.strokeStyle = color;
   ctx.stroke(); 
 
