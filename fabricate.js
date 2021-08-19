@@ -101,7 +101,7 @@ const fabricate = (tagName) => {
    * @param {Array<HTMLElement>} newChildren - Children to append inside.
    * @returns {HTMLElement}
    */
-  el.addChildren = (newChildren) => {
+  el.withChildren = (newChildren) => {
     newChildren.forEach(child => {
       // It's another element
       if (typeof child === 'object') {
@@ -117,6 +117,9 @@ const fabricate = (tagName) => {
 
     return el;
   };
+
+  // Semantic alias for addChildren
+  el.addChildren = el.withChildren;
 
   /**
    * Set the inner HTML.
@@ -257,7 +260,7 @@ fabricate.updateState = (key, updateCb) => {
 
   // Update elements watching this key
   stateWatchers
-    .forEach(({ el, cb }) => cb(el, state));
+    .forEach(({ el, cb }) => cb(el, Object.freeze({ ...state })));
 };
 
 /**
@@ -381,7 +384,7 @@ fabricate.NavBar = ({
     backgroundColor,
     alignItems: 'center',
   })
-  .addChildren([
+  .withChildren([
     fabricate('h1')
       .withStyles({
         color,
@@ -507,6 +510,7 @@ fabricate.Fader = ({
     setTimeout(() => el.addStyles({ opacity: 1 }), delayMs);
   });
 
+// TODO: Unfinished Select component
 fabricate.Select = ({
   options = ['foo', 'bar', 'baz'],
 }) => fabricate('select')
@@ -515,6 +519,31 @@ fabricate.Select = ({
       el.add(new Option(option, option));
     });
   });
+
+/**
+ * Basic Pill component.
+ *
+ * @param {object} props - Component props.
+ * @param {string} props.text - Pill text.
+ * @param {string} props.backgroundColor - Pill backgroundColor. 
+ * @param {string} props.color - Pill color. 
+ * @returns {HTMLElement}
+ */
+fabricate.Pill = ({
+  text = 'Pill',
+  backgroundColor = '#444',
+  color = 'white',
+} = {}) => fabricate.Column()
+  .withStyles({
+    color,
+    backgroundColor,
+    justifyContent: 'center',
+    borderRadius: '20px',
+    padding: '5px 8px',
+    margin: '5px',
+    cursor: 'default',
+  })
+  .setText(text);
 
 ////////////////////////////////////////////// Styles //////////////////////////////////////////////
 

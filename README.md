@@ -79,6 +79,7 @@ Some basic components are available to quickly build UI:
 * `Loader` - A spinning stylable loader.
 * `Card` - A Material-esque card.
 * `Fader` - A fade-in wrapper.
+* `Pill` - A stylable pill.
 
 See [`fabricate.js`](./fabricate.js) for all of these and their options.
 

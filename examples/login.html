@@ -23,7 +23,7 @@
        * @returns {HTMLElement}
        */
       const LoginForm = () => fabricate('div')
-        .addChildren([
+        .withChildren([
           TextInput({ placeholder: 'Email' })
             .onChange((el, value) => updateState('email', () => value)),
           TextInput({ placeholder: 'Password' })
@@ -58,7 +58,7 @@
           margin: 'auto',
           textAlign: 'center',
         })
-        .addChildren([
+        .withChildren([
           Text({ text: 'Login' })
             .withStyles({
               fontWeight: 'bold',
@@ -80,8 +80,8 @@
 
       const pageContainer = Column()
         .withStyles({ padding: '40px' })
-        .addChildren([
-          when(state => !state.isCompleted, () => Fader().addChildren([LoginBox()])),
+        .withChildren([
+          when(state => !state.isCompleted, () => Fader().withChildren([LoginBox()])),
           when(state => state.isCompleted, () => Text({ text: 'Login completed!' })),
         ]);
 

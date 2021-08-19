@@ -19,7 +19,7 @@
 
       const pageContainer =  Column()
         .withStyles({ padding: '10px' })
-        .addChildren([
+        .withChildren([
           Text({ text: 'The counter below counts button clicks:' }),
           CounterView(),
           Button({ text: 'Increment' })
