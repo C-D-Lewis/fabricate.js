@@ -8,7 +8,6 @@ intended for small apps with relatively simply layouts.
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [API](#api)
-- [Other features](#other-features)
 
 
 ## Introduction
@@ -27,7 +26,7 @@ const Container = () => fabricate('div')
   .withStyles({ padding: '10px' });
 
 const page = Container()
-  .addChildren([
+  .withChildren([
     Text('Hello, world!')
       .withStyles({ fontSize: '1.1rem' }),
   ]);
@@ -137,13 +136,15 @@ Add other components as children to a parent:
 const { Row, Button, app } = fabricate;
 
 const buttonRow = Row()
-  .addChildren([
+  .withChildren([
     Button({ text: 'Submit'}),
     Button({ text: 'Cancel'}),
   ]);
 
 app(buttonRow);
 ```
+
+> A semantic alias `addChildren` is also available.
 
 ### Add behaviors
 
@@ -174,13 +175,25 @@ Button({ text: 'Click me!' })
 For simple elements, set their `innerHTML` or `innerText`:
 
 ```js
-Button({ text: 'Cancel' })
+fabricate('div')
   .withStyles({ backgroundColor: 'red' })
+  .setText('I am a red <div>');
 ```
 
-## Other features
+### Remove all child elements
 
-`fabricate` itself has some helpers as detailed below.
+For components such as lists that refresh data, use `clear()`:
+
+```js
+const ItemList = (items) => fabricate('div')
+  .asFlex('column')
+  .withChildren(items.map(Item));
+
+// When new data is available
+itemList.clear();
+
+itemList.addChildren(newItems.map(Item));
+```
 
 ### Detect mobile devices
 
@@ -198,11 +211,11 @@ Use `app()` to start an app from the document body:
 
 ```js
 const page = PageContainer()
-  .addChildren([
+  .withChildren([
     Title('My New App'),
     NavBar(),
     MainContent()
-      .addChildren([
+      .withChildren([
         HeroImage(),
         Introduction(article.body),
       ]),
@@ -222,7 +235,7 @@ const { app, Text, updateState } = fabricate;
 
 // View can watch some state
 const counterView = Text()
-  .watchState(state => el.setText(state.counter));
+  .watchState((el, state) => el.setText(state.counter));
 
 // Initialise first state
 app(counterView, { counter: 0 });
@@ -242,7 +255,7 @@ method:
 const { app, updateState, when, Column, Text } = fabricate;
 
 const pageContainer =  Column()
-  .addChildren([
+  .withChildren([
     // Check some state, and provide a function to build the component to show
     when(state => state.showText, () => Text({ text: 'Now you see me!'})),
   ]);

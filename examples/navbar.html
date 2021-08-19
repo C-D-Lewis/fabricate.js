@@ -15,7 +15,7 @@
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const { Column, Row, Text, Button, NavBar, Image, TextInput, app, updateState, getState } = fabricate;
+      const { Column, Row, Text, Button, NavBar, Image, TextInput, app, updateState, getState, Pill } = fabricate;
 
       const contentContainer = Column()
         .withStyles({ padding: '15px' })
@@ -45,6 +45,8 @@
         .withChildren([
           NavBar({ title: 'Fabricate example app'}),
           contentContainer,
+          Row()
+            .withChildren(['foo', 'bar', 'baz'].map(p => Pill({ text: p }))),
         ]);
 
       app(pageContainer, { name: 'Unknown' });

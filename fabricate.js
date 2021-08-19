@@ -238,7 +238,7 @@ fabricate.when = (stateTestCb, builderCb) => {
   const host = fabricate('div')
     .watchState(onStateUpdate);
 
-  // Test immediately
+  // Test state immediately
   onStateUpdate(host, state);
 
   return host;
@@ -531,7 +531,7 @@ fabricate.Select = ({
  */
 fabricate.Pill = ({
   text = 'Pill',
-  backgroundColor = '#444',
+  backgroundColor = '#666',
   color = 'white',
 } = {}) => fabricate.Column()
   .withStyles({
