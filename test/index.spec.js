@@ -12,7 +12,7 @@ const results = {
 const addResult = (passed, msg) => {
   const span = document.createElement('span');
   span.classList = passed ? 'pass' : 'fail';
-  span.innerText = `${passed ? '✓' : 'X'} - ${msg}`;
+  span.innerText = `${passed ? '✓' : 'X'} ${msg}`;
   document.body.appendChild(span);
 };
 
@@ -336,8 +336,6 @@ const test = () => {
       color,
     });
 
-    console.log(el.style)
-
     return el.innerText === 'Click me'
       && el.style.minWidth === '100px'
       && el.style.width === 'max-content'
@@ -354,6 +352,55 @@ const test = () => {
       && el.style.fontWeight === 'bold'
       && el.style.textAlign === 'center'
       && el.style.cursor === 'pointer';
+  });
+
+  it('should provide NavBar component', () => {
+    const color = 'white';
+    const backgroundColor = 'pink';
+    const el = fabricate.NavBar({
+      title: 'Example App',
+      backgroundColor,
+      color,
+    });
+
+    const title = el.children[0];
+
+    return el.style.padding === '10px 20px'
+      && el.style.height === '40px'
+      && el.style.backgroundColor === backgroundColor
+      && el.style.alignItems === 'center'
+
+      // Check children
+      && title.tagName === 'H1'
+      && title.style.color === color
+      && title.style.fontWeight === 'bold'
+      && title.style.fontSize === '1.2rem'
+      && title.style.cursor === 'default'
+      && title.innerText === 'Example App';
+  });
+
+  it('should provide TextInput component', () => {
+    const color = 'white';
+    const backgroundColor = 'pink';
+    const el = fabricate.TextInput({
+      placeholder: 'Enter text',
+      backgroundColor,
+      color,
+    });
+
+    return el.placeholder === 'Enter text'
+      && el.type === 'text'
+      && el.style.display === 'flex'
+      && el.style.flexDirection === 'row'
+      && el.style.width === 'max-content'
+      && el.style.borderTopColor === color
+      && el.style.borderTopStyle === 'solid'
+      && el.style.color === color
+      && el.style.backgroundColor === backgroundColor
+      && el.style.borderRadius === '5px'
+      && el.style.padding === '3px 5px'
+      && el.style.fontSize === '1.1rem'
+      && el.style.margin === '5px auto';
   });
 };
 
