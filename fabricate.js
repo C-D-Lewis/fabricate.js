@@ -296,7 +296,9 @@ fabricate.Column = () => fabricate('div')
  * @param {string} [props.text] - Text to show.
  * @returns {HTMLElement}
  */
-fabricate.Text = ({ text }) => fabricate('span')
+fabricate.Text = ({
+  text = 'No text specified',
+} = {}) => fabricate('span')
   .withStyles({
     fontSize: '1.1rem',
     margin: '5px',
