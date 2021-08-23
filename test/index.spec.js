@@ -326,6 +326,35 @@ const test = () => {
       && el.style.width === '10px'
       && el.style.height === '10px';
   });
+
+  it('should provide Button component', () => {
+    const color = 'white';
+    const backgroundColor = 'pink';
+    const el = fabricate.Button({
+      text: 'Click me',
+      backgroundColor,
+      color,
+    });
+
+    console.log(el.style)
+
+    return el.innerText === 'Click me'
+      && el.style.minWidth === '100px'
+      && el.style.width === 'max-content'
+      && el.style.height === '20px'
+      && el.style.color === color
+      && el.style.backgroundColor === backgroundColor
+      && el.style.borderTopColor === color
+      && el.style.borderTopStyle === 'solid'
+      && el.style.borderTopWidth === '1px'
+      && el.style.borderRadius === '5px'
+      && el.style.padding === '8px 10px'
+      && el.style.margin === '5px'
+      && el.style.justifyContent === 'center'
+      && el.style.fontWeight === 'bold'
+      && el.style.textAlign === 'center'
+      && el.style.cursor === 'pointer';
+  });
 };
 
 /**

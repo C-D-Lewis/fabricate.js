@@ -8,6 +8,7 @@ intended for small apps with relatively simply layouts.
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [API](#api)
+- [Run tests](#run-tests)
 
 
 ## Introduction
@@ -269,3 +270,15 @@ setInterval(() => updateState('showText', state => !state.showText), 2000);
 
 See [`examples/login.html`](examples/login.html) for a more complex example of
 conditional rendering in action.
+
+
+## Run tests
+
+Open the test page to run all unit tests:
+
+```shell
+python3 -m http.server
+```
+
+Open `localhost:8000`, then navigate to `test/index.html` and see if all test
+summaries are green and the total indicates all tests passed.
