@@ -512,16 +512,6 @@ fabricate.Fader = ({
     setTimeout(() => el.addStyles({ opacity: 1 }), delayMs);
   });
 
-// TODO: Unfinished Select component
-fabricate.Select = ({
-  options = ['foo', 'bar', 'baz'],
-}) => fabricate('select')
-  .then((el) => {
-    options.forEach((option) => {
-      el.add(new Option(option, option));
-    });
-  });
-
 /**
  * Basic Pill component.
  *
@@ -546,6 +536,18 @@ fabricate.Pill = ({
     cursor: 'default',
   })
   .setText(text);
+
+/**
+ * TODO: Unfinished Select component
+ */
+// fabricate.Select = ({
+//   options = ['foo', 'bar', 'baz'],
+// }) => fabricate('select')
+//   .then((el) => {
+//     options.forEach((option) => {
+//       el.add(new Option(option, option));
+//     });
+//   });
 
 ////////////////////////////////////////////// Styles //////////////////////////////////////////////
 
