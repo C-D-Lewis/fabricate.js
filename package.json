@@ -1,0 +1,24 @@
+{
+  "name": "fabricate",
+  "version": "1.0.0",
+  "description": "Tiny vanilla JS webapp framework with a fluent API and zero dependencies.",
+  "main": "fabricate.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/c-d-lewis/fabricate.git"
+  },
+  "keywords": [],
+  "author": "C-D-Lewis",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/c-d-lewis/fabricate/issues"
+  },
+  "homepage": "https://github.com/c-d-lewis/fabricate#readme"
+}
