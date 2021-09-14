@@ -13,6 +13,18 @@ intended for small apps with relatively simply layouts.
 - [Run tests](#run-tests)
 
 
+## Installation
+
+Install from a CDN, such as `unpkg`:
+
+```html
+<!-- Where x.y.z is a published version -->
+<script src="https://unpkg.com/fabricate.js@x.y.z/fabricate.js"></script>
+```
+
+or copy or reference `fabricate.js` from `node_modules`.
+
+
 ## Introduction
 
 The aim of `fabricate` is to allow a quick and expressive way to set up UI
