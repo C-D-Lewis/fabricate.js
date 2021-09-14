@@ -1,6 +1,6 @@
 # fabricate
 
-![](logo.png)
+<img src="https://raw.githubusercontent.com/C-D-Lewis/fabricate/main/logo.png" style="max-width: 80%; display: block; margin: auto;"/>
 
 > n. To create quickly and easily.
 
