@@ -2,6 +2,8 @@
 
 > n. To create quickly and easily.
 
+![](logo.png)
+
 A tiny vanilla JS webapp framework with a fluent API and zero dependencies,
 intended for small apps with relatively simply layouts.
 
