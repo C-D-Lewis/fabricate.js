@@ -8,7 +8,7 @@
     </style>
   </head>
   <body>
-    <script type="text/javascript" src="../fabricate.js"></script>
+    <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
       const { app, updateState, when, Column, Text, Fader } = fabricate;
@@ -18,7 +18,7 @@
           Text({ text: 'Now you see me!'}),
         ]);
 
-      const pageContainer =  Column()
+      const pageContainer = Column()
         .withChildren([
           when(state => state.showText, () => Content()),
         ]);

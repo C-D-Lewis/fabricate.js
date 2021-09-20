@@ -179,6 +179,38 @@ const fabricate = (tagName) => {
   return el;
 };
 
+/////////////////////////////////////////////// State //////////////////////////////////////////////
+
+/**
+ * Notify watchers of a state change.
+ */
+const notifyStateChange = () => stateWatchers
+  .forEach(({ el, cb }) => cb(el, Object.freeze({ ...state })));
+
+/**
+ * Update the state.
+ *
+ * @param {string} key - State key to update.
+ * @param {function} updateCb - Callback that gets the previous value and returns new value.
+ */
+fabricate.updateState = (key, updateCb) => {
+  if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
+  if (typeof updateCb !== 'function') throw new Error('State update must be function(previous) { }');
+
+  state[key] = updateCb(state);
+
+  // Update elements watching this key
+  notifyStateChange();
+};
+
+/**
+ * Get some state by key.
+ *
+ * @param {string} key - Key to get.
+ * @returns {any} The value stored, if any.
+ */
+fabricate.getState = (key) => state[key];
+
 ////////////////////////////////////////////// Helpers /////////////////////////////////////////////
 
 /**
@@ -188,34 +220,37 @@ const fabricate = (tagName) => {
  */
 fabricate.isMobile = () => window.innerWidth < MOBILE_MAX_WIDTH;
 
-/**
- * Begin a component hierarchy from the body.
- *
- * @param {HTMLElement} root - First element in the app tree.
- * @param {object} [initialState] - Optional, initial state.
- */
+ /**
+  * Begin a component hierarchy from the body.
+  *
+  * @param {HTMLElement} root - First element in the app tree.
+  * @param {object} [initialState] - Optional, initial state.
+  */
 fabricate.app = (root, initialState) => {
   state = initialState || {};
   document.body.appendChild(root);
+
+  // Trigger initial state update
+  notifyStateChange();
 };
 
-/**
- * Conditionally render a child in response to state update.
- *
- * @param {function} stateTestCb - Callback to test the state.
- * @param {function} builderCb - Callback that should return the element to show.
- * @returns {HTMLElement}
- */
+ /**
+  * Conditionally render a child in response to state update.
+  *
+  * @param {function} stateTestCb - Callback to test the state.
+  * @param {function} builderCb - Callback that should return the element to show.
+  * @returns {HTMLElement}
+  */
 fabricate.when = (stateTestCb, builderCb) => {
   let lastResult = false;
 
   /**
-   * When the state updates.
-   *
-   * @param {HTMLElement} el - The host element.
-   * @param {object} stateNow - State object.
-   * @returns {void}
-   */
+  * When the state updates.
+  *
+  * @param {HTMLElement} el - The host element.
+  * @param {object} stateNow - State object.
+  * @returns {void}
+  */
   const onStateUpdate = (el, stateNow) => {
     const newResult = stateTestCb(stateNow);
 
@@ -234,7 +269,7 @@ fabricate.when = (stateTestCb, builderCb) => {
     if (watcher) watcher.cb(child, state);
     el.addChildren([child]);
   };
-  
+
   const host = fabricate('div')
     .watchState(onStateUpdate);
 
@@ -243,33 +278,6 @@ fabricate.when = (stateTestCb, builderCb) => {
 
   return host;
 };
-
-/////////////////////////////////////////////// State //////////////////////////////////////////////
-
-/**
- * Update the state.
- *
- * @param {string} key - State key to update.
- * @param {function} updateCb - Callback that gets the previous value and returns new value.
- */
-fabricate.updateState = (key, updateCb) => {
-  if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
-  if (typeof updateCb !== 'function') throw new Error('State update must be function(previous) { }');
-
-  state[key] = updateCb(state);
-
-  // Update elements watching this key
-  stateWatchers
-    .forEach(({ el, cb }) => cb(el, Object.freeze({ ...state })));
-};
-
-/**
- * Get some state by key.
- *
- * @param {string} key - Key to get.
- * @returns {any} The value stored, if any.
- */
-fabricate.getState = (key) => state[key];
 
 ///////////////////////////////////////// Basic Components /////////////////////////////////////////
 
