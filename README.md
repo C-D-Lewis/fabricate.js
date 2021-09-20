@@ -12,6 +12,8 @@ intended for small apps with relatively simply layouts.
 - [API](#api)
 - [Run tests](#run-tests)
 
+See `examples` for some simple example apps.
+
 
 ## Installation
 
