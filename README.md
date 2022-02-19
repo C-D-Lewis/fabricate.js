@@ -143,7 +143,7 @@ const BannerImage = (src) => fabricate('img')
   .withAttributes({ src });
 ```
 
-A semantic alias `addStyles()` is also available.
+A semantic alias `addStyles()`/ `addAttributes()` is also available.
 
 ### Add children
 
@@ -252,7 +252,12 @@ const { app, Text, updateState } = fabricate;
 
 // View can watch some state
 const counterView = Text()
-  .watchState((el, state) => el.setText(state.counter));
+  .watchState((el, state, updatedKey) => {
+    // Ignore unrelated changes
+    if (updatedKey !== 'counter') return;
+
+    el.setText(state.counter);
+  });
 
 // Initialise first state
 app(counterView, { counter: 0 });

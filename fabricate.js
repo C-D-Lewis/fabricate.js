@@ -39,6 +39,9 @@ const fabricate = (tagName) => {
     return el;
   };
 
+  // Alias addAttributes => withAttributes for semantics
+  el.addAttributes = el.withAttributes;
+
   /**
    * Convenience method for adding a click handler.
    *
@@ -183,9 +186,11 @@ const fabricate = (tagName) => {
 
 /**
  * Notify watchers of a state change.
+ *
+ * Watchers receive (el, state, changedKey)
  */
-const notifyStateChange = () => stateWatchers
-  .forEach(({ el, cb }) => cb(el, Object.freeze({ ...state })));
+const notifyStateChange = (key) => stateWatchers
+  .forEach(({ el, cb }) => cb(el, Object.freeze({ ...state }), key));
 
 /**
  * Update the state.
@@ -200,7 +205,7 @@ fabricate.updateState = (key, updateCb) => {
   state[key] = updateCb(state);
 
   // Update elements watching this key
-  notifyStateChange();
+  notifyStateChange(key);
 };
 
 /**

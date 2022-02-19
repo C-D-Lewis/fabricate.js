@@ -49,6 +49,15 @@ const test = () => {
     return hasAttributes(el, attributes);
   });
 
+  it('should include attributes alias', () => {
+    const attributes = { href: 'https://example.com' };
+
+    const el = fabricate('a')
+      .withAttributes(attributes);
+
+    return hasAttributes(el, attributes);
+  });
+
   it('should add a click handler', () => {
     let counter = 0;
 
@@ -164,13 +173,17 @@ const test = () => {
 
   it('should watch and update state', () => {
     let counter = 0;
+    let updatedKey;
 
     fabricate('div')
-      .watchState((el, state) => (counter += state.counter));
+      .watchState((el, state, key) => {
+        counter += state.counter;
+        updatedKey = key;
+      });
 
     fabricate.updateState('counter', () => 2);
 
-    return counter === 2;
+    return counter === 2 && updatedKey === 'counter';
   });
 
   it('should allow use of .then', () => {
