@@ -89,22 +89,8 @@ const CancelButton = () => BasicButton()
 
 See the `examples` directory for more examples.
 
-Some basic components are available to quickly build UI:
-
-* `Column`- A stylable flex column.
-* `Row` - A stylable flex row.
-* `Text` - A stylable text span.
-* `Button` - A stylable button.
-* `NavBar` - A stylable navbar.
-* `Image` - An image.
-* `TextInput` - A text input with placeholder.
-* `Loader` - A spinning stylable loader.
-* `Card` - A Material-esque card.
-* `Fader` - A fade-in wrapper.
-* `Pill` - A stylable pill.
-
-See [`fabricate.js`](./fabricate.js) for details on all of these and their
-options.
+Some basic components are available to quickly build UI, see below for more
+details.
 
 
 ## Installation
@@ -127,11 +113,20 @@ Just include in your HTML file, such as in a `lib` directory:
 * [`fabricate` helpers](#fabricate-1)
   * [`.isMobile()`](#ismobile)
   * [`.app()`](#app)
-  * [`.updateState()` / `.watchState()`](#updatestate--withstate)
+  * [`.updateState()` / `.watchState()`](#updatestate--watchstate)
   * [`.when()`](#when)
 * [Built-in Components](#built-in-components)
   * [`Row`](#row)
   * [`Column`](#column)
+  * [`Text`](#text)
+  * [`Image`](#image)
+  * [`Button`](#button)
+  * [`NavBar`](#navbar)
+  * [`TextInput`](#textinput)
+  * [`Loader`](#loader)
+  * [`Card`](#card)
+  * [`Fader`](#fader)
+  * [`Pill`](#pill)
 
 
 ### `Component`
@@ -369,6 +364,128 @@ fabricate.Column()
   ]);
 ```
 
+#### `Text`
+
+Basic text component:
+
+```js
+fabricate.Text({ text: 'Hello, world!' });
+```
+
+#### `Image`
+
+Basic image component:
+
+```js
+fabricate.Image({
+  src: '/assets/images/gallery01.png',
+  width: 640,
+  height: 480,
+});
+```
+
+#### `Button`
+
+A simple button component with optional hover highlight behavior:
+
+```js
+fabricate.Button({
+  text: 'Click me!',
+  color: 'white',
+  backgroundColor: 'gold',
+  highlight: true,
+});
+```
+
+#### `NavBar`
+
+NavBar component for app titles, etc. Can contain more components within itself:
+
+```js
+fabricate.NavBar({
+  title: 'My Example App',
+  color: 'white',
+  backgroundColor: 'purple',
+})
+  .withChildren([
+    fabricate.Button({ text: 'Home' })
+      .onClick(goHome),
+    fabricate.Button({ text: 'Gallery' })
+      .onClick(goToGallery),
+  ]);
+```
+
+#### `TextInput`
+
+A basic text input box with padding:
+
+```js
+fabricate.TextInput({
+  placeholder: 'Enter email address',
+  color: '#444',
+  backgroundColor: 'white'
+})
+  .onChange((el, newVal) => console.log(`Email now ${newVal}`));
+```
+
+#### `Loader`
+
+Customizable CSS-based spinner/loader:
+
+```js
+fabricate.Loader({
+  size: 48,
+  lineWidth: 5,
+  color: 'red',
+});
+```
+
+#### `Card`
+
+Simple Material-like card component for housing sections of other components:
+
+```js
+fabricate.Card()
+  .withChildren([
+    fabricate.Image({ src: '/assets/images/gallery01.png' }),
+  ]);
+```
+
+#### `Fader`
+
+Container that fades in upon creation to smoothly show other components inside:
+
+```js
+fabricate.Fader({
+  durationS: 0.6,
+  delayMs: 300,
+});
+```
+
+#### `Pill`
+
+Basic pill for category selection or tags etc:
+
+```js
+fabricate.Row()
+  .withChildren([
+    Pill({
+      text: 'All',
+      color: 'white',
+      backgroundColor: 'green',
+    }),
+    Pill({
+      text: 'Favorites',
+      color: 'white',
+      backgroundColor: 'red',
+    }),
+    Pill({
+      text: 'Unread',
+      color: 'white',
+      backgroundColor: 'blue',
+    }),
+  ]);
+```
 
 ## Run tests
 
