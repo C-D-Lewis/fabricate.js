@@ -5,7 +5,8 @@
 ![](logo.png)
 
 A tiny vanilla JS webapp framework with a fluent API and zero dependencies,
-intended for small apps with relatively simply layouts.
+intended for small apps with relatively simply layouts. Comes with some
+pre-prepared components to get started quickly.
 
 - [Introduction](#introduction)
 - [Installation](#installation)
@@ -24,38 +25,43 @@ Install from a CDN, such as `unpkg`:
 <script src="https://unpkg.com/fabricate.js@x.y.z/fabricate.js"></script>
 ```
 
-or copy or reference `fabricate.js` from `node_modules`.
+or install from [npm](https://www.npmjs.com/package/fabricate.js) and copy or
+reference `fabricate.js` from `node_modules`.
 
 
 ## Introduction
 
 The aim of `fabricate` is to allow a quick and expressive way to set up UI
 with a fluent API based on method chaining. This allows creating elements with
-styles, attributes, handlers, and child elements in an easy fashion.
+styles, attributes, handlers, and child elements in an easy and predictable
+fashion.
 
 For example, a text element in a padded container:
 
 ```js
-const Text = (text) => fabricate('span').setText(text);
+const Text = (text) => fabricate('span')
+  .setText(text)
+  .withStyles({ fontSize: '1.1rem' });
 
 const Container = () => fabricate('div')
   .asFlex('column')
   .withStyles({ padding: '10px' });
 
-const page = Container()
+const ExamplePage = () => Container()
   .withChildren([
-    Text('Hello, world!')
-      .withStyles({ fontSize: '1.1rem' }),
+    Text('Hello, world!'),
+    Text('Welcome to fabricate.js!'),
   ]);
 
 // Use as the root app element
-fabricate.app(page);
+fabricate.app(ExamplePage());
 ```
 
-Components can be extended after they are created, for example a button:
+Components can be extended after they are created, for example a button with
+a hover-based effect:
 
 ```js
-const Button = () => fabricate('div')
+const BasicButton = () => fabricate('div')
   .asFlex('column')
   .withStyles({
     padding: '8px 10px',
@@ -66,22 +72,22 @@ const Button = () => fabricate('div')
     cursor: 'pointer',
   })
   .onHover({
-    start: el => el.withStyles({ filter: 'brightness(1.1)' }),
-    end: el => el.withStyles({ filter: 'brightness(1)' }),
+    start: el => el.addStyles({ filter: 'brightness(1.1)' }),
+    end: el => el.addStyles({ filter: 'brightness(1)' }),
   });
 
-const SubmitButton = () => Button()
+const SubmitButton = () => BasicButton()
   .setText('Submit')
   .withStyles({ backgroundColor: 'green' })
   .onClick(() => alert('Success!'));
 
-const CancelButton = () => Button()
+const CancelButton = () => BasicButton()
   .setText('Cancel')
   .withStyles({ backgroundColor: 'red' })
   .onClick(() => alert('Cancelled!'));
 ```
 
-See `examples` for more.
+See the `examples` directory for more examples.
 
 Some basic components are available to quickly build UI:
 
@@ -97,7 +103,8 @@ Some basic components are available to quickly build UI:
 * `Fader` - A fade-in wrapper.
 * `Pill` - A stylable pill.
 
-See [`fabricate.js`](./fabricate.js) for all of these and their options.
+See [`fabricate.js`](./fabricate.js) for details on all of these and their
+options.
 
 
 ## Installation
@@ -110,7 +117,14 @@ Just include in your HTML file, such as in a `lib` directory:
 
 ## API
 
-### Create a component
+* [`fabricate()`](#fabricate)
+  * [`.asFlex()`](#asflex)
+  * [`.withStyles()` / `withAttributes()`](#)
+  * [`.withChildren()`](#)
+  * [`.onClick()` / `onHover()`](#)
+  * [`.clear()`](#)
+
+### `fabricate()`
 
 To create a component, simply specify the tag name:
 
@@ -118,18 +132,17 @@ To create a component, simply specify the tag name:
 const EmptyDivComponent = () => fabricate('div');
 ```
 
-### Use flex box
+#### `.asFlex()`
 
 To quickly set basic `display: flex` and `flexDirection`:
 
 ```js
-const Column = () => fabricate('div')
-  .asFlex('column');
+const Column = () => fabricate('div').asFlex('column');
 ```
 
-> The `Row` and `Column` basic components included can help with these.
+> The `Row` and `Column` basic components are included for this purpose.
 
-### Add styles and attributes
+#### `.withStyles()` / `withAttributes()`
 
 Use more method chaining to flesh out the component:
 
@@ -138,32 +151,27 @@ const BannerImage = (src) => fabricate('img')
   .withStyles({
     width: '800px',
     height: 'auto',
-    borderRadius: '10px',
   })
   .withAttributes({ src });
 ```
 
-A semantic alias `addStyles()`/ `addAttributes()` is also available.
+> Semantic aliases `addStyles()` and `addAttributes()` are also available.
 
-### Add children
+#### `.withChildren()`
 
 Add other components as children to a parent:
 
 ```js
-const { Row, Button, app } = fabricate;
-
-const buttonRow = Row()
+const ButtonRow = () => Row()
   .withChildren([
     Button({ text: 'Submit'}),
     Button({ text: 'Cancel'}),
   ]);
-
-app(buttonRow);
 ```
 
 > A semantic alias `addChildren` is also available.
 
-### Add behaviors
+#### `.onClick()` / `onHover()`
 
 Add click and hover behaviors, which are provided the same element to allow
 updating styles and attributes etc:
@@ -182,12 +190,10 @@ Hovering can also be implemented with just a callback if preferred:
 ```js
 Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
-  .onHover(
-    (el, hovering) => console.log(`I ${hovering ? 'may' : 'may not'} be of interest`)
-  );
+  .onHover((el, hovering) => console.log(`hovering: ${hovering}`));
 ```
 
-### Set text/HTML
+### `.setText()` / `.setHtml()`
 
 For simple elements, set their `innerHTML` or `innerText`:
 
@@ -197,22 +203,33 @@ fabricate('div')
   .setText('I am a red <div>');
 ```
 
-### Remove all child elements
-
-For components such as lists that refresh data, use `clear()`:
+Or set HTML directly:
 
 ```js
-const ItemList = (items) => fabricate('div')
-  .asFlex('column')
-  .withChildren(items.map(Item));
-
-// When new data is available
-itemList.clear();
-
-itemList.addChildren(newItems.map(Item));
+fabricate('div')
+  .setHtml('<span>I\'m just more HTML!</div>');
 ```
 
-### Detect mobile devices
+#### `.clear()`
+
+For components such as lists that refresh data, use `clear()` to remove
+all children:
+
+```js
+const UserList = ({ users }) => fabricate('div')
+  .asFlex('column')
+  .withChildren(users.map(User));
+
+/**
+ * When new data is available.
+ */
+const refreshUserList = (newUsers) => {
+  userList.clear();
+  userList.addChildren(newUsers.map(User));
+};
+```
+
+### `isMobile()`
 
 ```js
 // Detect a very narrow device, or mobile device
