@@ -205,7 +205,7 @@ fabricate.TextInput({ placeholder: 'Email address' })
   .onChange((el, value) => console.log(`Entered ${value}`));
 ```
 
-### `.setText()` / `.setHtml()`
+#### `.setText()` / `.setHtml()`
 
 For simple elements, set their `innerHTML` or `innerText`:
 
