@@ -196,7 +196,7 @@ const notifyStateChange = (key) => stateWatchers
  * Update the state.
  *
  * @param {string} key - State key to update.
- * @param {function} updateCb - Callback that gets the previous value and returns new value.
+ * @param {function} updateCb - Callback that gets the previous state and returns new value.
  */
 fabricate.updateState = (key, updateCb) => {
   if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
@@ -322,7 +322,7 @@ fabricate.Text = ({
  * Basic Image component.
  *
  * @param {object} props - Component props.
- * @param {string} [props.src] - Image URL to show.
+ * @param {string} props.src - Image URL to show.
  * @param {number} [props.width] - Image width.
  * @param {number} [props.height] - Image height.
  * @returns {HTMLElement}
@@ -343,15 +343,15 @@ fabricate.Image = ({
  *
  * @param {object} props - Component props.
  * @param {string} [props.text] - Button text.
- * @param {string} [props.backgroundColor] - Button background color.
  * @param {string} [props.color] - Button text and border color.
+ * @param {string} [props.backgroundColor] - Button background color.
  * @param {boolean} [props.highlight] - True to enable highlight colors on hover.
  * @returns {HTMLElement}
  */
 fabricate.Button = ({
   text = 'Button',
-  backgroundColor = 'white',
   color = '#444',
+  backgroundColor = 'white',
   highlight = true,
 } = {}) => fabricate.Column()
   .withStyles({
@@ -384,8 +384,8 @@ fabricate.Button = ({
  *
  * @param {object} props - Component props.
  * @param {string} [props.title] - NavBar title text.
- * @param {string} [props.backgroundColor] - NavBar background color.
  * @param {string} [props.color] - NavBar text color.
+ * @param {string} [props.backgroundColor] - NavBar background color.
  * @returns {HTMLElement}
  */
 fabricate.NavBar = ({
@@ -414,9 +414,9 @@ fabricate.NavBar = ({
  * Basic TextInput component with placeholder
  *
  * @param {object} props - Component props.
- * @param {string} [props.backgroundColor] - TextInput background color.
+ * @param {string} [props.placeholder] - TextInput placeholder text.
  * @param {string} [props.color] - TextInput text color.
- * @param {string} [props.title] - TextInput placeholder text.
+ * @param {string} [props.backgroundColor] - TextInput background color.
  * @returns {HTMLElement}
  */
 fabricate.TextInput = ({
@@ -529,15 +529,15 @@ fabricate.Fader = ({
  * Basic Pill component.
  *
  * @param {object} props - Component props.
- * @param {string} props.text - Pill text.
- * @param {string} props.backgroundColor - Pill backgroundColor. 
- * @param {string} props.color - Pill color. 
+ * @param {string} [props.text] - Pill text.
+ * @param {string} [props.color] - Pill color. 
+ * @param {string} [props.backgroundColor] - Pill backgroundColor. 
  * @returns {HTMLElement}
  */
 fabricate.Pill = ({
   text = 'Pill',
-  backgroundColor = '#666',
   color = 'white',
+  backgroundColor = '#666',
 } = {}) => fabricate.Column()
   .withStyles({
     color,

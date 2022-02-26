@@ -117,16 +117,26 @@ Just include in your HTML file, such as in a `lib` directory:
 
 ## API
 
-* [`fabricate()`](#fabricate)
+* [Create `Component`](#component)
   * [`.asFlex()`](#asflex)
-  * [`.withStyles()` / `withAttributes()`](#)
-  * [`.withChildren()`](#)
-  * [`.onClick()` / `onHover()`](#)
-  * [`.clear()`](#)
+  * [`.withStyles()` / `withAttributes()`](#withstyles--withattributes)
+  * [`.withChildren()`](#withchildren)
+  * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
+  * [`.clear()`](#clear)
+  * [`.then()`](#then)
+* [`fabricate` helpers](#fabricate-1)
+  * [`.isMobile()`](#ismobile)
+  * [`.app()`](#app)
+  * [`.updateState()` / `.watchState()`](#updatestate--withstate)
+  * [`.when()`](#when)
+* [Built-in Components](#built-in-components)
+  * [`Row`](#row)
+  * [`Column`](#column)
 
-### `fabricate()`
 
-To create a component, simply specify the tag name:
+### `Component`
+
+To create a `Component`, simply specify the tag name:
 
 ```js
 const EmptyDivComponent = () => fabricate('div');
@@ -162,22 +172,22 @@ const BannerImage = (src) => fabricate('img')
 Add other components as children to a parent:
 
 ```js
-const ButtonRow = () => Row()
+const ButtonRow = () => fabricate.Row()
   .withChildren([
-    Button({ text: 'Submit'}),
-    Button({ text: 'Cancel'}),
+    fabricate.Button({ text: 'Submit'}),
+    fabricate.Button({ text: 'Cancel'}),
   ]);
 ```
 
 > A semantic alias `addChildren` is also available.
 
-#### `.onClick()` / `onHover()`
+#### `.onClick()` / `onHover()` / `.onChange()`
 
 Add click and hover behaviors, which are provided the same element to allow
 updating styles and attributes etc:
 
 ```js
-Button({ text: 'Click me!' })
+fabricate.Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover({
     start: el => console.log('maybe clicked'),
@@ -188,9 +198,16 @@ Button({ text: 'Click me!' })
 Hovering can also be implemented with just a callback if preferred:
 
 ```js
-Button({ text: 'Click me!' })
+fabricate.Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover((el, hovering) => console.log(`hovering: ${hovering}`));
+```
+
+For inputs, the `change` even can also be used:
+
+```js
+fabricate.TextInput({ placeholder: 'Email address' })
+  .onChange((el, value) => console.log(`Entered ${value}`));
 ```
 
 ### `.setText()` / `.setHtml()`
@@ -229,25 +246,39 @@ const refreshUserList = (newUsers) => {
 };
 ```
 
-### `isMobile()`
+#### `.then()`
+
+Simple method to do something immediately after creating a component with
+chain methods:
+
+```js
+fabricate.Text({ text: 'Example text' })
+  .withStyles({ color: 'blue' })
+  .then(() => console.log('Text was created'));
+```
+
+
+### `fabricate`
+
+The imported object also has some helper methods to use:
+
+#### `.isMobile()`
 
 ```js
 // Detect a very narrow device, or mobile device
-Text()
-  .withStyles({
-    fontSize: fabricate.isMobile() ? '1rem' : '1.8rem',
-  })
+fabricate.Text()
+  .withStyles({ fontSize: fabricate.isMobile() ? '1rem' : '1.8rem' })
 ```
 
-### Begin an app from document body
+#### `.app()`
 
-Use `app()` to start an app from the document body:
+Use `app()` to start an app from the `document.body`:
 
 ```js
 const page = PageContainer()
   .withChildren([
-    Title('My New App'),
-    NavBar(),
+    fabricate.Title('My New App'),
+    fabricate.NavBar(),
     MainContent()
       .withChildren([
         HeroImage(),
@@ -258,17 +289,15 @@ const page = PageContainer()
 fabricate.app(page);
 ```
 
-### Use global state
+#### `.updateState()` / `.watchState()`
 
 A few methods are available to make it easy to maintain some basic global state
 and to update components when those states change. See the
 [counter](examples/counter.html) example for a full example.
 
 ```js
-const { app, Text, updateState } = fabricate;
-
 // View can watch some state
-const counterView = Text()
+const counterView = fabricate.Text()
   .watchState((el, state, updatedKey) => {
     // Ignore unrelated changes
     if (updatedKey !== 'counter') return;
@@ -277,37 +306,68 @@ const counterView = Text()
   });
 
 // Initialise first state
-app(counterView, { counter: 0 });
+fabricate.app(counterView, { counter: 0 });
 
-// Update the state using the previous value
+// Update the state using the previous state
 setInterval(() => {
-  updateState('counter', state => state.counter + 1);
+  fabricate.updateState('counter', prev => prev.counter + 1);
 }, 1000);
 ```
 
-### Conditional rendering
+#### `.when()`
 
 Conditionally add or remove a component (or tree of components) using the `when`
 method:
 
 ```js
-const { app, updateState, when, Column, Text } = fabricate;
-
-const pageContainer =  Column()
+const pageContainer =  fabricate.Column()
   .withChildren([
     // Check some state, and provide a function to build the component to show
-    when(state => state.showText, () => Text({ text: 'Now you see me!'})),
+    fabricate.when(
+      state => state.showText,
+      () => fabricate.Text({ text: 'Now you see me!'}),
+    ),
   ]);
 
-// Use as the root app element
-app(pageContainer, { showText: false });
+// Use as the root app element and provide first state values
+fabricate.app(pageContainer, { showText: false });
 
 // Later, add the text
-setInterval(() => updateState('showText', state => !state.showText), 2000);
+setInterval(
+  () => fabricate.updateState('showText', state => !state.showText),
+  2000,
+);
 ```
 
 See [`examples/login.html`](examples/login.html) for a more complex example of
 conditional rendering in action.
+
+
+### Built-in Components
+
+#### `Row`
+
+A simple flex row:
+
+```js
+fabricate.Row()
+  .withChildren([
+    fabricate.Button().setText('Confirm'),
+    fabricate.Button().setText('Cancel'),
+  ]);
+```
+
+#### `Column`
+
+A simple flex column:
+
+```js
+fabricate.Column()
+  .withChildren([
+    fabricate.Image({ src: '/assets/images/gallery1.png' }),
+    fabricate.Image({ src: '/assets/images/gallery2.png' }),
+  ]);
+```
 
 
 ## Run tests
