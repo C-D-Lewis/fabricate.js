@@ -45,7 +45,13 @@ const it = (summary, cb) => {
  */
 const hasStyles = (el, styles) => Object
   .entries(styles)
-  .every(([k, v]) => el.style[k] === v);
+  .every(([k, spec]) => {
+    const actual = el.style[k];
+    const match = actual === spec;
+    if (!match) alert(`Style ${actual} does not match expected: ${spec}`);
+    
+    return match;
+  });
 
 /**
  * Check an element has all the specified attributes.

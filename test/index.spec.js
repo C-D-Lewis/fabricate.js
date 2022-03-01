@@ -14,8 +14,8 @@ const test = () => {
     return el.tagName === 'H2';
   });
 
-  it('should provide convenience \'f\' alias', () => {
-    return typeof window.f === 'function';
+  it('should provide convenience \'fab\' alias', () => {
+    return typeof window.fab === 'function';
   });
 
   it('should include styles', () => {
@@ -328,8 +328,6 @@ const test = () => {
       height: '20px',
       color,
       backgroundColor,
-      borderTopColor: color,
-      borderTopStyle: 'solid',
       borderRadius: '5px',
       padding: '8px 10px',
       margin: '5px',
@@ -337,6 +335,7 @@ const test = () => {
       fontWeight: 'bold',
       textAlign: 'center',
       cursor: 'pointer',
+      userSelect: 'none',
     };
 
     const el = fabricate.Button({
@@ -392,7 +391,7 @@ const test = () => {
       color: color,
       backgroundColor: backgroundColor,
       borderRadius: '5px',
-      padding: '3px 5px',
+      padding: '7px 9px',
       fontSize: '1.1rem',
       margin: '5px auto',
     };
@@ -480,7 +479,7 @@ const test = () => {
       color,
       backgroundColor,
       justifyContent: 'center',
-      cursor: 'default',
+      cursor: 'pointer',
       margin: '5px',
       padding: '5px 8px',
       borderRadius: '20px',
