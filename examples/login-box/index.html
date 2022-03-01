@@ -27,6 +27,7 @@
           TextInput({ placeholder: 'Email' })
             .onChange((el, value) => updateState('email', () => value)),
           TextInput({ placeholder: 'Password' })
+            .withAttributes({ type: 'password' })
             .onChange((el, value) => updateState('password', () => value)),
 
           Button({ text: 'Submit' })

@@ -57,8 +57,7 @@ const NewItemBox = () => {
       input,
       Button({
         text: 'Create',
-        color: 'gold',
-        backgroundColor: 'white',
+        backgroundColor: 'gold',
       })
         .withStyles({
           minWidth: '50px',
@@ -102,8 +101,8 @@ const TaskItem = (content) => Card()
 
     Button({
       text: 'Delete',
-      color: 'red',
-      backgroundColor: 'gold',
+      color: 'white',
+      backgroundColor: 'darkred',
     })
       .withStyles({
         minWidth: '50px',

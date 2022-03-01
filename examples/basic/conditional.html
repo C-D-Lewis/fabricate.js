@@ -11,23 +11,21 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      const { app, updateState, when, Column, Text, Fader } = fabricate;
-
-      const Content = () => Fader()
+      const Content = () => fab.Fader()
         .withChildren([
-          Text({ text: 'Now you see me!'}),
+          fab.Text({ text: 'Now you see me!'}),
         ]);
 
-      const pageContainer = Column()
+      const pageContainer = fab.Column()
         .withChildren([
-          when(state => state.showText, () => Content()),
+          fab.when(state => state.showText, () => Content()),
         ]);
 
       // Use as the root app element
-      app(pageContainer, { showText: false });
+      fabricate.app(pageContainer, { showText: false });
 
       // Later, add the text
-      setInterval(() => updateState('showText', state => !state.showText), 2000);
+      setInterval(() => fab.updateState('showText', state => !state.showText), 2000);
     </script>
   </body>
 </html>

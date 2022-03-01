@@ -110,7 +110,7 @@ Just include in your HTML file, such as in a `lib` directory:
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
   * [`.clear()`](#clear)
   * [`.then()`](#then)
-* [`fabricate` helpers](#fabricate-1)
+* [`fabricate` / `fab` helpers](#fabricate--f)
   * [`.isMobile()`](#ismobile)
   * [`.app()`](#app)
   * [`.updateState()` / `.watchState()`](#updatestate--watchstate)
@@ -136,6 +136,8 @@ To create a `Component`, simply specify the tag name:
 ```js
 const EmptyDivComponent = () => fabricate('div');
 ```
+
+> The convenience alias `fab` is also available.
 
 #### `.asFlex()`
 
@@ -167,10 +169,10 @@ const BannerImage = (src) => fabricate('img')
 Add other components as children to a parent:
 
 ```js
-const ButtonRow = () => fabricate.Row()
+const ButtonRow = () => fab.Row()
   .withChildren([
-    fabricate.Button({ text: 'Submit'}),
-    fabricate.Button({ text: 'Cancel'}),
+    fab.Button({ text: 'Submit'}),
+    fab.Button({ text: 'Cancel'}),
   ]);
 ```
 
@@ -182,7 +184,7 @@ Add click and hover behaviors, which are provided the same element to allow
 updating styles and attributes etc:
 
 ```js
-fabricate.Button({ text: 'Click me!' })
+fab.Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover({
     start: el => console.log('maybe clicked'),
@@ -193,7 +195,7 @@ fabricate.Button({ text: 'Click me!' })
 Hovering can also be implemented with just a callback if preferred:
 
 ```js
-fabricate.Button({ text: 'Click me!' })
+fab.Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover((el, hovering) => console.log(`hovering: ${hovering}`));
 ```
@@ -201,7 +203,7 @@ fabricate.Button({ text: 'Click me!' })
 For inputs, the `change` even can also be used:
 
 ```js
-fabricate.TextInput({ placeholder: 'Email address' })
+fab.TextInput({ placeholder: 'Email address' })
   .onChange((el, value) => console.log(`Entered ${value}`));
 ```
 
@@ -247,13 +249,13 @@ Simple method to do something immediately after creating a component with
 chain methods:
 
 ```js
-fabricate.Text({ text: 'Example text' })
+fab.Text({ text: 'Example text' })
   .withStyles({ color: 'blue' })
   .then(() => console.log('Text was created'));
 ```
 
 
-### `fabricate`
+### `fabricate` / `f`
 
 The imported object also has some helper methods to use:
 
@@ -261,8 +263,8 @@ The imported object also has some helper methods to use:
 
 ```js
 // Detect a very narrow device, or mobile device
-fabricate.Text()
-  .withStyles({ fontSize: fabricate.isMobile() ? '1rem' : '1.8rem' })
+fab.Text()
+  .withStyles({ fontSize: fab.isMobile() ? '1rem' : '1.8rem' })
 ```
 
 #### `.app()`
@@ -272,8 +274,8 @@ Use `app()` to start an app from the `document.body`:
 ```js
 const page = PageContainer()
   .withChildren([
-    fabricate.Title('My New App'),
-    fabricate.NavBar(),
+    fab.Title('My New App'),
+    fab.NavBar(),
     MainContent()
       .withChildren([
         HeroImage(),
@@ -292,7 +294,7 @@ and to update components when those states change. See the
 
 ```js
 // View can watch some state
-const counterView = fabricate.Text()
+const counterView = fab.Text()
   .watchState((el, state, updatedKey) => {
     // Ignore unrelated changes
     if (updatedKey !== 'counter') return;
@@ -305,7 +307,7 @@ fabricate.app(counterView, { counter: 0 });
 
 // Update the state using the previous state
 setInterval(() => {
-  fabricate.updateState('counter', prev => prev.counter + 1);
+  fab.updateState('counter', prev => prev.counter + 1);
 }, 1000);
 ```
 
@@ -315,12 +317,12 @@ Conditionally add or remove a component (or tree of components) using the `when`
 method:
 
 ```js
-const pageContainer =  fabricate.Column()
+const pageContainer =  fab.Column()
   .withChildren([
     // Check some state, and provide a function to build the component to show
-    fabricate.when(
+    fab.when(
       state => state.showText,
-      () => fabricate.Text({ text: 'Now you see me!'}),
+      () => fab.Text({ text: 'Now you see me!'}),
     ),
   ]);
 
@@ -329,7 +331,7 @@ fabricate.app(pageContainer, { showText: false });
 
 // Later, add the text
 setInterval(
-  () => fabricate.updateState('showText', state => !state.showText),
+  () => fab.updateState('showText', state => !state.showText),
   2000,
 );
 ```
@@ -345,10 +347,10 @@ conditional rendering in action.
 A simple flex row:
 
 ```js
-fabricate.Row()
+fab.Row()
   .withChildren([
-    fabricate.Button().setText('Confirm'),
-    fabricate.Button().setText('Cancel'),
+    fab.Button().setText('Confirm'),
+    fab.Button().setText('Cancel'),
   ]);
 ```
 
@@ -357,10 +359,10 @@ fabricate.Row()
 A simple flex column:
 
 ```js
-fabricate.Column()
+fab.Column()
   .withChildren([
-    fabricate.Image({ src: '/assets/images/gallery1.png' }),
-    fabricate.Image({ src: '/assets/images/gallery2.png' }),
+    fab.Image({ src: '/assets/images/gallery1.png' }),
+    fab.Image({ src: '/assets/images/gallery2.png' }),
   ]);
 ```
 
@@ -369,7 +371,7 @@ fabricate.Column()
 Basic text component:
 
 ```js
-fabricate.Text({ text: 'Hello, world!' });
+fab.Text({ text: 'Hello, world!' });
 ```
 
 #### `Image`
@@ -377,7 +379,7 @@ fabricate.Text({ text: 'Hello, world!' });
 Basic image component:
 
 ```js
-fabricate.Image({
+fab.Image({
   src: '/assets/images/gallery01.png',
   width: 640,
   height: 480,
@@ -389,7 +391,7 @@ fabricate.Image({
 A simple button component with optional hover highlight behavior:
 
 ```js
-fabricate.Button({
+fab.Button({
   text: 'Click me!',
   color: 'white',
   backgroundColor: 'gold',
@@ -402,15 +404,15 @@ fabricate.Button({
 NavBar component for app titles, etc. Can contain more components within itself:
 
 ```js
-fabricate.NavBar({
+fab.NavBar({
   title: 'My Example App',
   color: 'white',
   backgroundColor: 'purple',
 })
   .withChildren([
-    fabricate.Button({ text: 'Home' })
+    fab.Button({ text: 'Home' })
       .onClick(goHome),
-    fabricate.Button({ text: 'Gallery' })
+    fab.Button({ text: 'Gallery' })
       .onClick(goToGallery),
   ]);
 ```
@@ -420,7 +422,7 @@ fabricate.NavBar({
 A basic text input box with padding:
 
 ```js
-fabricate.TextInput({
+fab.TextInput({
   placeholder: 'Enter email address',
   color: '#444',
   backgroundColor: 'white'
@@ -433,7 +435,7 @@ fabricate.TextInput({
 Customizable CSS-based spinner/loader:
 
 ```js
-fabricate.Loader({
+fab.Loader({
   size: 48,
   lineWidth: 5,
   color: 'red',
@@ -445,9 +447,9 @@ fabricate.Loader({
 Simple Material-like card component for housing sections of other components:
 
 ```js
-fabricate.Card()
+fab.Card()
   .withChildren([
-    fabricate.Image({ src: '/assets/images/gallery01.png' }),
+    fab.Image({ src: '/assets/images/gallery01.png' }),
   ]);
 ```
 
@@ -456,7 +458,7 @@ fabricate.Card()
 Container that fades in upon creation to smoothly show other components inside:
 
 ```js
-fabricate.Fader({
+fab.Fader({
   durationS: 0.6,
   delayMs: 300,
 });
@@ -467,7 +469,7 @@ fabricate.Fader({
 Basic pill for category selection or tags etc:
 
 ```js
-fabricate.Row()
+fab.Row()
   .withChildren([
     Pill({
       text: 'All',
@@ -489,11 +491,5 @@ fabricate.Row()
 
 ## Run tests
 
-Open the test page to run all unit tests:
-
-```shell
-python3 -m http.server
-```
-
-Open `localhost:8000`, then navigate to `test/index.html` and see if all test
-summaries are green and the total indicates all tests passed.
+Open the test page (`test/index.html`) and see if all test summaries are green
+and the total indicates all tests passed.

@@ -14,6 +14,10 @@ const test = () => {
     return el.tagName === 'H2';
   });
 
+  it('should provide convenience \'f\' alias', () => {
+    return typeof window.f === 'function';
+  });
+
   it('should include styles', () => {
     const styles = {
       display: 'flex',

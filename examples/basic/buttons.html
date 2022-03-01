@@ -11,31 +11,29 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      const { Button, Column, app } = fabricate;
-
-      const SubmitButton = () => Button({
+      const SubmitButton = () => fab.Button({
         text: 'Submit',
-        color: 'green',
+        backgroundColor: 'green',
       })
         .onClick(() => alert('Success!'));
 
-      const CancelButton = () => Button({
+      const CancelButton = () => fab.Button({
         text: 'Cancel',
-        color: 'red',
+        backgroundColor: 'darkred',
       })
         .onClick(() => alert('Cancelled!'));
 
-      const Container = () => Column()
+      const Container = () => fab.Column()
         .withStyles({ padding: '10px' })
         .withChildren([
-          Button({ text: 'Normal' }),
+          fab.Button({ text: 'Normal', highlight: false }),
           SubmitButton(),
           CancelButton(),
         ]);
 
       const pageContainer = Container();
 
-      app(pageContainer);
+      fabricate.app(pageContainer);
     </script>
   </body>
 </html>

@@ -350,8 +350,8 @@ fabricate.Image = ({
  */
 fabricate.Button = ({
   text = 'Button',
-  color = '#444',
-  backgroundColor = 'white',
+  color = 'white',
+  backgroundColor = '#444',
   highlight = true,
 } = {}) => fabricate.Column()
   .withStyles({
@@ -360,7 +360,6 @@ fabricate.Button = ({
     height: '20px',
     color,
     backgroundColor,
-    border: highlight ? `solid 1px ${color}` : 'none',
     borderRadius: '5px',
     padding: '8px 10px',
     margin: '5px',
@@ -368,14 +367,12 @@ fabricate.Button = ({
     fontWeight: 'bold',
     textAlign: 'center',
     cursor: 'pointer',
+    userSelect: 'none',
   })
   .onHover((el, hovering) => {
     if (!highlight) return;
 
-    el.addStyles({
-      color: hovering ? backgroundColor : color,
-      backgroundColor: hovering ? color : backgroundColor,
-    });
+    el.addStyles({ filter: `brightness(${hovering ? '1.2' : '1'})` });
   })
   .setText(text);
 
@@ -431,7 +428,7 @@ fabricate.TextInput = ({
     color,
     backgroundColor,
     borderRadius: '5px',
-    padding: '3px 5px',
+    padding: '7px 9px',
     fontSize: '1.1rem',
     margin: '5px auto',
   })
@@ -480,11 +477,11 @@ fabricate.Loader = ({
   ctx.beginPath();
   ctx.arc(center, center, radius, 0, 2 * Math.PI);
   ctx.strokeStyle = '#ddd';
-  ctx.stroke(); 
+  ctx.stroke();
   ctx.beginPath();
   ctx.arc(center, center, radius, 0, 1);
   ctx.strokeStyle = color;
-  ctx.stroke(); 
+  ctx.stroke();
 
   container.addChildren([canvas]);
 
@@ -530,14 +527,16 @@ fabricate.Fader = ({
  *
  * @param {object} props - Component props.
  * @param {string} [props.text] - Pill text.
- * @param {string} [props.color] - Pill color. 
- * @param {string} [props.backgroundColor] - Pill backgroundColor. 
+ * @param {string} [props.color] - Pill color.
+ * @param {string} [props.backgroundColor] - Pill backgroundColor.
+ * @param {boolean} [props.highlight] - True to enable highlight colors on hover.
  * @returns {HTMLElement}
  */
 fabricate.Pill = ({
   text = 'Pill',
   color = 'white',
   backgroundColor = '#666',
+  highlight = true,
 } = {}) => fabricate.Column()
   .withStyles({
     color,
@@ -546,7 +545,12 @@ fabricate.Pill = ({
     borderRadius: '20px',
     padding: '5px 8px',
     margin: '5px',
-    cursor: 'default',
+    cursor: 'pointer',
+  })
+  .onHover((el, hovering) => {
+    if (!highlight) return;
+
+    el.addStyles({ filter: `brightness(${hovering ? '1.2' : '1'})` });
   })
   .setText(text);
 
@@ -561,6 +565,10 @@ fabricate.Pill = ({
 //       el.add(new Option(option, option));
 //     });
 //   });
+
+///////////////////////////////////////// Convenience alias ////////////////////////////////////////
+
+window.fab = fabricate;
 
 ////////////////////////////////////////////// Styles //////////////////////////////////////////////
 

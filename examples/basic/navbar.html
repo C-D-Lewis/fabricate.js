@@ -15,7 +15,8 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      const { Column, Row, Text, Button, NavBar, Image, TextInput, app, updateState, getState, Pill } = fabricate;
+      // Destructuring is useful if permitted by the project structure
+      const { Column, Row, Text, Button, NavBar, Image, TextInput, updateState, getState, Pill } = fabricate;
 
       const contentContainer = Column()
         .withStyles({ padding: '15px' })
@@ -49,7 +50,7 @@
             .withChildren(['foo', 'bar', 'baz'].map(p => Pill({ text: p }))),
         ]);
 
-      app(pageContainer, { name: 'Unknown' });
+      fabricate.app(pageContainer, { name: 'Unknown' });
     </script>
   </body>
 </html>
