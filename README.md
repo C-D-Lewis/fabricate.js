@@ -110,10 +110,11 @@ Just include in your HTML file, such as in a `lib` directory:
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
   * [`.clear()`](#clear)
   * [`.then()`](#then)
-* [`fabricate` / `fab` helpers](#fabricate--f)
+* [`fabricate` / `fab` helpers](#fabricate--fab)
   * [`.isMobile()`](#ismobile)
   * [`.app()`](#app)
   * [`.updateState()` / `.watchState()`](#updatestate--watchstate)
+  * [`.manageState()`](#managestate)
   * [`.when()`](#when)
 * [Built-in Components](#built-in-components)
   * [`Row`](#row)
@@ -255,7 +256,7 @@ fab.Text({ text: 'Example text' })
 ```
 
 
-### `fabricate` / `f`
+### `fabricate` / `fab`
 
 The imported object also has some helper methods to use:
 
@@ -289,18 +290,16 @@ fabricate.app(page);
 #### `.updateState()` / `.watchState()`
 
 A few methods are available to make it easy to maintain some basic global state
-and to update components when those states change. See the
-[counter](examples/counter.html) example for a full example.
+and to update components when those states change. A list of keys to watch
+can be provided, otherwise all state updates are notified.
 
 ```js
-// View can watch some state
+// View can watch some state - specifically, 'state.counter'
 const counterView = fab.Text()
-  .watchState((el, state, updatedKey) => {
-    // Ignore unrelated changes
-    if (updatedKey !== 'counter') return;
-
-    el.setText(state.counter);
-  });
+  .watchState(
+    (el, newState, key) => el.setText(newState.counter),
+    ['counter'],
+  );
 
 // Initialise first state
 fabricate.app(counterView, { counter: 0 });
@@ -309,6 +308,24 @@ fabricate.app(counterView, { counter: 0 });
 setInterval(() => {
   fab.updateState('counter', prev => prev.counter + 1);
 }, 1000);
+```
+
+#### `.manageState()`
+
+Manage some component-local state, useful for state that is deep in a component
+tree or is not used elsewhere in the app. Requires component class name/unique
+name, state key, and an optional initial value.
+
+```js
+const ValueView = () => {
+  const counterState = fabricate.manageState('ValueView', 'counter', 0);
+
+  return fabricate.Button({ text: 'Click me' })
+    .onClick(() => counterState.set(counterState.get() + 1))
+    .watchState(
+      (el, newState, key) => el.setText(`Counted: ${newState[counterState.key]})`),
+    );
+};
 ```
 
 #### `.when()`

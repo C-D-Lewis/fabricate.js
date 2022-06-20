@@ -175,7 +175,7 @@ const test = () => {
     return parent.childElementCount === 0;
   });
 
-  it('should watch and update state', () => {
+  it('should watch and update state for all keys', () => {
     let counter = 0;
     let updatedKey;
 
@@ -188,6 +188,31 @@ const test = () => {
     fabricate.updateState('counter', () => 2);
 
     return counter === 2 && updatedKey === 'counter';
+  });
+
+  it('should watch and update specific state only', () => {
+    let counter = 0;
+    let updatedKey;
+
+    fabricate('div')
+      .watchState((el, state, key) => {
+        counter += state.counter;
+        updatedKey = key;
+      }, ['counter']);
+
+    fabricate.updateState('counter', () => 2);
+
+    // Update another state item, but should not run the filtered callback above
+    fabricate.updateState('notcounter', () => 1);
+
+    return counter === 2 && updatedKey === 'counter';
+  });
+
+  it('should manage component-local states', () => {
+    const { get, set, key } = fabricate.manageState('TestComponent', 'value', 0);
+
+    set(255);
+    return get() === 255 && key === `TestComponent:value` && fabricate.getState(key) === 255;
   });
 
   it('should allow use of .then', () => {

@@ -160,10 +160,11 @@ const fabricate = (tagName) => {
    * Watch the state for changes.
    *
    * @param {function} cb - Callback to be notified.
+   * @param {Array<string>} keyList - List of keys to listen to.
    * @returns {HTMLElement}
    */
-  el.watchState = (cb) => {
-    stateWatchers.push({ el, cb });
+  el.watchState = (cb, keyList) => {
+    stateWatchers.push({ el, cb, keyList });
     return el;
   };
 
@@ -190,7 +191,13 @@ const fabricate = (tagName) => {
  * Watchers receive (el, state, changedKey)
  */
 const notifyStateChange = (key) => stateWatchers
-  .forEach(({ el, cb }) => cb(el, Object.freeze({ ...state }), key));
+  .forEach(({ el, cb, keyList }) => {
+    // If keyList is specified, filter state updates
+    if (keyList && !keyList.includes(key)) return;
+
+    // Notify the watching component
+    cb(el, Object.freeze({ ...state }), key);
+  });
 
 /**
  * Update the state.
@@ -215,6 +222,35 @@ fabricate.updateState = (key, updateCb) => {
  * @returns {any} The value stored, if any.
  */
 fabricate.getState = (key) => state[key];
+
+/**
+ * Manage state for a specific component
+ *
+ * @param {string} componentName - Name of the component class.
+ * @param {string} stateName - Name of the state key within the component.
+ * @param {*} [initialValue] - Initial value of the state.
+ * @returns {object} Object with getter, setter, and full state key name.
+ */
+fabricate.manageState = (componentName, stateName, initialValue) => {
+  const key = `${componentName}:${stateName}`;
+
+  /**
+   * State getter.
+   *
+   * @returns {*} State value.
+   */
+  const get = () => fabricate.getState(key);
+
+  /**
+   * State setter.
+   *
+   * @param {*} newValue - New state value.
+   */
+  const set = (newValue) => fabricate.updateState(key, () => newValue);
+  if (initialValue) set(initialValue);
+
+  return { get, set, key };
+};
 
 ////////////////////////////////////////////// Helpers /////////////////////////////////////////////
 
@@ -263,20 +299,24 @@ fabricate.when = (stateTestCb, builderCb) => {
     if (newResult === lastResult) return;
     lastResult = newResult;
 
-    el.clear();
+    // Hide
 
-    // Should not be shown
-    if (!newResult) return;
+    // Should not be shown - falsey was returned
+    if (!newResult) {
+      el.clear();
+      return;
+    }
 
-    // Render with builderCb
+    // Render with builderCb and notify child of latest state
     const child = builderCb();
     const watcher = stateWatchers.find(p => p.el === child);
     if (watcher) watcher.cb(child, state);
+
+    // Show
     el.addChildren([child]);
   };
 
-  const host = fabricate('div')
-    .watchState(onStateUpdate);
+  const host = fabricate('div').watchState(onStateUpdate);
 
   // Test state immediately
   onStateUpdate(host, state);
