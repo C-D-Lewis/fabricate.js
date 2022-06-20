@@ -106,7 +106,7 @@ Just include in your HTML file, such as in a `lib` directory:
 * [Create `Component`](#component)
   * [`.asFlex()`](#asflex)
   * [`.withStyles()` / `withAttributes()`](#withstyles--withattributes)
-  * [`.withChildren()`](#withchildren)
+  * [`.withChildren()` / `addChildren()`](#withchildren--addchildren)
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
   * [`.clear()`](#clear)
   * [`.then()`](#then)
@@ -164,7 +164,7 @@ const BannerImage = (src) => fabricate('img')
 
 > Semantic aliases `addStyles()` and `addAttributes()` are also available.
 
-#### `.withChildren()`
+#### `.withChildren()` / `addChildren()`
 
 Add other components as children to a parent:
 
