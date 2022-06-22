@@ -164,6 +164,13 @@ const test = () => {
     return el.innerText === 'Hello, world!';
   });
 
+  it('should set input value', () => {
+    const el = fabricate('input');
+    el.value = 'foobar';
+
+    return el.value === 'foobar';
+  });
+
   it('should clear children', () => {
     const child = fabricate('div')
 
@@ -213,6 +220,23 @@ const test = () => {
 
     set(255);
     return get() === 255 && key === `TestComponent:value` && fabricate.getState(key) === 255;
+  });
+
+  it('should immediately notify initial state', () => {
+    let counter = 0;
+
+    const App = () => fabricate('div')
+      .watchState((el, newState) => (counter += 1));
+
+    fabricate.app(App(), { foo: 'bar' });
+
+    return counter === 1;
+  });
+
+  it('should allow logStateUpdates option', () => {
+    fabricate.app(fabricate('div'), {}, { logStateUpdates: true });
+
+    return _fabricate.options.logStateUpdates = true;
   });
 
   it('should allow use of .then', () => {

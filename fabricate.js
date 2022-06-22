@@ -1,8 +1,14 @@
-/** Max mobile width. */
-const MOBILE_MAX_WIDTH = 1000;
+// Proivate data
+const _fabricate = {
+  /** Max mobile width. */
+  MOBILE_MAX_WIDTH: 1000,
 
-let state = {};
-let stateWatchers = [];
+  state: {},
+  stateWatchers: [],
+  options: {
+    logStateUpdates: false,
+  },
+};
 
 /**
  * Create an element of a given tag type, with fluent methods for continuing
@@ -164,7 +170,7 @@ const fabricate = (tagName) => {
    * @returns {HTMLElement}
    */
   el.watchState = (cb, keyList) => {
-    stateWatchers.push({ el, cb, keyList });
+    _fabricate.stateWatchers.push({ el, cb, keyList });
     return el;
   };
 
@@ -187,17 +193,25 @@ const fabricate = (tagName) => {
 
 /**
  * Notify watchers of a state change.
- *
  * Watchers receive (el, state, changedKey)
+ *
+ * @param {string} key - Key that was updated.
  */
-const notifyStateChange = (key) => stateWatchers
-  .forEach(({ el, cb, keyList }) => {
-    // If keyList is specified, filter state updates
-    if (keyList && !keyList.includes(key)) return;
+const notifyStateChange = (key) => {
+  const { stateWatchers, state, options } = _fabricate;
 
-    // Notify the watching component
-    cb(el, Object.freeze({ ...state }), key);
-  });
+  if (options.logStateUpdates)
+    console.log(`fabricate notifyStateChange: key=${key} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
+
+  stateWatchers
+    .forEach(({ el, cb, keyList }) => {
+      // If keyList is specified, filter state updates
+      if (keyList && !keyList.includes(key)) return;
+
+      // Notify the watching component
+      cb(el, Object.freeze({ ...state }), key);
+    });
+};
 
 /**
  * Update the state.
@@ -206,6 +220,8 @@ const notifyStateChange = (key) => stateWatchers
  * @param {function} updateCb - Callback that gets the previous state and returns new value.
  */
 fabricate.updateState = (key, updateCb) => {
+  const { state } = _fabricate;
+
   if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
   if (typeof updateCb !== 'function') throw new Error('State update must be function(previous) { }');
 
@@ -221,7 +237,7 @@ fabricate.updateState = (key, updateCb) => {
  * @param {string} key - Key to get.
  * @returns {any} The value stored, if any.
  */
-fabricate.getState = (key) => state[key];
+fabricate.getState = (key) => _fabricate.state[key];
 
 /**
  * Manage state for a specific component
@@ -259,17 +275,22 @@ fabricate.manageState = (componentName, stateName, initialValue) => {
  *
  * @returns {boolean}
  */
-fabricate.isMobile = () => window.innerWidth < MOBILE_MAX_WIDTH;
+fabricate.isMobile = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
 
  /**
   * Begin a component hierarchy from the body.
   *
   * @param {HTMLElement} root - First element in the app tree.
   * @param {object} [initialState] - Optional, initial state.
+  * @param {object} [opts] - Extra options.
   */
-fabricate.app = (root, initialState) => {
-  state = initialState || {};
+fabricate.app = (root, initialState, opts) => {
+  _fabricate.state = initialState || {};
   document.body.appendChild(root);
+
+  // Options
+  const { logStateUpdates } = opts || {};
+  if (logStateUpdates) _fabricate.options.logStateUpdates = true;
 
   // Trigger initial state update
   notifyStateChange();
@@ -283,6 +304,7 @@ fabricate.app = (root, initialState) => {
   * @returns {HTMLElement}
   */
 fabricate.when = (stateTestCb, builderCb) => {
+  const { state } = _fabricate;
   let lastResult = false;
 
   /**
@@ -293,13 +315,12 @@ fabricate.when = (stateTestCb, builderCb) => {
   * @returns {void}
   */
   const onStateUpdate = (el, stateNow) => {
+    const { state, stateWatchers } = _fabricate;
     const newResult = stateTestCb(stateNow);
 
     // Only re-render if a new result from the test callback
     if (newResult === lastResult) return;
     lastResult = newResult;
-
-    // Hide
 
     // Should not be shown - falsey was returned
     if (!newResult) {
@@ -612,11 +633,9 @@ window.fab = fabricate;
 
 ////////////////////////////////////////////// Styles //////////////////////////////////////////////
 
-const stylesHtml = `
-  @keyframes spin {
+document.head.appendChild(fabricate('style')
+  .setHtml(`@keyframes spin {
     100% {
       transform:rotate(360deg);
     }
-  }
-`;
-document.head.appendChild(fabricate('style').setHtml(stylesHtml));
+  }`));
