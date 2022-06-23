@@ -270,7 +270,8 @@ fab.Text()
 
 #### `.app()`
 
-Use `app()` to start an app from the `document.body`:
+Use `app()` to start an app from the `document.body`. You can also specify an
+initial state, as well as options.
 
 ```js
 const page = PageContainer()
@@ -284,7 +285,18 @@ const page = PageContainer()
       ]),
   ]);
 
-fabricate.app(page);
+const initialState = {
+  article: {
+    title: 'Using fabricate.js in web apps',
+    description: 'Lorem ipsum...',
+  },
+};
+
+const options = {
+  logStateUpdates: true,
+};
+
+fabricate.app(page, initialState, options);
 ```
 
 #### `.updateState()` / `.watchState()`
@@ -293,12 +305,15 @@ A few methods are available to make it easy to maintain some basic global state
 and to update components when those states change. A list of keys to watch
 can be provided, otherwise all state updates are notified.
 
+> To receive the initial state update when using a key list, include
+> `fabricate:init` in the list.
+
 ```js
 // View can watch some state - specifically, 'state.counter'
 const counterView = fab.Text()
   .watchState(
     (el, newState, key) => el.setText(newState.counter),
-    ['counter'],
+    ['fabricate:init', 'counter'],
   );
 
 // Initialise first state

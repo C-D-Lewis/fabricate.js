@@ -197,11 +197,11 @@ const fabricate = (tagName) => {
  *
  * @param {string} key - Key that was updated.
  */
-const notifyStateChange = (key) => {
+const _notifyStateChange = (key) => {
   const { stateWatchers, state, options } = _fabricate;
 
   if (options.logStateUpdates)
-    console.log(`fabricate notifyStateChange: key=${key} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
+    console.log(`fabricate _notifyStateChange: key=${key} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
 
   stateWatchers
     .forEach(({ el, cb, keyList }) => {
@@ -228,7 +228,7 @@ fabricate.updateState = (key, updateCb) => {
   state[key] = updateCb(state);
 
   // Update elements watching this key
-  notifyStateChange(key);
+  _notifyStateChange(key);
 };
 
 /**
@@ -293,7 +293,7 @@ fabricate.app = (root, initialState, opts) => {
   if (logStateUpdates) _fabricate.options.logStateUpdates = true;
 
   // Trigger initial state update
-  notifyStateChange();
+  _notifyStateChange('fabricate:init');
 };
 
  /**
@@ -558,9 +558,10 @@ fabricate.Card = () => fabricate('div')
   .asFlex('column')
   .withStyles({
     width: 'max-content',
-    padding: '10px',
     borderRadius: '5px',
     boxShadow: '2px 2px 3px 1px #5555',
+    backgroundColor: 'white',
+    overflow: 'hidden',
   });
 
 /**

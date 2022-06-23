@@ -233,6 +233,17 @@ const test = () => {
     return counter === 1;
   });
 
+  it('should immediately notify initial state when using a keyList', () => {
+    let counter = 0;
+
+    const App = () => fabricate('div')
+      .watchState((el, newState) => (counter += 1), ['fabricate:init', 'foo']);
+
+    fabricate.app(App(), { foo: 'bar' });
+
+    return counter === 1;
+  });
+
   it('should allow logStateUpdates option', () => {
     fabricate.app(fabricate('div'), {}, { logStateUpdates: true });
 
@@ -493,13 +504,13 @@ const test = () => {
       display: 'flex',
       flexDirection: 'column',
       width: 'max-content',
-      padding: '10px',
       borderBottomLeftRadius: '5px',
       borderBottomRightRadius: '5px',
       borderRadius: '5px',
       borderTopLeftRadius: '5px',
       borderTopRightRadius: '5px',
       boxShadow: 'rgba(85, 85, 85, 0.333) 2px 2px 3px 1px',
+      backgroundColor: 'white',
     };
 
     const el = fabricate.Card();
