@@ -1,3 +1,6 @@
+/* eslint-disable no-return-assign */
+/* global hasStyles hasAttributes it printResults _fabricate */
+
 /**
  * The test suite.
  */
@@ -14,9 +17,7 @@ const test = () => {
     return el.tagName === 'H2';
   });
 
-  it('should provide convenience \'fab\' alias', () => {
-    return typeof window.fab === 'function';
-  });
+  it('should provide convenience \'fab\' alias', () => typeof window.fab === 'function');
 
   it('should include styles', () => {
     const styles = {
@@ -43,7 +44,7 @@ const test = () => {
 
     return hasStyles(el, styles);
   });
-  
+
   it('should include attributes', () => {
     const attributes = { href: 'https://example.com' };
 
@@ -63,38 +64,38 @@ const test = () => {
   });
 
   it('should add a click handler', () => {
-    let counter = 0;
+    let clicked;
 
     const el = fabricate('div')
-      .onClick(() => (counter += 1));
+      .onClick(() => (clicked = true));
 
     el.click();
 
-    return counter === 1;
+    return clicked;
   });
 
   it('should add an input handler', () => {
-    let counter = 0;
+    let changed;
 
     const el = fabricate('input')
       .withAttributes({ type: 'text' })
-      .onChange(() => (counter += 1));
+      .onChange(() => (changed = true));
 
     el.dispatchEvent(new Event('input'));
 
-    return counter === 1;
+    return changed;
   });
 
   it('should add hover behaviors', () => {
-    let counter = 0;
+    let hovered;
 
     const el = fabricate('div')
-      .onHover((el, hovering) => (counter += 1));
+      .onHover(() => (hovered = true));
 
     el.dispatchEvent(new Event('mouseenter'));
     el.dispatchEvent(new Event('mouseleave'));
 
-    return counter === 2;
+    return hovered;
   });
 
   it('should add hover handlers', () => {
@@ -133,7 +134,7 @@ const test = () => {
   });
 
   it('should allow specifying children', () => {
-    const child = fabricate('span')
+    const child = fabricate('span');
 
     const parent = fabricate('div')
       .withChildren([child]);
@@ -142,7 +143,7 @@ const test = () => {
   });
 
   it('should allow specifying children with alias', () => {
-    const child = fabricate('span')
+    const child = fabricate('span');
 
     const parent = fabricate('div')
       .addChildren([child]);
@@ -172,7 +173,7 @@ const test = () => {
   });
 
   it('should clear children', () => {
-    const child = fabricate('div')
+    const child = fabricate('div');
 
     const parent = fabricate('div')
       .addChildren([child]);
@@ -183,18 +184,19 @@ const test = () => {
   });
 
   it('should watch and update state for all keys', () => {
-    let counter = 0;
+    let updateCount = 0;
     let updatedKey;
 
     fabricate('div')
       .watchState((el, state, key) => {
-        counter += state.counter;
+        updateCount += 1;
         updatedKey = key;
       });
 
-    fabricate.updateState('counter', () => 2);
+    fabricate.updateState('counter', () => 1);
+    fabricate.updateState('counter2', () => 2);
 
-    return counter === 2 && updatedKey === 'counter';
+    return fabricate.getState('counter2') === 2 && updatedKey === 'counter2' && updateCount === 2;
   });
 
   it('should watch and update specific state only', () => {
@@ -212,36 +214,34 @@ const test = () => {
     // Update another state item, but should not run the filtered callback above
     fabricate.updateState('notcounter', () => 1);
 
-    return counter === 2 && updatedKey === 'counter';
+    return fabricate.getState('counter') === 2 && counter === 2 && updatedKey === 'counter';
   });
 
   it('should manage component-local states', () => {
     const { get, set, key } = fabricate.manageState('TestComponent', 'value', 0);
 
     set(255);
-    return get() === 255 && key === `TestComponent:value` && fabricate.getState(key) === 255;
+    return get() === 255 && key === 'TestComponent:value' && fabricate.getState(key) === 255;
   });
 
   it('should immediately notify initial state', () => {
-    let counter = 0;
+    let updatedKey;
+    const App = () => fabricate('div').watchState((e, s, k) => (updatedKey = k));
 
-    const App = () => fabricate('div')
-      .watchState((el, newState) => (counter += 1));
+    fabricate.app(App(), { counter: 0 });
 
-    fabricate.app(App(), { foo: 'bar' });
-
-    return counter === 1;
+    return fabricate.getState('counter') === 0 && updatedKey === 'fabricate:init';
   });
 
   it('should immediately notify initial state when using a keyList', () => {
     let counter = 0;
 
     const App = () => fabricate('div')
-      .watchState((el, newState) => (counter += 1), ['fabricate:init', 'foo']);
+      .watchState(() => (counter += 1), ['fabricate:init', 'foo']);
 
     fabricate.app(App(), { foo: 'bar' });
 
-    return counter === 1;
+    return fabricate.getState('foo') === 'bar' && counter === 1;
   });
 
   it('should allow logStateUpdates option', () => {
@@ -254,13 +254,13 @@ const test = () => {
     let counter = 0;
 
     fabricate('div')
-      .then(el => (counter += 1));
+      .then(() => (counter += 1));
 
     return counter === 1;
   });
-  
+
   it('should detect small screens', () => {
-    let original = window.innerWidth;
+    const original = window.innerWidth;
 
     window.innerWidth = 400;
     const result = fabricate.isMobile() === true;
@@ -271,10 +271,7 @@ const test = () => {
     return result;
   });
 
-  it('should detect large screens', () => {
-    // Assuming this runs on a desktop
-    return fabricate.isMobile() === false;
-  });
+  it('should detect large screens', () => fabricate.isMobile() === false);
 
   it('should allow starting an app from the body', () => {
     const app = fabricate('div')
@@ -312,7 +309,7 @@ const test = () => {
     fabricate('div')
       .withChildren([
         fabricate.when(
-          state => state.isVisible === true,
+          (state) => state.isVisible === true,
           () => fabricate('div').then(() => (counter += 1)),
         ),
       ]);
@@ -327,7 +324,7 @@ const test = () => {
     fabricate.updateState('counter', () => 1);
 
     // Based on prior
-    fabricate.updateState('counter', state => state.counter + 1);
+    fabricate.updateState('counter', (state) => state.counter + 1);
 
     return fabricate.getState('counter') === 2;
   });
@@ -436,7 +433,7 @@ const test = () => {
       // Check children
       && title.tagName === 'H1'
       && title.innerText === 'Example App'
-      && hasStyles(title, titleStyles)
+      && hasStyles(title, titleStyles);
   });
 
   it('should provide TextInput component', () => {
@@ -448,8 +445,8 @@ const test = () => {
       width: 'max-content',
       borderTopColor: color,
       borderTopStyle: 'solid',
-      color: color,
-      backgroundColor: backgroundColor,
+      color,
+      backgroundColor,
       borderRadius: '5px',
       padding: '7px 9px',
       fontSize: '1.1rem',
@@ -496,7 +493,7 @@ const test = () => {
       && hasStyles(el, containerStyles)
       // Check children
       && canvas.tagName === 'CANVAS'
-      && hasStyles(canvas, canvasStyles)
+      && hasStyles(canvas, canvasStyles);
   });
 
   it('should provide Card component', () => {
@@ -526,7 +523,7 @@ const test = () => {
       transitionTimingFunction: 'ease',
       transitionDelay: '0s',
     };
-  
+
     const el = fabricate.Fader();
 
     return hasStyles(el, faderStyles);

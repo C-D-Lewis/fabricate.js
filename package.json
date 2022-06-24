@@ -4,7 +4,7 @@
   "description": "Tiny vanilla JS webapp framework with a fluent API and zero dependencies.",
   "main": "fabricate.js",
   "directories": {
-    "example": "examples",
+    "examples": "examples",
     "test": "test"
   },
   "scripts": {
@@ -20,5 +20,34 @@
   "bugs": {
     "url": "https://github.com/c-d-lewis/fabricate/issues"
   },
-  "homepage": "https://github.com/c-d-lewis/fabricate#readme"
+  "homepage": "https://github.com/c-d-lewis/fabricate#readme",
+  "devDependencies": {
+    "eslint": "^8.3.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3"
+  },
+  "eslintConfig": {
+    "extends": "eslint-config-airbnb-base",
+    "env": {
+      "browser": true
+    },
+    "rules": {
+      "no-multi-spaces": 0,
+      "global-require": 0,
+      "import/no-dynamic-require": 0,
+      "no-await-in-loop": 0,
+      "no-console": 0,
+      "no-alert": 0,
+      "no-param-reassign": [
+        "error",
+        { "props": false }
+      ]
+    },
+    "globals": {
+      "fabricate": "readonly",
+      "fab": "readonly",
+      "Theme": "readonly",
+      "Colors": "readonly"
+    }
+  }
 }

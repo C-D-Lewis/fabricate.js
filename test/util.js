@@ -22,7 +22,8 @@ const addResult = (passed, msg) => {
  * @param {string} summary - Test summary.
  * @param {function} cb - Test function, must return true.
  */
-const it = (summary, cb) => {
+// eslint-disable-next-line no-unused-vars
+const it = async (summary, cb) => {
   results.total += 1;
 
   let passed = false;
@@ -32,7 +33,7 @@ const it = (summary, cb) => {
   } catch (e) {
     console.log(e);
   }
-  
+
   addResult(passed, summary);
 };
 
@@ -43,13 +44,14 @@ const it = (summary, cb) => {
  * @param {object} styles - Object of styles.
  * @returns {boolean} true if all styles are present.
  */
+// eslint-disable-next-line no-unused-vars
 const hasStyles = (el, styles) => Object
   .entries(styles)
   .every(([k, spec]) => {
     const actual = el.style[k];
     const match = actual === spec;
     if (!match) alert(`Style ${actual} does not match expected: ${spec}`);
-    
+
     return match;
   });
 
@@ -60,6 +62,7 @@ const hasStyles = (el, styles) => Object
  * @param {object} attributes - Object of attributes.
  * @returns {boolean} true if all attributes are present.
  */
+// eslint-disable-next-line no-unused-vars
 const hasAttributes = (el, attributes) => Object
   .entries(attributes)
   .every(([k, v]) => el.getAttribute(k) === v);
@@ -67,6 +70,7 @@ const hasAttributes = (el, attributes) => Object
 /**
  * Print the result to the page.
  */
+// eslint-disable-next-line no-unused-vars
 const printResults = () => {
   const span = document.createElement('span');
   span.style.marginTop = '20px';

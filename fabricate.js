@@ -1,4 +1,7 @@
-// Proivate data
+/* eslint-disable spaced-comment */
+/* eslint-disable no-underscore-dangle */
+
+// Private data
 const _fabricate = {
   /** Max mobile width. */
   MOBILE_MAX_WIDTH: 1000,
@@ -111,7 +114,7 @@ const fabricate = (tagName) => {
    * @returns {HTMLElement}
    */
   el.withChildren = (newChildren) => {
-    newChildren.forEach(child => {
+    newChildren.forEach((child) => {
       // It's another element
       if (typeof child === 'object') {
         el.appendChild(child);
@@ -147,7 +150,7 @@ const fabricate = (tagName) => {
    * @param {string} text - Text to set.
    * @returns {HTMLElement}
    */
-   el.setText = (text = '') => {
+  el.setText = (text = '') => {
     el.innerText = text;
     return el;
   };
@@ -189,7 +192,7 @@ const fabricate = (tagName) => {
   return el;
 };
 
-/////////////////////////////////////////////// State //////////////////////////////////////////////
+//////////////////////////////////////////////// State /////////////////////////////////////////////
 
 /**
  * Notify watchers of a state change.
@@ -200,17 +203,15 @@ const fabricate = (tagName) => {
 const _notifyStateChange = (key) => {
   const { stateWatchers, state, options } = _fabricate;
 
-  if (options.logStateUpdates)
-    console.log(`fabricate _notifyStateChange: key=${key} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
+  if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: key=${key} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
 
-  stateWatchers
-    .forEach(({ el, cb, keyList }) => {
-      // If keyList is specified, filter state updates
-      if (keyList && !keyList.includes(key)) return;
+  stateWatchers.forEach(({ el, cb, keyList }) => {
+    // If keyList is specified, filter state updates
+    if (keyList && !keyList.includes(key)) return;
 
-      // Notify the watching component
-      cb(el, Object.freeze({ ...state }), key);
-    });
+    // Notify the watching component
+    cb(el, Object.freeze({ ...state }), key);
+  });
 };
 
 /**
@@ -277,7 +278,7 @@ fabricate.manageState = (componentName, stateName, initialValue) => {
  */
 fabricate.isMobile = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
 
- /**
+/**
   * Begin a component hierarchy from the body.
   *
   * @param {HTMLElement} root - First element in the app tree.
@@ -285,18 +286,21 @@ fabricate.isMobile = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
   * @param {object} [opts] - Extra options.
   */
 fabricate.app = (root, initialState, opts) => {
+  // Reset state
   _fabricate.state = initialState || {};
-  document.body.appendChild(root);
 
   // Options
   const { logStateUpdates } = opts || {};
-  if (logStateUpdates) _fabricate.options.logStateUpdates = true;
+  if (logStateUpdates) _fabricate.options.logStateUpdates = !!logStateUpdates;
 
   // Trigger initial state update
   _notifyStateChange('fabricate:init');
+
+  // Show app
+  document.body.appendChild(root);
 };
 
- /**
+/**
   * Conditionally render a child in response to state update.
   *
   * @param {function} stateTestCb - Callback to test the state.
@@ -304,19 +308,18 @@ fabricate.app = (root, initialState, opts) => {
   * @returns {HTMLElement}
   */
 fabricate.when = (stateTestCb, builderCb) => {
-  const { state } = _fabricate;
   let lastResult = false;
 
   /**
   * When the state updates.
   *
   * @param {HTMLElement} el - The host element.
-  * @param {object} stateNow - State object.
+  * @param {object} newState - State object.
   * @returns {void}
   */
-  const onStateUpdate = (el, stateNow) => {
-    const { state, stateWatchers } = _fabricate;
-    const newResult = stateTestCb(stateNow);
+  const onStateUpdate = (el, newState) => {
+    const { stateWatchers } = _fabricate;
+    const newResult = stateTestCb(newState);
 
     // Only re-render if a new result from the test callback
     if (newResult === lastResult) return;
@@ -330,8 +333,8 @@ fabricate.when = (stateTestCb, builderCb) => {
 
     // Render with builderCb and notify child of latest state
     const child = builderCb();
-    const watcher = stateWatchers.find(p => p.el === child);
-    if (watcher) watcher.cb(child, state);
+    const watcher = stateWatchers.find((p) => p.el === child);
+    if (watcher) watcher.cb(child, newState);
 
     // Show
     el.addChildren([child]);
@@ -340,7 +343,7 @@ fabricate.when = (stateTestCb, builderCb) => {
   const host = fabricate('div').watchState(onStateUpdate);
 
   // Test state immediately
-  onStateUpdate(host, state);
+  onStateUpdate(host, _fabricate.state);
 
   return host;
 };
@@ -630,6 +633,7 @@ fabricate.Pill = ({
 
 ///////////////////////////////////////// Convenience alias ////////////////////////////////////////
 
+// Convenient alternative
 window.fab = fabricate;
 
 ////////////////////////////////////////////// Styles //////////////////////////////////////////////
