@@ -77,3 +77,10 @@ const printResults = () => {
   span.innerHTML = `${results.passed} / ${results.total} passed`;
   document.body.appendChild(span);
 };
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    hasStyles,
+    hasAttributes,
+  };
+}

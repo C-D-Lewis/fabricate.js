@@ -3,12 +3,8 @@
   "version": "1.8.1",
   "description": "Tiny vanilla JS webapp framework with a fluent API and zero dependencies.",
   "main": "fabricate.js",
-  "directories": {
-    "examples": "examples",
-    "test": "test"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nyc mocha test/unit/**"
   },
   "repository": {
     "type": "git",
@@ -22,14 +18,19 @@
   },
   "homepage": "https://github.com/c-d-lewis/fabricate#readme",
   "devDependencies": {
+    "browser-env": "^3.3.0",
+    "chai": "^4.3.6",
     "eslint": "^8.3.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.25.3"
+    "eslint-plugin-import": "^2.25.3",
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0"
   },
   "eslintConfig": {
     "extends": "eslint-config-airbnb-base",
     "env": {
-      "browser": true
+      "browser": true,
+      "mocha": true
     },
     "rules": {
       "no-multi-spaces": 0,
@@ -40,7 +41,9 @@
       "no-alert": 0,
       "no-param-reassign": [
         "error",
-        { "props": false }
+        {
+          "props": false
+        }
       ]
     },
     "globals": {
@@ -49,5 +52,17 @@
       "Theme": "readonly",
       "Colors": "readonly"
     }
+  },
+  "nyc": {
+    "exclude": [
+      "test/*"
+    ],
+    "reporter": [
+      "cobertura",
+      "html",
+      "lcov",
+      "text-summary"
+    ],
+    "report-dir": "./reports"
   }
 }

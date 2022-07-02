@@ -644,3 +644,7 @@ document.head.appendChild(fabricate('style')
       transform:rotate(360deg);
     }
   }`));
+
+if (typeof module !== 'undefined') {
+  module.exports = fabricate;
+}
