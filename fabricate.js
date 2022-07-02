@@ -150,7 +150,7 @@ const fabricate = (tagName) => {
    * @param {string} text - Text to set.
    * @returns {HTMLElement}
    */
-  el.setText = (text = '') => {
+  el.setText = (text) => {
     el.innerText = text;
     return el;
   };
@@ -264,9 +264,16 @@ fabricate.manageState = (componentName, stateName, initialValue) => {
    * @param {*} newValue - New state value.
    */
   const set = (newValue) => fabricate.updateState(key, () => newValue);
-  if (initialValue) set(initialValue);
+  if (typeof initialValue !== 'undefined') set(initialValue);
 
   return { get, set, key };
+};
+
+/**
+ * Clear all state.
+ */
+fabricate.clearState = () => {
+  _fabricate.state = {};
 };
 
 ////////////////////////////////////////////// Helpers /////////////////////////////////////////////

@@ -8,30 +8,217 @@ const fabricate = require('../../fabricate');
 const { hasStyles, hasAttributes } = require('../util');
 
 describe('fabricate.js', () => {
-  it('should export fabricate function', () => {
-    expect(typeof fabricate === 'function');
+  afterEach(() => {
+    fabricate.clearState();
+
+    document.getElementsByTagName('html')[0].innerHTML = '';
   });
 
-  it('should create a div with styles', () => {
-    const styles = { color: 'white' };
-    const component = fabricate('div').withStyles(styles);
+  describe('Component creation', () => {
+    it('should export fabricate function', () => {
+      expect(typeof fabricate === 'function');
+    });
 
-    expect(hasStyles(component, styles)).to.equal(true);
+    it('should create a div with styles', () => {
+      const styles = { color: 'white' };
+      const component = fabricate('div').withStyles(styles);
+
+      expect(hasStyles(component, styles)).to.equal(true);
+    });
+
+    it('should create a img with attrbutes', () => {
+      const attrbutes = { src: 'http://foo.bar/image.png' };
+      const component = fabricate('img').withAttributes(attrbutes);
+
+      expect(hasAttributes(component, attrbutes)).to.equal(true);
+    });
+
+    it('should provide simple flex row', () => {
+      // 'row' is the default
+      const component = fabricate('div').asFlex();
+
+      const styles = {
+        display: 'flex',
+        flexDirection: 'row',
+      };
+      expect(hasStyles(component, styles)).to.equal(true);
+    });
+
+    it('should provide simple flex column', () => {
+      const component = fabricate('div').asFlex('column');
+
+      const styles = {
+        display: 'flex',
+        flexDirection: 'column',
+      };
+      expect(hasStyles(component, styles)).to.equal(true);
+    });
+
+    it('should add child elements', () => {
+      const component = fabricate('div').withChildren([fabricate('div')]);
+
+      expect(component.children[0].tagName).to.equal('DIV');
+    });
+
+    it('should add child text', () => {
+      const component = fabricate('div').withChildren(['some text']);
+
+      expect(component.children[0].tagName).to.equal('SPAN');
+    });
+
+    it('should set element text', () => {
+      const component = fabricate('div').setText('foo');
+
+      expect(component.innerText).to.equal('foo');
+    });
+
+    it('should clear all child element', () => {
+      const component = fabricate('div').withChildren([fabricate('div')]);
+      component.clear();
+
+      expect(component.childElementCount).to.equal(0);
+    });
+
+    it('should allow doing something after component creation', () => {
+      let updated;
+      fabricate('div').then(() => updated = true);
+
+      expect(updated).to.equal(true);
+    });
   });
 
-  it('should create a img with attrbutes', () => {
-    const attrbutes = { src: 'http://foo.bar/image.png' };
-    const component = fabricate('img').withAttributes(attrbutes);
+  describe('Component behaviours', () => {
+    it('should attach a click handler', () => {
+      let clicked;
+      const component = fabricate('div').onClick(() => (clicked = true));
 
-    expect(hasAttributes(component, attrbutes)).to.equal(true);
+      component.click();
+
+      expect(clicked).to.equal(true);
+    });
+
+    it('should attach a change handler', () => {
+      let changed;
+      const component = fabricate('input')
+        .withAttributes({ type: 'text' })
+        .onChange(() => (changed = true));
+
+      component.dispatchEvent(new Event('input'));
+
+      expect(changed).to.equal(true);
+    });
+
+    it('should attach a hover handler', () => {
+      let hovered;
+      const component = fabricate('div')
+        .onHover(() => (hovered = true));
+
+      component.dispatchEvent(new Event('mouseenter'));
+      component.dispatchEvent(new Event('mouseleave'));
+
+      expect(hovered).to.equal(true);
+    });
+
+    it('should attach hover handlers', () => {
+      let counter = 0;
+      const component = fabricate('div')
+        .onHover({
+          start: () => (counter += 1),
+          end: () => (counter += 1),
+        });
+
+      component.dispatchEvent(new Event('mouseenter'));
+      component.dispatchEvent(new Event('mouseleave'));
+
+      expect(counter).to.equal(2);
+    });
   });
 
-  it('should attach a click handler', () => {
-    let clicked;
-    const component = fabricate('div').onClick(() => (clicked = true));
+  describe('App state', () => {
+    it('should allow watching app state', () => {
+      let updatedKey;
+      fabricate('div').watchState((el, newState, key) => (updatedKey = key));
 
-    component.click();
+      fabricate.updateState('counter', () => 1);
 
-    expect(clicked).to.equal(true);
+      expect(updatedKey).to.equal('counter');
+    });
+
+    it('should allow watching app state with key list', () => {
+      let updatedKey;
+      fabricate('div').watchState(
+        (el, newState, key) => (updatedKey = key),
+        ['counter'],
+      );
+
+      fabricate.updateState('counter', () => 1);
+      fabricate.updateState('counter2', () => 1);
+
+      expect(updatedKey).to.equal('counter');
+    });
+
+    it('should throw if state update key not specified', () => {
+      expect(() => fabricate.updateState(undefined, () => false)).to.throw(Error);
+    });
+
+    it('should throw if state update callback is not a function', () => {
+      expect(() => fabricate.updateState('counter', false)).to.throw(Error);
+    });
+
+    it('should allow getting specific state', () => {
+      fabricate.updateState('counter', () => 42);
+      const value = fabricate.getState('counter');
+
+      expect(value).to.equal(42);
+    });
+
+    it('should allow managing component-local state', () => {
+      const { get, set, key } = fabricate.manageState('TestComponent', 'value', 0);
+
+      set(255);
+      expect(get()).to.equal(255);
+      expect(key).to.equal('TestComponent:value');
+      expect(fabricate.getState(key)).to.equal(255);
+    });
+
+    it('should allow managing component-local state with no initial value', () => {
+      const { get } = fabricate.manageState('TestComponent', 'value');
+
+      expect(get()).to.equal(undefined);
+    });
+  });
+
+  describe('Helpers', () => {
+    it('should allow detection of narrow screens', () => {
+      expect(fabricate.isMobile()).to.equal(false);
+    });
+
+    it('should allow creation of root app heirachy with no initial state', () => {
+      const Component = () => fabricate('div');
+
+      fabricate.app(Component());
+
+      expect(document.body.childElementCount).to.equal(1);
+    });
+
+    it('should allow creation of root app heirachy with initial state update', () => {
+      let updatedKey;
+      const Component = () => fabricate('div').watchState(
+        (el, newState, key) => (updatedKey = key),
+        ['fabricate:init'],
+      );
+      const initialState = { counter: 0 };
+
+      fabricate.app(Component(), initialState);
+
+      expect(updatedKey).to.equal('fabricate:init');
+      expect(document.body.childElementCount).to.equal(1);
+    });
+  });
+
+  describe('Options', () => {
+    it('should allow logging of state updates', () => {
+      fabricate.app(fabricate('div'), {}, { logStateUpdates: true });
+    });
   });
 });

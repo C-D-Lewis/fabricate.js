@@ -116,6 +116,7 @@ Just include in your HTML file, such as in a `lib` directory:
   * [`.updateState()` / `.watchState()`](#updatestate--watchstate)
   * [`.manageState()`](#managestate)
   * [`.when()`](#when)
+  * [`.clearState()`](#clearstate)
 * [Built-in Components](#built-in-components)
   * [`Row`](#row)
   * [`Column`](#column)
@@ -372,6 +373,15 @@ See [`examples/login.html`](examples/login.html) for a more complex example of
 conditional rendering in action.
 
 
+#### `.clearState()`
+
+Clear all state stored:
+
+```js
+fabricate.clearState();
+```
+
+
 ### Built-in Components
 
 #### `Row`
@@ -523,5 +533,15 @@ fab.Row()
 
 ## Run tests
 
-Open the test page (`test/index.html`) and see if all test summaries are green
-and the total indicates all tests passed.
+### Unit tests
+
+Run unit tests:
+
+```
+npm test
+```
+
+### Browser tests
+
+Open the test page (`test/browser/index.html`) and see if all test summaries
+are green and the total indicates all tests passed.

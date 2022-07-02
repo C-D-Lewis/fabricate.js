@@ -1,5 +1,5 @@
 /* eslint-disable no-return-assign */
-/* global hasStyles hasAttributes it printResults _fabricate */
+/* global hasStyles hasAttributes printResults _fabricate */
 
 /**
  * The test suite.
