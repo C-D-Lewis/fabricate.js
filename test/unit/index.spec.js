@@ -203,6 +203,7 @@ describe('fabricate.js', () => {
 
     it('should allow creation of root app heirachy with initial state update', () => {
       let updatedKey;
+
       const Component = () => fabricate('div').watchState(
         (el, newState, key) => (updatedKey = key),
         ['fabricate:init'],
@@ -214,6 +215,108 @@ describe('fabricate.js', () => {
       expect(updatedKey).to.equal('fabricate:init');
       expect(document.body.childElementCount).to.equal(1);
     });
+
+    it('should conditionally render a component only once per state value', () => {
+      let renderCount = 0;
+
+      const Component = () => fabricate('div').then(() => (renderCount += 1));
+
+      fabricate.when((state) => state.visible, Component);
+      fabricate.updateState('visible', () => true);
+
+      // Should not re-render for same value
+      fabricate.updateState('visible', () => true);
+
+      expect(renderCount).to.equal(1);
+    });
+
+    it('should conditionally render a component and notify it immediately', () => {
+      let watcherUsed;
+
+      const Component = () => fabricate('div').watchState(() => (watcherUsed = true));
+
+      fabricate.when((state) => state.visible, Component);
+      fabricate.updateState('visible', () => true);
+      fabricate.updateState('visible', () => true);
+
+      expect(watcherUsed).to.equal(true);
+    });
+  });
+
+  describe('Basic components', () => {
+    it('should provide Row', () => {
+      const component = fabricate.Row();
+      const styles = { display: 'flex', flexDirection: 'row' };
+
+      expect(hasStyles(component, styles)).to.equal(true);
+    });
+
+    it('should provide Column', () => {
+      const component = fabricate.Column();
+      const styles = { display: 'flex', flexDirection: 'column' };
+
+      expect(hasStyles(component, styles)).to.equal(true);
+    });
+
+    it('should provide Text', () => {
+      const component = fabricate.Text({ text: 'foo' });
+      const styles = { fontSize: '1.1rem', margin: '5px' };
+
+      expect(hasStyles(component, styles)).to.equal(true);
+      expect(component.innerText).to.equal('foo');
+    });
+
+    it('should provide Text with default text', () => {
+      const component = fabricate.Text();
+
+      expect(component.innerText).to.equal('No text specified');
+    });
+
+    it('should provide Image', () => {
+      const component = fabricate.Image({ src: 'https://foo.com/image.png' });
+      const styles = { width: '256px', height: '256px' };
+      const attributes = { src: 'https://foo.com/image.png' };
+
+      expect(hasStyles(component, styles)).to.equal(true);
+      expect(hasAttributes(component, attributes)).to.equal(true);
+    });
+
+    it('should provide Image with default src', () => {
+      const component = fabricate.Image();
+      const styles = { width: '256px', height: '256px' };
+      const attributes = { src: '' };
+
+      expect(hasStyles(component, styles)).to.equal(true);
+      expect(hasAttributes(component, attributes)).to.equal(true);
+    });
+
+    it('should provide Button', () => {
+      const color = 'pink';
+      const backgroundColor = 'blue';
+      const component = fabricate.Button({
+        text: 'Example',
+        color,
+        backgroundColor,
+        highlight: false,
+      });
+      const styles = {
+        minWidth: '100px',
+        // width: 'max-content',
+        height: '20px',
+        color,
+        backgroundColor,
+        borderRadius: '5px',
+        padding: '8px 10px',
+        margin: '5px',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        cursor: 'pointer',
+        userSelect: 'none',
+      };
+
+      expect(hasStyles(component, styles)).to.equal(true);
+    })
   });
 
   describe('Options', () => {
