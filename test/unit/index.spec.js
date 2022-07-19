@@ -297,11 +297,10 @@ describe('fabricate.js', () => {
         text: 'Example',
         color,
         backgroundColor,
-        highlight: false,
+        highlight: true,
       });
       const styles = {
         minWidth: '100px',
-        // width: 'max-content',
         height: '20px',
         color,
         backgroundColor,
@@ -316,6 +315,66 @@ describe('fabricate.js', () => {
       };
 
       expect(hasStyles(component, styles)).to.equal(true);
+    });
+
+    it('should provide Button with default values', () => {
+      let hovered;
+
+      const color = 'white';
+      const backgroundColor = 'rgb(68, 68, 68)';
+      const component = fabricate.Button()
+        .onHover(() => {
+          hovered = true;
+        });
+      const styles = {
+        minWidth: '100px',
+        height: '20px',
+        color,
+        backgroundColor,
+        borderRadius: '5px',
+        padding: '8px 10px',
+        margin: '5px',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        cursor: 'pointer',
+        userSelect: 'none',
+      };
+
+      expect(hasStyles(component, styles)).to.equal(true);
+
+      component.dispatchEvent(new Event('mouseenter'));
+      component.dispatchEvent(new Event('mouseleave'));
+
+      expect(hovered).to.equal(true);
+    });
+
+    it('should provide Button with no highlight behavior', () => {
+      const color = 'white';
+      const backgroundColor = 'rgb(68, 68, 68)';
+      const component = fabricate.Button({ highlight: false });
+      const styles = {
+        minWidth: '100px',
+        height: '20px',
+        color,
+        backgroundColor,
+        borderRadius: '5px',
+        padding: '8px 10px',
+        margin: '5px',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        cursor: 'pointer',
+        userSelect: 'none',
+      };
+
+      component.dispatchEvent(new Event('mouseenter'));
+
+      expect(hasStyles(component, styles)).to.equal(true);
+    });
+
+    it('should provide NavBar', () => {
+      
     })
   });
 
