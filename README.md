@@ -540,8 +540,3 @@ Run unit tests:
 ```
 npm test
 ```
-
-### Browser tests
-
-Open the test page (`test/browser/index.html`) and see if all test summaries
-are green and the total indicates all tests passed.
