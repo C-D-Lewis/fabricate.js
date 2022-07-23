@@ -439,6 +439,7 @@ fabricate.Button = ({
     textAlign: 'center',
     cursor: 'pointer',
     userSelect: 'none',
+    filter: 'brightness(1)',
   })
   .onHover((el, hovering) => {
     if (!highlight) return;
@@ -495,7 +496,7 @@ fabricate.TextInput = ({
   .asFlex('row')
   .withStyles({
     width: 'max-content',
-    border: 'solid 1px white',
+    border: '1px solid white',
     color,
     backgroundColor,
     borderRadius: '5px',
@@ -618,6 +619,7 @@ fabricate.Pill = ({
     padding: '5px 8px',
     margin: '5px',
     cursor: 'pointer',
+    filter: 'brightness(1)',
   })
   .onHover((el, hovering) => {
     if (!highlight) return;

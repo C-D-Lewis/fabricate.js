@@ -50,7 +50,7 @@ const hasStyles = (el, styles) => Object
   .every(([k, spec]) => {
     const actual = el.style[k];
     const match = actual === spec;
-    if (!match) console.log(`Style ${k}=${actual} does not match expected: ${spec}`);
+    if (!match) console.log(`Style ${k}=${actual} (${typeof actual}) does not match expected: ${spec} (${typeof spec})`);
 
     return match;
   });

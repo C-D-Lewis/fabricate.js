@@ -4,7 +4,8 @@
   "description": "Tiny vanilla JS webapp framework with a fluent API and zero dependencies.",
   "main": "fabricate.js",
   "scripts": {
-    "test": "nyc mocha test/unit/**"
+    "test": "nyc mocha test/unit/**",
+    "prepublishOnly": "npm run test"
   },
   "repository": {
     "type": "git",

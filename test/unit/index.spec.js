@@ -8,6 +8,15 @@ const fabricate = require('../../fabricate');
 const { hasStyles, hasAttributes } = require('../util');
 
 describe('fabricate.js', () => {
+  before(() => {
+    // Mock
+    HTMLCanvasElement.prototype.getContext = () => ({
+      beginPath: () => {},
+      arc: () => {},
+      stroke: () => {},
+    });
+  });
+
   afterEach(() => {
     fabricate.clearState();
 
@@ -21,62 +30,64 @@ describe('fabricate.js', () => {
 
     it('should create a div with styles', () => {
       const styles = { color: 'white' };
-      const component = fabricate('div').withStyles(styles);
+      const el = fabricate('div').withStyles(styles);
 
-      expect(hasStyles(component, styles)).to.equal(true);
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should create a img with attrbutes', () => {
       const attrbutes = { src: 'http://foo.bar/image.png' };
-      const component = fabricate('img').withAttributes(attrbutes);
+      const el = fabricate('img').withAttributes(attrbutes);
 
-      expect(hasAttributes(component, attrbutes)).to.equal(true);
+      expect(hasAttributes(el, attrbutes)).to.equal(true);
     });
 
     it('should provide simple flex row', () => {
       // 'row' is the default
-      const component = fabricate('div').asFlex();
+      const el = fabricate('div').asFlex();
 
       const styles = {
         display: 'flex',
         flexDirection: 'row',
       };
-      expect(hasStyles(component, styles)).to.equal(true);
+
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should provide simple flex column', () => {
-      const component = fabricate('div').asFlex('column');
+      const el = fabricate('div').asFlex('column');
 
       const styles = {
         display: 'flex',
         flexDirection: 'column',
       };
-      expect(hasStyles(component, styles)).to.equal(true);
+
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should add child elements', () => {
-      const component = fabricate('div').withChildren([fabricate('div')]);
+      const el = fabricate('div').withChildren([fabricate('div')]);
 
-      expect(component.children[0].tagName).to.equal('DIV');
+      expect(el.children[0].tagName).to.equal('DIV');
     });
 
     it('should add child text', () => {
-      const component = fabricate('div').withChildren(['some text']);
+      const el = fabricate('div').withChildren(['some text']);
 
-      expect(component.children[0].tagName).to.equal('SPAN');
+      expect(el.children[0].tagName).to.equal('SPAN');
     });
 
     it('should set element text', () => {
-      const component = fabricate('div').setText('foo');
+      const el = fabricate('div').setText('foo');
 
-      expect(component.innerText).to.equal('foo');
+      expect(el.innerText).to.equal('foo');
     });
 
     it('should clear all child element', () => {
-      const component = fabricate('div').withChildren([fabricate('div')]);
-      component.clear();
+      const el = fabricate('div').withChildren([fabricate('div')]);
+      el.clear();
 
-      expect(component.childElementCount).to.equal(0);
+      expect(el.childElementCount).to.equal(0);
     });
 
     it('should allow doing something after component creation', () => {
@@ -90,45 +101,45 @@ describe('fabricate.js', () => {
   describe('Component behaviours', () => {
     it('should attach a click handler', () => {
       let clicked;
-      const component = fabricate('div').onClick(() => (clicked = true));
+      const el = fabricate('div').onClick(() => (clicked = true));
 
-      component.click();
+      el.click();
 
       expect(clicked).to.equal(true);
     });
 
     it('should attach a change handler', () => {
       let changed;
-      const component = fabricate('input')
+      const el = fabricate('input')
         .withAttributes({ type: 'text' })
         .onChange(() => (changed = true));
 
-      component.dispatchEvent(new Event('input'));
+      el.dispatchEvent(new Event('input'));
 
       expect(changed).to.equal(true);
     });
 
     it('should attach a hover handler', () => {
       let hovered;
-      const component = fabricate('div')
+      const el = fabricate('div')
         .onHover(() => (hovered = true));
 
-      component.dispatchEvent(new Event('mouseenter'));
-      component.dispatchEvent(new Event('mouseleave'));
+      el.dispatchEvent(new Event('mouseenter'));
+      el.dispatchEvent(new Event('mouseleave'));
 
       expect(hovered).to.equal(true);
     });
 
     it('should attach hover handlers', () => {
       let counter = 0;
-      const component = fabricate('div')
+      const el = fabricate('div')
         .onHover({
           start: () => (counter += 1),
           end: () => (counter += 1),
         });
 
-      component.dispatchEvent(new Event('mouseenter'));
-      component.dispatchEvent(new Event('mouseleave'));
+      el.dispatchEvent(new Event('mouseenter'));
+      el.dispatchEvent(new Event('mouseleave'));
 
       expect(counter).to.equal(2);
     });
@@ -193,7 +204,7 @@ describe('fabricate.js', () => {
       expect(fabricate.isMobile()).to.equal(false);
     });
 
-    it('should allow creation of root app heirachy with no initial state', () => {
+    it('should allow creation of root app element with no initial state', () => {
       const Component = () => fabricate('div');
 
       fabricate.app(Component());
@@ -201,7 +212,7 @@ describe('fabricate.js', () => {
       expect(document.body.childElementCount).to.equal(1);
     });
 
-    it('should allow creation of root app heirachy with initial state update', () => {
+    it('should allow creation of root app element with initial state update', () => {
       let updatedKey;
 
       const Component = () => fabricate('div').watchState(
@@ -245,59 +256,89 @@ describe('fabricate.js', () => {
 
   describe('Basic components', () => {
     it('should provide Row', () => {
-      const component = fabricate.Row();
+      const el = fabricate.Row();
       const styles = { display: 'flex', flexDirection: 'row' };
 
-      expect(hasStyles(component, styles)).to.equal(true);
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should provide Column', () => {
-      const component = fabricate.Column();
+      const el = fabricate.Column();
       const styles = { display: 'flex', flexDirection: 'column' };
 
-      expect(hasStyles(component, styles)).to.equal(true);
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should provide Text', () => {
-      const component = fabricate.Text({ text: 'foo' });
+      const el = fabricate.Text({ text: 'foo' });
       const styles = { fontSize: '1.1rem', margin: '5px' };
 
-      expect(hasStyles(component, styles)).to.equal(true);
-      expect(component.innerText).to.equal('foo');
+      expect(hasStyles(el, styles)).to.equal(true);
+      expect(el.innerText).to.equal('foo');
     });
 
-    it('should provide Text with default text', () => {
-      const component = fabricate.Text();
+    it('should provide Text with default props', () => {
+      const el = fabricate.Text();
 
-      expect(component.innerText).to.equal('No text specified');
+      expect(el.innerText).to.equal('No text specified');
     });
 
-    it('should provide Image', () => {
-      const component = fabricate.Image({ src: 'https://foo.com/image.png' });
-      const styles = { width: '256px', height: '256px' };
-      const attributes = { src: 'https://foo.com/image.png' };
+    it('should provide Text with custom props', () => {
+      const el = fabricate.Text({ text: 'Hello' });
 
-      expect(hasStyles(component, styles)).to.equal(true);
-      expect(hasAttributes(component, attributes)).to.equal(true);
+      expect(el.innerText).to.equal('Hello');
     });
 
-    it('should provide Image with default src', () => {
-      const component = fabricate.Image();
+    it('should provide Image with default props', () => {
+      const el = fabricate.Image();
       const styles = { width: '256px', height: '256px' };
       const attributes = { src: '' };
 
-      expect(hasStyles(component, styles)).to.equal(true);
-      expect(hasAttributes(component, attributes)).to.equal(true);
+      expect(hasStyles(el, styles)).to.equal(true);
+      expect(hasAttributes(el, attributes)).to.equal(true);
     });
 
-    it('should provide Button', () => {
+    it('should provide Image with custom props', () => {
+      const el = fabricate.Image({
+        src: 'https://example.com/image.png',
+        width: '24px',
+        height: '24px',
+      });
+      const styles = { width: '24px', height: '24px' };
+      const attributes = { src: 'https://example.com/image.png' };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+      expect(hasAttributes(el, attributes)).to.equal(true);
+    });
+
+    it('should provide Button with default props', () => {
+      const el = fabricate.Button();
+      const styles = {
+        minWidth: '100px',
+        height: '20px',
+        color: 'white',
+        backgroundColor: 'rgb(68, 68, 68)',
+        borderRadius: '5px',
+        padding: '8px 10px',
+        margin: '5px',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        cursor: 'pointer',
+        userSelect: 'none',
+      };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+    });
+
+    it('should provide Button with custom props', () => {
       const color = 'pink';
       const backgroundColor = 'blue';
-      const component = fabricate.Button({
+      const el = fabricate.Button({
         text: 'Example',
         color,
         backgroundColor,
-        highlight: true,
+        highlight: false,
       });
       const styles = {
         minWidth: '100px',
@@ -314,23 +355,16 @@ describe('fabricate.js', () => {
         userSelect: 'none',
       };
 
-      expect(hasStyles(component, styles)).to.equal(true);
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
-    it('should provide Button with default values', () => {
-      let hovered;
-
-      const color = 'white';
-      const backgroundColor = 'rgb(68, 68, 68)';
-      const component = fabricate.Button()
-        .onHover(() => {
-          hovered = true;
-        });
+    it('should provide Button with highlight behavior', () => {
+      const el = fabricate.Button();
       const styles = {
         minWidth: '100px',
         height: '20px',
-        color,
-        backgroundColor,
+        color: 'white',
+        backgroundColor: 'rgb(68, 68, 68)',
         borderRadius: '5px',
         padding: '8px 10px',
         margin: '5px',
@@ -339,25 +373,26 @@ describe('fabricate.js', () => {
         textAlign: 'center',
         cursor: 'pointer',
         userSelect: 'none',
+        filter: 'brightness(1.2)',
       };
 
-      expect(hasStyles(component, styles)).to.equal(true);
+      // Hover
+      el.dispatchEvent(new Event('mouseenter'));
+      expect(hasStyles(el, styles)).to.equal(true);
 
-      component.dispatchEvent(new Event('mouseenter'));
-      component.dispatchEvent(new Event('mouseleave'));
-
-      expect(hovered).to.equal(true);
+      // End hover
+      el.dispatchEvent(new Event('mouseleave'));
+      styles.filter = 'brightness(1)';
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should provide Button with no highlight behavior', () => {
-      const color = 'white';
-      const backgroundColor = 'rgb(68, 68, 68)';
-      const component = fabricate.Button({ highlight: false });
+      const el = fabricate.Button({ highlight: false });
       const styles = {
         minWidth: '100px',
         height: '20px',
-        color,
-        backgroundColor,
+        color: 'white',
+        backgroundColor: 'rgb(68, 68, 68)',
         borderRadius: '5px',
         padding: '8px 10px',
         margin: '5px',
@@ -366,16 +401,280 @@ describe('fabricate.js', () => {
         textAlign: 'center',
         cursor: 'pointer',
         userSelect: 'none',
+        filter: 'brightness(1)',
       };
 
-      component.dispatchEvent(new Event('mouseenter'));
-
-      expect(hasStyles(component, styles)).to.equal(true);
+      el.dispatchEvent(new Event('mouseenter'));
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
-    it('should provide NavBar', () => {
-      
-    })
+    it('should provide NavBar with default props', () => {
+      // Parent
+      const navbar = fabricate.NavBar();
+      const navbarStyles = {
+        padding: '10px 20px',
+        height: '40px',
+        backgroundColor: 'forestgreen',
+        alignItems: 'center',
+      };
+
+      expect(hasStyles(navbar, navbarStyles)).to.equal(true);
+
+      // Children
+      const title = navbar.childNodes[0];
+      const titleStyles = {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: '1.2rem',
+        cursor: 'default',
+      };
+
+      expect(hasStyles(title, titleStyles)).to.equal(true);
+      expect(title.innerText).to.equal('NavBar Title');
+    });
+
+    it('should provide NavBar with custom props', () => {
+      // Parent
+      const navbar = fabricate.NavBar({
+        title: 'Custom Title',
+        color: 'pink',
+        backgroundColor: 'blue',
+      });
+      const navbarStyles = {
+        padding: '10px 20px',
+        height: '40px',
+        alignItems: 'center',
+        backgroundColor: 'blue',
+      };
+
+      expect(hasStyles(navbar, navbarStyles)).to.equal(true);
+
+      // Children
+      const title = navbar.childNodes[0];
+      const titleStyles = {
+        color: 'pink',
+        fontWeight: 'bold',
+        fontSize: '1.2rem',
+        cursor: 'default',
+      };
+
+      expect(hasStyles(title, titleStyles)).to.equal(true);
+      expect(title.innerText).to.equal('Custom Title');
+    });
+
+    it('should provide TextInput with default props', () => {
+      const el = fabricate.TextInput();
+      const styles = {
+        border: '1px solid white',
+        color: 'black',
+        backgroundColor: 'rgb(245, 245, 245)',
+        borderRadius: '5px',
+        padding: '7px 9px',
+        fontSize: '1.1rem',
+        margin: '5px auto',
+      };
+      const attrbutes = {
+        type: 'text',
+        placeholder: 'Enter value',
+      };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+      expect(hasAttributes(el, attrbutes)).to.equal(true);
+    });
+
+    it('should provide TextInput with custom props', () => {
+      const el = fabricate.TextInput({
+        placeholder: 'Email address',
+        color: 'white',
+        backgroundColor: 'red',
+      });
+      const styles = {
+        border: '1px solid white',
+        color: 'white',
+        backgroundColor: 'red',
+        borderRadius: '5px',
+        padding: '7px 9px',
+        fontSize: '1.1rem',
+        margin: '5px auto',
+      };
+      const attrbutes = {
+        type: 'text',
+        placeholder: 'Email address',
+      };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+      expect(hasAttributes(el, attrbutes)).to.equal(true);
+    });
+
+    it('should provide Loader with default props', () => {
+      // Parent
+      const loader = fabricate.Loader();
+      const loaderStyles = {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '48px',
+        height: '48px',
+      };
+
+      expect(hasStyles(loader, loaderStyles)).to.equal(true);
+
+      // Canvas
+      const canvas = loader.childNodes[0];
+      const canvasStyles = {
+        width: '48px',
+        height: '48px',
+        animation: 'spin 0.7s linear infinite',
+      };
+
+      expect(hasStyles(canvas, canvasStyles)).to.equal(true);
+    });
+
+    it('should provide Loader with custom props', () => {
+      // Parent
+      const loader = fabricate.Loader({
+        size: 128,
+        lineWidth: 1,
+        color: 'green',
+      });
+      const loaderStyles = {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '128px',
+        height: '128px',
+      };
+
+      expect(hasStyles(loader, loaderStyles)).to.equal(true);
+
+      // Canvas
+      const canvas = loader.childNodes[0];
+      const canvasStyles = {
+        width: '128px',
+        height: '128px',
+        animation: 'spin 0.7s linear infinite',
+      };
+
+      expect(hasStyles(canvas, canvasStyles)).to.equal(true);
+    });
+
+    it('should provide Fader with default props', (done) => {
+      const el = fabricate.Fader();
+      const styles = {
+        opacity: '0',
+        transition: 'opacity 0.6s',
+      };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+
+      // Fades
+      setTimeout(() => {
+        expect(el.style.opacity).to.equal('1');
+        done();
+      }, 350);
+    });
+
+    it('should provide Fader with custom props', (done) => {
+      const el = fabricate.Fader({
+        durationS: '1',
+        delayMs: 100,
+      });
+      const styles = {
+        opacity: '0',
+        transition: 'opacity 1s',
+      };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+
+      // Fades
+      setTimeout(() => {
+        expect(el.style.opacity).to.equal('1');
+        done();
+      }, 150);
+    });
+
+    it('should provide Pill with default props', () => {
+      const el = fabricate.Pill();
+      const styles = {
+        display: 'flex',
+        flexDirection: 'column',
+        color: 'white',
+        backgroundColor: 'rgb(102, 102, 102)',
+        justifyContent: 'center',
+        borderRadius: '20px',
+        padding: '5px 8px',
+        margin: '5px',
+        cursor: 'pointer',
+      };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+      expect(el.innerText).to.equal('Pill');
+    });
+
+    it('should provide Pill with custom props', () => {
+      const el = fabricate.Pill({
+        text: 'Example',
+        color: 'red',
+        backgroundColor: 'blue',
+        highlight: false,
+      });
+      const styles = {
+        display: 'flex',
+        flexDirection: 'column',
+        color: 'red',
+        backgroundColor: 'blue',
+        justifyContent: 'center',
+        borderRadius: '20px',
+        padding: '5px 8px',
+        margin: '5px',
+        cursor: 'pointer',
+      };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+      expect(el.innerText).to.equal('Example');
+    });
+
+    it('should provide Pill with highlight behavior', () => {
+      const el = fabricate.Pill();
+      const styles = {
+        display: 'flex',
+        flexDirection: 'column',
+        color: 'white',
+        backgroundColor: 'rgb(102, 102, 102)',
+        justifyContent: 'center',
+        borderRadius: '20px',
+        padding: '5px 8px',
+        margin: '5px',
+        cursor: 'pointer',
+        filter: 'brightness(1.2)',
+      };
+
+      // Hover
+      el.dispatchEvent(new Event('mouseenter'));
+      expect(hasStyles(el, styles)).to.equal(true);
+
+      // End hover
+      el.dispatchEvent(new Event('mouseleave'));
+      styles.filter = 'brightness(1)';
+      expect(hasStyles(el, styles)).to.equal(true);
+    });
+
+    it('should provide Pill with no highlight behavior', () => {
+      const el = fabricate.Pill({ highlight: false });
+      const styles = {
+        display: 'flex',
+        flexDirection: 'column',
+        color: 'white',
+        backgroundColor: 'rgb(102, 102, 102)',
+        justifyContent: 'center',
+        borderRadius: '20px',
+        padding: '5px 8px',
+        margin: '5px',
+        cursor: 'pointer',
+        filter: 'brightness(1)',
+      };
+
+      el.dispatchEvent(new Event('mouseenter'));
+      expect(hasStyles(el, styles)).to.equal(true);
+    });
   });
 
   describe('Options', () => {
