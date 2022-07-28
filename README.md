@@ -26,7 +26,11 @@ Install from a CDN, such as `unpkg`:
 ```
 
 or install from [npm](https://www.npmjs.com/package/fabricate.js) and copy or
-reference `fabricate.js` from `node_modules`.
+reference `fabricate.js` from `node_modules`:
+
+```html
+<script type="text/javascript" src="./lib/fabricate.js"></script>
+```
 
 
 ## Introduction
@@ -92,14 +96,6 @@ See the `examples` directory for more examples.
 Some basic components are available to quickly build UI, see below for more
 details.
 
-
-## Installation
-
-Just include in your HTML file, such as in a `lib` directory:
-
-```html
-<script type="text/javascript" src="./lib/fabricate.js"></script>
-```
 
 ## API
 
