@@ -1,6 +1,6 @@
 const {
   app, updateState, getState,
-  Column, Row, NavBar, Image, TextInput, Button, Card, Fader
+  Column, Row, NavBar, Image, TextInput, Button, Card,
 } = fabricate;
 
 /**
@@ -19,11 +19,38 @@ const loadTasksFromStorage = () => {
 const saveTasksToStorage = () => localStorage.setItem('tasks', JSON.stringify(getState('tasks')));
 
 /**
+ * When a task should be saved.
+ *
+ * @param {HTMLElement} input - Input containing the current value. TODO: Use updateState instead.
+ */
+const onSaveTask = (input) => {
+  const { value } = input;
+  if (value.trim().length === 0) return;
+
+  // Add new item
+  updateState('tasks', (state) => [...state.tasks, value]);
+
+  // Reset
+  input.value = '';
+  updateState('nextItem', () => '');
+
+  // Save app state
+  saveTasksToStorage();
+};
+
+/**
  * Component to add a new task item.
  *
  * @returns {HTMLElement}
  */
 const NewItemBox = () => {
+  const icon = Image({
+    src: './assets/pencil.png',
+    width: '28px',
+    height: '28px',
+  })
+    .withStyles({ padding: '10px' });
+
   const input = TextInput({
     placeholder: 'Create a new task...',
     backgroundColor: '#0000',
@@ -46,36 +73,11 @@ const NewItemBox = () => {
       padding: '3px',
     })
     .withChildren([
-      Image({
-        src: './assets/pencil.png',
-        width: '28px',
-        height: '28px',
-      })
-        .withStyles({
-          padding: '10px',
-        }),
+      icon,
       input,
-      Button({
-        text: 'Create',
-        backgroundColor: 'gold',
-      })
-        .withStyles({
-          minWidth: '50px',
-        })
-        .onClick(() => {
-          const { value } = input;
-          if (value.trim().length === 0) return;
-
-          // Add new item
-          updateState('tasks', state => [...state.tasks, value]);
-
-          // Reset
-          input.value = '';
-          updateState('nextItem', () => '');
-
-          // Save app state
-          saveTasksToStorage();
-        }),
+      Button({ text: 'Create', backgroundColor: 'gold' })
+        .withStyles({ minWidth: '50px' })
+        .onClick(() => onSaveTask(input)),
     ]);
 };
 
@@ -93,10 +95,7 @@ const TaskItem = (content) => Card()
   })
   .withChildren([
     fabricate('div')
-      .withStyles({
-        padding: '15px',
-        fontSize: '1.6rem',
-      })
+      .withStyles({ padding: '15px', fontSize: '1.6rem' })
       .setText(content),
 
     Button({
@@ -104,13 +103,10 @@ const TaskItem = (content) => Card()
       color: 'white',
       backgroundColor: 'darkred',
     })
-      .withStyles({
-        minWidth: '50px',
-        padding: '5px',
-      })
+      .withStyles({ minWidth: '50px', padding: '5px' })
       .onClick(() => {
         // Remove the item
-        updateState('tasks', ({ tasks }) => tasks.filter(p => p !== content));
+        updateState('tasks', ({ tasks }) => tasks.filter((p) => p !== content));
 
         // Save app state
         saveTasksToStorage();
@@ -123,13 +119,9 @@ const TaskItem = (content) => Card()
  * @returns {HTMLElement}
  */
 const TaskList = () => Row()
-  .withStyles({
-    padding: '10px',
-    flexWrap: 'wrap',
-  })
+  .withStyles({ padding: '10px', flexWrap: 'wrap' })
   .watchState((el, state) => {
     el.clear();
-
     el.addChildren(state.tasks.map(TaskItem));
   });
 
