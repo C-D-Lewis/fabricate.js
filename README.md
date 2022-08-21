@@ -11,6 +11,7 @@ pre-prepared components to get started quickly.
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [API](#api)
+- [Built-in components](#built-in-components)
 - [Run tests](#run-tests)
 
 See `examples` for some simple example apps.
@@ -113,18 +114,6 @@ details.
   * [`.manageState()`](#managestate)
   * [`.when()`](#when)
   * [`.clearState()`](#clearstate)
-* [Built-in Components](#built-in-components)
-  * [`Row`](#row)
-  * [`Column`](#column)
-  * [`Text`](#text)
-  * [`Image`](#image)
-  * [`Button`](#button)
-  * [`NavBar`](#navbar)
-  * [`TextInput`](#textinput)
-  * [`Loader`](#loader)
-  * [`Card`](#card)
-  * [`Fader`](#fader)
-  * [`Pill`](#pill)
 
 
 ### `Component`
@@ -273,8 +262,7 @@ initial state, as well as options.
 ```js
 const page = PageContainer()
   .withChildren([
-    fab.Title('My New App'),
-    fab.NavBar(),
+    fab.NavBar({ title: 'My New App' }),
     MainContent()
       .withChildren([
         HeroImage(),
@@ -378,7 +366,21 @@ fabricate.clearState();
 ```
 
 
-### Built-in Components
+## Built-in components
+
+See `examples/components` for a page displaying all example components.
+
+* [`Row`](#row)
+* [`Column`](#column)
+* [`Text`](#text)
+* [`Image`](#image)
+* [`Button`](#button)
+* [`NavBar`](#navbar)
+* [`TextInput`](#textinput)
+* [`Loader`](#loader)
+* [`Card`](#card)
+* [`Fader`](#fader)
+* [`Pill`](#pill)
 
 #### `Row`
 
