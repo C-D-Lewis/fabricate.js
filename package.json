@@ -45,7 +45,9 @@
         {
           "props": false
         }
-      ]
+      ],
+      "spaced-comment": 0,
+      "no-underscore-dangle": 0
     },
     "globals": {
       "fabricate": "readonly",

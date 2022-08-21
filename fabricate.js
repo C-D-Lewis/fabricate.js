@@ -1,6 +1,3 @@
-/* eslint-disable spaced-comment */
-/* eslint-disable no-underscore-dangle */
-
 // Private data
 const _fabricate = {
   /** Max mobile width. */
@@ -12,6 +9,8 @@ const _fabricate = {
     logStateUpdates: false,
   },
 };
+
+/////////////////////////////////////////// Main factory ///////////////////////////////////////////
 
 /**
  * Create an element of a given tag type, with fluent methods for continuing
@@ -192,7 +191,7 @@ const fabricate = (tagName) => {
   return el;
 };
 
-//////////////////////////////////////////////// State /////////////////////////////////////////////
+///////////////////////////////////////// State management /////////////////////////////////////////
 
 /**
  * Notify watchers of a state change.
@@ -355,7 +354,21 @@ fabricate.when = (stateTestCb, builderCb) => {
   return host;
 };
 
-///////////////////////////////////////// Basic Components /////////////////////////////////////////
+/**
+ * Declare a component so that it can be instantiated in other files.
+ *
+ * @param {string} name - Name of the component.
+ * @param {*} builderCb - Builder function to instantiate it.
+ * @throws {Error} if the name is invalid or it's already declared.
+ */
+fabricate.createComponent = (name, builderCb) => {
+  if (!/^[a-zA-Z]{1,}$/.test(name)) throw new Error('Declared component names must be a single word of letters');
+  if (fabricate[name]) throw new Error('Component already declared');
+
+  fabricate[name] = builderCb;
+};
+
+/////////////////////////////////////// Built-in Components ////////////////////////////////////////
 
 /**
  * Basic Row component.
@@ -377,12 +390,10 @@ fabricate.Column = () => fabricate('div')
  * Basic Text component.
  *
  * @param {object} props - Component props.
- * @param {string} [props.text] - Text to show.
+ * @param {string} [props.text] - Initial text.
  * @returns {HTMLElement}
  */
-fabricate.Text = ({
-  text = 'No text specified',
-} = {}) => fabricate('span')
+fabricate.Text = ({ text } = {}) => fabricate('p')
   .withStyles({
     fontSize: '1.1rem',
     margin: '5px',
@@ -451,6 +462,8 @@ fabricate.Button = ({
 /**
  * Basic NavBar component with colors and title.
  *
+ * TODO: Optional left-hand app icon
+ *
  * @param {object} props - Component props.
  * @param {string} [props.title] - NavBar title text.
  * @param {string} [props.color] - NavBar text color.
@@ -502,7 +515,7 @@ fabricate.TextInput = ({
     borderRadius: '5px',
     padding: '7px 9px',
     fontSize: '1.1rem',
-    margin: '5px auto',
+    margin: '5px 0px',
   })
   .withAttributes({
     type: 'text',
@@ -616,10 +629,11 @@ fabricate.Pill = ({
     backgroundColor,
     justifyContent: 'center',
     borderRadius: '20px',
-    padding: '5px 8px',
+    padding: '7px 8px 5px 8px',
     margin: '5px',
     cursor: 'pointer',
     filter: 'brightness(1)',
+    width: 'fit-content',
   })
   .onHover((el, hovering) => {
     if (!highlight) return;
@@ -628,9 +642,7 @@ fabricate.Pill = ({
   })
   .setText(text);
 
-/**
- * TODO: Unfinished Select component
- */
+// TODO: Unfinished Select component
 // fabricate.Select = ({
 //   options = ['foo', 'bar', 'baz'],
 // }) => fabricate('select')
@@ -639,6 +651,8 @@ fabricate.Pill = ({
 //       el.add(new Option(option, option));
 //     });
 //   });
+
+// TODO: Checkbox, radio group
 
 ///////////////////////////////////////// Convenience alias ////////////////////////////////////////
 
@@ -654,6 +668,7 @@ document.head.appendChild(fabricate('style')
     }
   }`));
 
+// Allow 'require' in unit tests
 if (typeof module !== 'undefined') {
   module.exports = fabricate;
 }

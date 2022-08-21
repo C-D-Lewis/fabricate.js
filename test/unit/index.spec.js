@@ -252,6 +252,23 @@ describe('fabricate.js', () => {
 
       expect(watcherUsed).to.equal(true);
     });
+
+    it('should allow declaring a component for re-use', () => {
+      const styles = { color: 'red' };
+
+      fabricate.createComponent('MyComponent', () => fabricate('div').withStyles(styles));
+      const el = fabricate.MyComponent();
+
+      expect(hasStyles(el, styles));
+    });
+
+    it('should not allow re-declaring a built-in component', () => {
+      expect(() => fabricate.createComponent('Button')).to.throw(Error);
+    });
+
+    it('should not allow invalid names', () => {
+      expect(() => fabricate.createComponent('My Component')).to.throw(Error);
+    });
   });
 
   describe('Basic components', () => {
@@ -280,13 +297,7 @@ describe('fabricate.js', () => {
     it('should provide Text with default props', () => {
       const el = fabricate.Text();
 
-      expect(el.innerText).to.equal('No text specified');
-    });
-
-    it('should provide Text with custom props', () => {
-      const el = fabricate.Text({ text: 'Hello' });
-
-      expect(el.innerText).to.equal('Hello');
+      expect(el.innerText).to.equal(undefined);
     });
 
     it('should provide Image with default props', () => {
@@ -471,7 +482,7 @@ describe('fabricate.js', () => {
         borderRadius: '5px',
         padding: '7px 9px',
         fontSize: '1.1rem',
-        margin: '5px auto',
+        margin: '5px 0px',
       };
       const attrbutes = {
         type: 'text',
@@ -495,7 +506,7 @@ describe('fabricate.js', () => {
         borderRadius: '5px',
         padding: '7px 9px',
         fontSize: '1.1rem',
-        margin: '5px auto',
+        margin: '5px 0px',
       };
       const attrbutes = {
         type: 'text',
@@ -600,7 +611,7 @@ describe('fabricate.js', () => {
         backgroundColor: 'rgb(102, 102, 102)',
         justifyContent: 'center',
         borderRadius: '20px',
-        padding: '5px 8px',
+        padding: '7px 8px 5px 8px',
         margin: '5px',
         cursor: 'pointer',
       };
@@ -623,7 +634,7 @@ describe('fabricate.js', () => {
         backgroundColor: 'blue',
         justifyContent: 'center',
         borderRadius: '20px',
-        padding: '5px 8px',
+        padding: '7px 8px 5px 8px',
         margin: '5px',
         cursor: 'pointer',
       };
@@ -641,7 +652,7 @@ describe('fabricate.js', () => {
         backgroundColor: 'rgb(102, 102, 102)',
         justifyContent: 'center',
         borderRadius: '20px',
-        padding: '5px 8px',
+        padding: '7px 8px 5px 8px',
         margin: '5px',
         cursor: 'pointer',
         filter: 'brightness(1.2)',
@@ -666,7 +677,7 @@ describe('fabricate.js', () => {
         backgroundColor: 'rgb(102, 102, 102)',
         justifyContent: 'center',
         borderRadius: '20px',
-        padding: '5px 8px',
+        padding: '7px 8px 5px 8px',
         margin: '5px',
         cursor: 'pointer',
         filter: 'brightness(1)',

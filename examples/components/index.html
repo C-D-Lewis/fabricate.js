@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../../fabricate.js"></script>
+
+    <script>
+      // Destructuring is useful if permitted by the project structure
+      const { Column, Text, Button, NavBar, Image, TextInput, Loader, Card, Fader, Pill, updateState, when } = fabricate;
+
+      /**
+       * Simple title component.
+       *
+       * @returns {HTMLElement}
+       */
+      const Title = () => Text().withStyles({ fontSize: '2rem', marginTop: '30px' });
+
+      const pageContainer = Column()
+        .withChildren([
+          Title().setText('Text'),
+          Text().setText('This is some example text to show the Text component.'),
+
+          Title().setText('Image'),
+          Image({ src: '../assets/account.png', width: '64px', height: '64px' }),
+
+          Title().setText('Button'),
+          Button({ text: 'Confirm', backgroundColor: 'royalblue' }),
+
+          Title().setText('NavBar'),
+          NavBar({ title: 'Example NavBar Title' }),
+
+          Title().setText('TextInput'),
+          TextInput({ placeholder: 'Enter text here' }),
+
+          Title().setText('Loader'),
+          Loader(),
+
+          Title().setText('Card'),
+          Card().withChildren([
+            Text().setText('Some text inside the card'),
+          ]),
+
+          Title().setText('Pill'),
+          Pill({ text: 'Example Pill' }),
+
+          Title().setText('Fader'),
+          when(
+            ({ showFader }) => showFader,
+            () => Fader().withChildren([Text().setText('Text fades in')]),
+          ),
+        ]);
+
+      fabricate.app(pageContainer, { showFader: false });
+
+      setInterval(() => updateState('showFader', prev => !prev.showFader), 1000);
+    </script>
+  </body>
+</html>

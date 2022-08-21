@@ -18,7 +18,7 @@
       const pageContainer =  fab.Column()
         .withStyles({ padding: '10px' })
         .withChildren([
-        fab.Text({ text: 'The counter below counts button clicks:' }),
+          fab.Text({ text: 'The counter below counts button clicks:' }),
           CounterView(),
           fab.Button({ text: 'Increment' })
             .onClick(() => fab.updateState('counter', state => state.counter + 1)),
