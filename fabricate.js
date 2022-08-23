@@ -264,6 +264,7 @@ fabricate.manageState = (componentName, stateName, initialValue) => {
    */
   const set = (newValue) => fabricate.updateState(key, () => newValue);
 
+  // TODO: Why did typeof !== 'undefined' cause issue here?
   if (initialValue) set(initialValue);
 
   return { get, set, key };
@@ -315,7 +316,6 @@ fabricate.app = (root, initialState, opts) => {
   * @returns {HTMLElement}
   */
 fabricate.when = (stateTestCb, builderCb) => {
-  const { state } = _fabricate;
   let lastResult = false;
 
   /**
@@ -326,7 +326,7 @@ fabricate.when = (stateTestCb, builderCb) => {
   * @returns {void}
   */
   const onStateUpdate = (el, newState) => {
-    const { state, stateWatchers } = _fabricate;
+    const { stateWatchers } = _fabricate;
     const newResult = stateTestCb(newState);
 
     // Only re-render if a new result from the test callback
@@ -342,7 +342,7 @@ fabricate.when = (stateTestCb, builderCb) => {
     // Render with builderCb and notify child of latest state
     const child = builderCb();
     const watcher = stateWatchers.find((p) => p.el === child);
-    if (watcher) watcher.cb(child, state);
+    if (watcher) watcher.cb(child, newState);
 
     // Show
     el.addChildren([child]);
@@ -351,7 +351,7 @@ fabricate.when = (stateTestCb, builderCb) => {
   const host = fabricate('div').watchState(onStateUpdate);
 
   // Test state immediately
-  onStateUpdate(host, state);
+  onStateUpdate(host, _fabricate.state);
 
   return host;
 };
