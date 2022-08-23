@@ -324,7 +324,7 @@ fabricate.when = (stateTestCb, builderCb) => {
   * @returns {void}
   */
   const onStateUpdate = (el, newState) => {
-    const { stateWatchers } = _fabricate;
+    const { state, stateWatchers } = _fabricate;
     const newResult = stateTestCb(newState);
 
     // Only re-render if a new result from the test callback
@@ -340,7 +340,7 @@ fabricate.when = (stateTestCb, builderCb) => {
     // Render with builderCb and notify child of latest state
     const child = builderCb();
     const watcher = stateWatchers.find((p) => p.el === child);
-    if (watcher) watcher.cb(child, newState);
+    if (watcher) watcher.cb(child, state);
 
     // Show
     el.addChildren([child]);
