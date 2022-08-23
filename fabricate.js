@@ -263,7 +263,8 @@ fabricate.manageState = (componentName, stateName, initialValue) => {
    * @param {*} newValue - New state value.
    */
   const set = (newValue) => fabricate.updateState(key, () => newValue);
-  if (typeof initialValue !== 'undefined') set(initialValue);
+
+  set(initialValue);
 
   return { get, set, key };
 };
