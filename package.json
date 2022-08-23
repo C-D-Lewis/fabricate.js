@@ -1,6 +1,6 @@
 {
   "name": "fabricate.js",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "description": "Tiny vanilla JS webapp framework with a fluent API and zero dependencies.",
   "main": "fabricate.js",
   "scripts": {
