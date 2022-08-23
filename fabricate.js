@@ -314,6 +314,7 @@ fabricate.app = (root, initialState, opts) => {
   * @returns {HTMLElement}
   */
 fabricate.when = (stateTestCb, builderCb) => {
+  const { state } = _fabricate;
   let lastResult = false;
 
   /**
@@ -349,7 +350,7 @@ fabricate.when = (stateTestCb, builderCb) => {
   const host = fabricate('div').watchState(onStateUpdate);
 
   // Test state immediately
-  onStateUpdate(host, _fabricate.state);
+  onStateUpdate(host, state);
 
   return host;
 };
