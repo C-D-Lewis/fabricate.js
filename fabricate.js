@@ -5,6 +5,7 @@ const _fabricate = {
 
   state: {},
   stateWatchers: [],
+  customComponents: {},
   options: {
     logStateUpdates: false,
   },
@@ -16,11 +17,17 @@ const _fabricate = {
  * Create an element of a given tag type, with fluent methods for continuing
  * to define it. When done, use 'build()' to get the element itself.
  *
- * @param {string} tagName - HTML tag name, such as 'div'.
+ * @param {string} tagName - HTML tag name, such as 'div', or declared custom component name.
+ * @param {object} [customProps] - Props to pass to a custom component being instantiated.
  * @returns {HTMLElement}
  */
-const fabricate = (tagName) => {
-  const el = document.createElement(tagName);
+const fabricate = (tagName, customProps) => {
+  const { customComponents } = _fabricate;
+
+  // Could be custom component
+  const el = customComponents[tagName]
+    ? customComponents[tagName](customProps)
+    : document.createElement(tagName);
 
   /**
    * Augment existing styles with new ones.
@@ -363,11 +370,11 @@ fabricate.when = (stateTestCb, builderCb) => {
  * @param {*} builderCb - Builder function to instantiate it.
  * @throws {Error} if the name is invalid or it's already declared.
  */
-fabricate.createComponent = (name, builderCb) => {
+fabricate.declare = (name, builderCb) => {
   if (!/^[a-zA-Z]{1,}$/.test(name)) throw new Error('Declared component names must be a single word of letters');
-  if (fabricate[name]) throw new Error('Component already declared');
+  if (fabricate[name] || _fabricate.customComponents[name]) throw new Error('Component already declared');
 
-  fabricate[name] = builderCb;
+  _fabricate.customComponents[name] = builderCb;
 };
 
 /////////////////////////////////////// Built-in Components ////////////////////////////////////////

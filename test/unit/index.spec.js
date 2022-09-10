@@ -253,21 +253,21 @@ describe('fabricate.js', () => {
       expect(watcherUsed).to.equal(true);
     });
 
-    it('should allow declaring a component for re-use', () => {
+    it('should allow declaring a component for re-use with props', () => {
       const styles = { color: 'red' };
 
-      fabricate.createComponent('MyComponent', () => fabricate('div').withStyles(styles));
-      const el = fabricate.MyComponent();
+      fabricate.declare('ColorfulText', ({ color }) => fabricate('div').withStyles({ color }));
+      const el = fabricate('ColorfulText', { color: 'red' });
 
       expect(hasStyles(el, styles));
     });
 
     it('should not allow re-declaring a built-in component', () => {
-      expect(() => fabricate.createComponent('Button')).to.throw(Error);
+      expect(() => fabricate.declare('Button')).to.throw(Error);
     });
 
     it('should not allow invalid names', () => {
-      expect(() => fabricate.createComponent('My Component')).to.throw(Error);
+      expect(() => fabricate.declare('My Component')).to.throw(Error);
     });
   });
 

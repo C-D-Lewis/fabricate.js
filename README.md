@@ -110,6 +110,7 @@ details.
 * [`fabricate` / `fab` helpers](#fabricate--fab)
   * [`.isMobile()`](#ismobile)
   * [`.app()`](#app)
+  * [`.declare()`](#declare)
   * [`.updateState()` / `.watchState()`](#updatestate--watchstate)
   * [`.manageState()`](#managestate)
   * [`.when()`](#when)
@@ -282,6 +283,22 @@ const options = {
 };
 
 fabricate.app(page, initialState, options);
+```
+
+#### `.declare()`
+
+Declare a custom component that can be instantiated elsewhere in the app, with
+props:
+
+```js
+fab.declare('ColorfulText', ({ color }) => fabricate('span').withStyles({ color }));
+```
+
+Then create the component where needed, supplying the required props:
+
+```js
+fab('ColorfulText', { color: 'red' })
+  .setText('Red custom component!');
 ```
 
 #### `.updateState()` / `.watchState()`

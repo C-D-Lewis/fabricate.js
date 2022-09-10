@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../../fabricate.js"></script>
+
+    <script>
+      // Declare a new component with props
+      fabricate.declare('ColorfulText', ({ color }) => fabricate('span').withStyles({ color }));
+
+      const App = () => fabricate.Column()
+        .withChildren([
+          // Use the component and pass props
+          fabricate('ColorfulText', { color: 'blue '})
+            .setText('Custom blue component!'),
+        ]);
+
+      fabricate.app(App());
+    </script>
+  </body>
+</html>
