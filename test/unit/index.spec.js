@@ -253,6 +253,10 @@ describe('fabricate.js', () => {
       expect(watcherUsed).to.equal(true);
     });
 
+    it('should temporarily fail', () => {
+      throw new Error('failed');
+    });
+
     it('should allow declaring a component for re-use with props', () => {
       const styles = { color: 'red' };
 
