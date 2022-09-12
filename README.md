@@ -157,10 +157,10 @@ const BannerImage = (src) => fabricate('img')
 Add other components as children to a parent:
 
 ```js
-const ButtonRow = () => fab.Row()
+const ButtonRow = () => fabricate.Row()
   .withChildren([
-    fab.Button({ text: 'Submit'}),
-    fab.Button({ text: 'Cancel'}),
+    fabricate.Button({ text: 'Submit'}),
+    fabricate.Button({ text: 'Cancel'}),
   ]);
 ```
 
@@ -172,7 +172,7 @@ Add click and hover behaviors, which are provided the same element to allow
 updating styles and attributes etc:
 
 ```js
-fab.Button({ text: 'Click me!' })
+fabricate.Button({ text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover({
     start: el => console.log('maybe clicked'),
@@ -183,15 +183,15 @@ fab.Button({ text: 'Click me!' })
 Hovering can also be implemented with just a callback if preferred:
 
 ```js
-fab.Button({ text: 'Click me!' })
-  .onClick(el => alert('Clicked!'))
+fabricate.Button({ text: 'Click me!' })
+  .onClick((el, state) => alert(`Clicked ${state.counter} times!`))
   .onHover((el, hovering) => console.log(`hovering: ${hovering}`));
 ```
 
 For inputs, the `change` even can also be used:
 
 ```js
-fab.TextInput({ placeholder: 'Email address' })
+fabricate.TextInput({ placeholder: 'Email address' })
   .onChange((el, value) => console.log(`Entered ${value}`));
 ```
 
@@ -237,7 +237,7 @@ Simple method to do something immediately after creating a component with
 chain methods:
 
 ```js
-fab.Text({ text: 'Example text' })
+fabricate.Text({ text: 'Example text' })
   .withStyles({ color: 'blue' })
   .then(() => console.log('Text was created'));
 ```
@@ -251,8 +251,8 @@ The imported object also has some helper methods to use:
 
 ```js
 // Detect a very narrow device, or mobile device
-fab.Text()
-  .withStyles({ fontSize: fab.isMobile() ? '1rem' : '1.8rem' })
+fabricate.Text()
+  .withStyles({ fontSize: fabricate.isMobile() ? '1rem' : '1.8rem' })
 ```
 
 #### `.app()`
@@ -263,7 +263,7 @@ initial state, as well as options.
 ```js
 const page = PageContainer()
   .withChildren([
-    fab.NavBar({ title: 'My New App' }),
+    fabricate.NavBar({ title: 'My New App' }),
     MainContent()
       .withChildren([
         HeroImage(),
@@ -280,10 +280,18 @@ const initialState = {
 
 const options = {
   logStateUpdates: true,
+  persistState: ['counter'],
 };
 
 fabricate.app(page, initialState, options);
 ```
+
+The options available are:
+
+| Name | Type | Description |
+|------|------|-------------|
+| `logStateUpdates` | `boolean` | Log all state updates in the console. |
+| `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
 
 #### `.declare()`
 
@@ -291,7 +299,7 @@ Declare a custom component that can be instantiated elsewhere in the app, with
 props:
 
 ```js
-fab.declare('ColorfulText', ({ color }) => fabricate('span').withStyles({ color }));
+fabricate.declare('ColorfulText', ({ color }) => fabricate('span').withStyles({ color }));
 ```
 
 Then create the component where needed, supplying the required props:
@@ -312,7 +320,7 @@ can be provided, otherwise all state updates are notified.
 
 ```js
 // View can watch some state - specifically, 'state.counter'
-const counterView = fab.Text()
+const counterView = fabricate.Text()
   .watchState(
     (el, newState, key) => el.setText(newState.counter),
     ['fabricate:init', 'counter'],
@@ -323,8 +331,11 @@ fabricate.app(counterView, { counter: 0 });
 
 // Update the state using the previous state
 setInterval(() => {
-  fab.updateState('counter', prev => prev.counter + 1);
+  fabricate.updateState('counter', prev => prev.counter + 1);
 }, 1000);
+
+// Or just the new data
+fabricate.updateState('counter', 0);
 ```
 
 #### `.manageState()`
@@ -351,12 +362,12 @@ Conditionally add or remove a component (or tree of components) using the `when`
 method:
 
 ```js
-const pageContainer =  fab.Column()
+const pageContainer =  fabricate.Column()
   .withChildren([
     // Check some state, and provide a function to build the component to show
-    fab.when(
+    fabricate.when(
       state => state.showText,
-      () => fab.Text({ text: 'Now you see me!'}),
+      () => fabricate.Text({ text: 'Now you see me!'}),
     ),
   ]);
 
@@ -365,7 +376,7 @@ fabricate.app(pageContainer, { showText: false });
 
 // Later, add the text
 setInterval(
-  () => fab.updateState('showText', state => !state.showText),
+  () => fabricate.updateState('showText', state => !state.showText),
   2000,
 );
 ```
@@ -404,10 +415,10 @@ See `examples/components` for a page displaying all example components.
 A simple flex row:
 
 ```js
-fab.Row()
+fabricate.Row()
   .withChildren([
-    fab.Button().setText('Confirm'),
-    fab.Button().setText('Cancel'),
+    fabricate.Button().setText('Confirm'),
+    fabricate.Button().setText('Cancel'),
   ]);
 ```
 
@@ -416,10 +427,10 @@ fab.Row()
 A simple flex column:
 
 ```js
-fab.Column()
+fabricate.Column()
   .withChildren([
-    fab.Image({ src: '/assets/images/gallery1.png' }),
-    fab.Image({ src: '/assets/images/gallery2.png' }),
+    fabricate.Image({ src: '/assets/images/gallery1.png' }),
+    fabricate.Image({ src: '/assets/images/gallery2.png' }),
   ]);
 ```
 
@@ -428,7 +439,7 @@ fab.Column()
 Basic text component:
 
 ```js
-fab.Text({ text: 'Hello, world!' });
+fabricate.Text({ text: 'Hello, world!' });
 ```
 
 #### `Image`
@@ -436,7 +447,7 @@ fab.Text({ text: 'Hello, world!' });
 Basic image component:
 
 ```js
-fab.Image({
+fabricate.Image({
   src: '/assets/images/gallery01.png',
   width: 640,
   height: 480,
@@ -448,7 +459,7 @@ fab.Image({
 A simple button component with optional hover highlight behavior:
 
 ```js
-fab.Button({
+fabricate.Button({
   text: 'Click me!',
   color: 'white',
   backgroundColor: 'gold',
@@ -461,15 +472,15 @@ fab.Button({
 NavBar component for app titles, etc. Can contain more components within itself:
 
 ```js
-fab.NavBar({
+fabricate.NavBar({
   title: 'My Example App',
   color: 'white',
   backgroundColor: 'purple',
 })
   .withChildren([
-    fab.Button({ text: 'Home' })
+    fabricate.Button({ text: 'Home' })
       .onClick(goHome),
-    fab.Button({ text: 'Gallery' })
+    fabricate.Button({ text: 'Gallery' })
       .onClick(goToGallery),
   ]);
 ```
@@ -479,7 +490,7 @@ fab.NavBar({
 A basic text input box with padding:
 
 ```js
-fab.TextInput({
+fabricate.TextInput({
   placeholder: 'Enter email address',
   color: '#444',
   backgroundColor: 'white'
@@ -492,7 +503,7 @@ fab.TextInput({
 Customizable CSS-based spinner/loader:
 
 ```js
-fab.Loader({
+fabricate.Loader({
   size: 48,
   lineWidth: 5,
   color: 'red',
@@ -504,9 +515,9 @@ fab.Loader({
 Simple Material-like card component for housing sections of other components:
 
 ```js
-fab.Card()
+fabricate.Card()
   .withChildren([
-    fab.Image({ src: '/assets/images/gallery01.png' }),
+    fabricate.Image({ src: '/assets/images/gallery01.png' }),
   ]);
 ```
 
@@ -515,7 +526,7 @@ fab.Card()
 Container that fades in upon creation to smoothly show other components inside:
 
 ```js
-fab.Fader({
+fabricate.Fader({
   durationS: 0.6,
   delayMs: 300,
 });
@@ -526,7 +537,7 @@ fab.Fader({
 Basic pill for category selection or tags etc:
 
 ```js
-fab.Row()
+fabricate.Row()
   .withChildren([
     Pill({
       text: 'All',
