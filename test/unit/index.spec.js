@@ -1,10 +1,11 @@
 /* eslint-disable no-return-assign */
+
 const browserEnv = require('browser-env');
 
-browserEnv();
+browserEnv({ url: 'http://localhost' });
 
 const { expect } = require('chai');
-const fabricate = require('../../fabricate');
+const { fabricate, _fabricate } = require('../../fabricate');
 const { hasStyles, hasAttributes } = require('../util');
 
 describe('fabricate.js', () => {
@@ -101,11 +102,16 @@ describe('fabricate.js', () => {
   describe('Component behaviours', () => {
     it('should attach a click handler', () => {
       let clicked;
-      const el = fabricate('div').onClick(() => (clicked = true));
+      let sawState;
+      const el = fabricate('div').onClick((_el, state) => {
+        clicked = true;
+        sawState = typeof state === 'object';
+      });
 
       el.click();
 
       expect(clicked).to.equal(true);
+      expect(sawState).to.equal(true);
     });
 
     it('should attach a change handler', () => {
@@ -172,13 +178,16 @@ describe('fabricate.js', () => {
       expect(() => fabricate.updateState(undefined, () => false)).to.throw(Error);
     });
 
-    it('should throw if state update callback is not a function', () => {
-      expect(() => fabricate.updateState('counter', false)).to.throw(Error);
+    it('should allow data state update', () => {
+      fabricate.updateState('counter', 23);
+      const value = _fabricate.state.counter;
+
+      expect(value).to.equal(23);
     });
 
-    it('should allow getting specific state', () => {
+    it('should allow updating specific state', () => {
       fabricate.updateState('counter', () => 42);
-      const value = fabricate.getState('counter');
+      const value = _fabricate.state.counter;
 
       expect(value).to.equal(42);
     });
@@ -189,7 +198,7 @@ describe('fabricate.js', () => {
       set(255);
       expect(get()).to.equal(255);
       expect(key).to.equal('TestComponent:value');
-      expect(fabricate.getState(key)).to.equal(255);
+      expect(_fabricate.state[key]).to.equal(255);
     });
 
     it('should allow managing component-local state with no initial value', () => {
@@ -686,11 +695,27 @@ describe('fabricate.js', () => {
       el.dispatchEvent(new Event('mouseenter'));
       expect(hasStyles(el, styles)).to.equal(true);
     });
+
+    it('should provide Card', () => {
+      const el = fabricate.Card();
+      const styles = { display: 'flex', flexDirection: 'column' };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+    });
   });
 
   describe('Options', () => {
     it('should allow logging of state updates', () => {
       fabricate.app(fabricate('div'), {}, { logStateUpdates: true });
+    });
+
+    it('should persist certain state', () => {
+      fabricate.app(fabricate('div'), { counter: 12, name: 'foo' }, { persistState: ['counter'] });
+
+      fabricate.updateState('counter', 64);
+
+      const stored = localStorage.getItem(_fabricate.STORAGE_KEY_STATE);
+      expect(stored).to.equal(JSON.stringify({ counter: 64 }));
     });
   });
 });

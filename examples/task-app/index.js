@@ -1,22 +1,7 @@
 const {
-  app, updateState, getState,
+  app, updateState,
   Column, Row, NavBar, Image, TextInput, Button, Card,
 } = fabricate;
-
-/**
- * Load saved tasks or use default.
- *
- * @returns {Array<string>} Loaded tasks.
- */
-const loadTasksFromStorage = () => {
-  const loaded = localStorage.getItem('tasks');
-  return loaded !== null ? JSON.parse(loaded) : ['Take out the trash before going to work'];
-};
-
-/**
- * Save tasks to localStorage.
- */
-const saveTasksToStorage = () => localStorage.setItem('tasks', JSON.stringify(getState('tasks')));
 
 /**
  * When a task should be saved.
@@ -28,14 +13,11 @@ const onSaveTask = (input) => {
   if (value.trim().length === 0) return;
 
   // Add new item
-  updateState('tasks', (state) => [...state.tasks, value]);
+  updateState('tasks', (prev) => [...prev.tasks, value]);
 
   // Reset
   input.value = '';
   updateState('nextItem', () => '');
-
-  // Save app state
-  saveTasksToStorage();
 };
 
 /**
@@ -107,9 +89,6 @@ const TaskItem = (content) => Card()
       .onClick(() => {
         // Remove the item
         updateState('tasks', ({ tasks }) => tasks.filter((p) => p !== content));
-
-        // Save app state
-        saveTasksToStorage();
       }),
   ]);
 
@@ -142,9 +121,10 @@ const main = () => {
 
   // Start app
   const initialState = {
-    tasks: loadTasksFromStorage(),
+    tasks: ['Take out the tash before going out'],
   };
-  app(pageContainer, initialState);
+  const options = { persistState: ['tasks'] };
+  app(pageContainer, initialState, options);
 };
 
 main();

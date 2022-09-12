@@ -2,14 +2,21 @@
 const _fabricate = {
   /** Max mobile width. */
   MOBILE_MAX_WIDTH: 1000,
+  /** LocalStorage key for persisted state */
+  STORAGE_KEY_STATE: '_fabricate:state',
+  /** Default options */
+  DEFAULT_OPTIONS: {
+    logStateUpdates: false,
+    persistState: undefined,
+  },
 
+  // Library state
   state: {},
   stateWatchers: [],
   customComponents: {},
-  options: {
-    logStateUpdates: false,
-  },
+  options: undefined,
 };
+_fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
 /////////////////////////////////////////// Main factory ///////////////////////////////////////////
 
@@ -60,11 +67,11 @@ const fabricate = (tagName, customProps) => {
   /**
    * Convenience method for adding a click handler.
    *
-   * @param {function} handler - Function to call when click happens.
+   * @param {function} handler - Function to call when click happens, with element and state.
    * @returns {HTMLElement}
    */
   el.onClick = (handler) => {
-    el.addEventListener('click', () => handler(el));
+    el.addEventListener('click', () => handler(el, _fabricate.state));
     return el;
   };
 
@@ -187,18 +194,56 @@ const fabricate = (tagName, customProps) => {
    * Convenience method to run some statements when a component is constructed
    * using only these chainable methods.
    *
-   * @param {function} f - Function to run immediately, with this element.
+   * @param {function} f - Function to run immediately, with this element and current state.
    * @returns {HTMLElement}
    */
   el.then = (f) => {
-    f(el);
+    f(el, _fabricate.state);
     return el;
   };
+
+  // TODO: Component-local state?
+  // el.withState = (initialState) => {
+  //   el.state = { ...initialState };
+  //   return el;
+  // };
+
+  // el.updateState = (newState) => {
+  //   el.state = {
+  //     ...el.state,
+  //     ...newState,
+  //   };
+  // };
 
   return el;
 };
 
 ///////////////////////////////////////// State management /////////////////////////////////////////
+
+/**
+ * Save current state to LocalStorage.
+ */
+const _savePersistState = () => {
+  const { STORAGE_KEY_STATE, state, options: { persistState } } = _fabricate;
+
+  // Store only those keys named for persistence
+  const toSave = Object.entries(state)
+    .filter(([k]) => persistState.includes(k))
+    .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+
+  localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(toSave));
+};
+
+/**
+ * Load persisted state if it exists.
+ */
+const _loadPersistState = () => {
+  const loaded = JSON.parse(localStorage.getItem(_fabricate.STORAGE_KEY_STATE) || '{}');
+  _fabricate.state = {
+    ..._fabricate.state,
+    ...loaded,
+  };
+};
 
 /**
  * Notify watchers of a state change.
@@ -209,7 +254,10 @@ const fabricate = (tagName, customProps) => {
 const _notifyStateChange = (key) => {
   const { stateWatchers, state, options } = _fabricate;
 
+  // Log to console for debugging
   if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: key=${key} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
+  // Persist to LocalStorage if required
+  if (options.persistState) _savePersistState();
 
   stateWatchers.forEach(({ el, cb, keyList }) => {
     // If keyList is specified, filter state updates
@@ -224,27 +272,19 @@ const _notifyStateChange = (key) => {
  * Update the state.
  *
  * @param {string} key - State key to update.
- * @param {function} updateCb - Callback that gets the previous state and returns new value.
+ * @param {function|object} update - Data or callback transforming old state, returning new value.
  */
-fabricate.updateState = (key, updateCb) => {
+fabricate.updateState = (key, update) => {
   const { state } = _fabricate;
 
   if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
-  if (typeof updateCb !== 'function') throw new Error('State update must be function(previous) { }');
 
-  state[key] = updateCb(state);
+  // Can be function or object
+  state[key] = typeof update === 'function' ? update(state) : update;
 
   // Update elements watching this key
   _notifyStateChange(key);
 };
-
-/**
- * Get some state by key.
- *
- * @param {string} key - Key to get.
- * @returns {any} The value stored, if any.
- */
-fabricate.getState = (key) => _fabricate.state[key];
 
 /**
  * Manage state for a specific component
@@ -262,7 +302,7 @@ fabricate.manageState = (componentName, stateName, initialValue) => {
    *
    * @returns {*} State value.
    */
-  const get = () => fabricate.getState(key);
+  const get = () => _fabricate.state[key];
 
   /**
    * State setter.
@@ -303,10 +343,12 @@ fabricate.isMobile = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
 fabricate.app = (root, initialState, opts) => {
   // Reset state
   _fabricate.state = initialState || {};
+  _fabricate.options = opts || _fabricate.DEFAULT_OPTIONS;
 
   // Options
-  const { logStateUpdates } = opts || {};
+  const { logStateUpdates, persistState } = opts || {};
   if (logStateUpdates) _fabricate.options.logStateUpdates = !!logStateUpdates;
+  if (persistState) _loadPersistState();
 
   // Trigger initial state update
   _notifyStateChange('fabricate:init');
@@ -679,5 +721,8 @@ document.head.appendChild(fabricate('style')
 
 // Allow 'require' in unit tests
 if (typeof module !== 'undefined') {
-  module.exports = fabricate;
+  module.exports = {
+    fabricate,
+    _fabricate,
+  };
 }

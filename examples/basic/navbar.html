@@ -13,7 +13,7 @@
 
     <script>
       // Destructuring is useful if permitted by the project structure
-      const { Column, Row, Text, Button, NavBar, Image, TextInput, updateState, getState, Pill } = fabricate;
+      const { Column, Row, Text, Button, NavBar, Image, TextInput, updateState, Pill } = fabricate;
 
       const contentContainer = Column()
         .withStyles({ padding: '15px' })
@@ -27,7 +27,7 @@
             })
             .onChange((el, newValue) => updateState('name', () => newValue)),
           Button({ text: 'Submit'})
-            .onClick(() => alert(`Thank you for clicking me, ${getState('name')}`)),
+            .onClick((el, state) => alert(`Thank you for clicking me, ${state.name}`)),
           
           Text({ text: 'An image component is shown below:' })
             .withStyles({ marginTop: '20px' }),

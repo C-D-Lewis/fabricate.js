@@ -12,7 +12,7 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      const { app, when, updateState, getState, Text, Button, TextInput, Card, Loader, Image, Column, Fader } = fabricate;
+      const { app, when, updateState, Text, Button, TextInput, Card, Loader, Image, Column, Fader } = fabricate;
 
       /**
        * Login form with email, password, and submit button.
@@ -22,15 +22,17 @@
       const LoginForm = () => fabricate('div')
         .withChildren([
           TextInput({ placeholder: 'Email' })
+            .withStyles({ margin: 'auto' })
             .onChange((el, value) => updateState('email', () => value)),
           TextInput({ placeholder: 'Password' })
+            .withStyles({ margin: 'auto' })
             .withAttributes({ type: 'password' })
             .onChange((el, value) => updateState('password', () => value)),
 
           Button({ text: 'Submit' })
             .withStyles({ margin: '15px auto' })
-            .onClick(() => {
-              if (!getState('email') || !getState('password')) {
+            .onClick((el, state) => {
+              if (!state.email || !state.password) {
                 alert('Please enter your details');
                 return;
               }
