@@ -193,7 +193,7 @@ Hovering can also be implemented with just a callback if preferred:
 fabricate.Button({ text: 'Click me!' })
   .onClick((el, state) => {
     alert(`Clicked ${state.counter} times!`);
-    fab.updateState('counter', ({ counter }) => counter + 1);
+    fabricate.updateState('counter', ({ counter }) => counter + 1);
   })
   .onHover((el, isHovered) => console.log(`isHovered: ${isHovered}`));
 ```
@@ -240,7 +240,7 @@ const UserList = ({ users }) => fabricate.Column()
 const refreshUserList = () => {
   const newUsers = await fetchUsers();
 
-  fab.updateState('userList', newUsers);
+  fabricate.updateState('userList', newUsers);
 };
 ```
 
@@ -576,8 +576,6 @@ fabricate.Row()
 
 ## Run tests
 
-### Unit tests
-
 Run unit tests:
 
 ```
@@ -588,15 +586,17 @@ npm test
 
 V2 - Changes for syntax:
 
-* `fabricate(tagName)` always, disallowing declaring existing components.
-* `withStyles`/`addStyles` -> `setStyles`
-* `withAttributes`/`addAttributes` -> `setAttributes` (`attributes` is taken)
-* `withChildren`/`addChildren` -> `setChildren`
-* `clear` -> `empty`
-* `updateState` -> `update`
-* `watchState` -> `onUpdate`
-* `then` -> `onCreate`
-* MutationObserver for `onDestroy` handler?
-* State updates with objects (spread internally) `fab.update({ counter: 0 })`
-* Component-local state? Reuable state machine from global?
-* More conservative props - Text#text not necessary
+- [x] - `fabricate(tagName)` always, disallowing declaring existing components.
+- [x] - `withStyles`/`addStyles` -> `setStyles`
+- [x] - `withAttributes`/`addAttributes` -> `setAttributes` (`attributes` is taken)
+- [x] - `withChildren`/`addChildren` -> `setChildren` + new `addChildren`
+- [x] - `clear` -> `empty`
+- [x] - `updateState` -> `update`
+- [x] - `watchState` -> `onUpdate`
+- [x] - `then` -> `onCreate`
+- [ ] - MutationObserver for `onDestroy` handler?
+- [ ] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
+- [ ] - Component-local state? Reuable state machine from global?
+- [ ] - New symbolic logo
+- [ ] - Comprehensive update release notes
+- [ ] - Predictable callback ctx ({ el, state, newValue }) etc.
