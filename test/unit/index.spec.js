@@ -334,7 +334,7 @@ describe('fabricate.js', () => {
     it('should provide Button with default props', () => {
       const el = fabricate.Button();
       const styles = {
-        minWidth: '100px',
+        minWidth: '80px',
         height: '20px',
         color: 'white',
         backgroundColor: 'rgb(68, 68, 68)',
@@ -361,7 +361,7 @@ describe('fabricate.js', () => {
         highlight: false,
       });
       const styles = {
-        minWidth: '100px',
+        minWidth: '80px',
         height: '20px',
         color,
         backgroundColor,
@@ -381,7 +381,7 @@ describe('fabricate.js', () => {
     it('should provide Button with highlight behavior', () => {
       const el = fabricate.Button();
       const styles = {
-        minWidth: '100px',
+        minWidth: '80px',
         height: '20px',
         color: 'white',
         backgroundColor: 'rgb(68, 68, 68)',
@@ -409,7 +409,7 @@ describe('fabricate.js', () => {
     it('should provide Button with no highlight behavior', () => {
       const el = fabricate.Button({ highlight: false });
       const styles = {
-        minWidth: '100px',
+        minWidth: '80px',
         height: '20px',
         color: 'white',
         backgroundColor: 'rgb(68, 68, 68)',

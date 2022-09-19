@@ -13,7 +13,7 @@
 
     <script>
       // Destructuring is useful if permitted by the project structure
-      const { Column, Row, Text, Button, NavBar, Image, TextInput, updateState, Pill } = fabricate;
+      const { Column, Row, Text, Button, NavBar, Image, TextInput, updateState, Pill, Card } = fabricate;
 
       const contentContainer = Column()
         .withStyles({ padding: '15px' })
@@ -21,30 +21,32 @@
           Text({ text: `Your device appears to be a ${fabricate.isMobile() ? 'mobile' : 'desktop'} device.` }),
           
           TextInput({ placeholder: 'Enter your name' })
-            .withStyles({
-              marginLeft: '5px',
-              marginTop: '20px',
-            })
+            .withStyles({ marginLeft: '5px', marginTop: '20px' })
             .onChange((el, newValue) => updateState('name', () => newValue)),
           Button({ text: 'Submit'})
             .onClick((el, state) => alert(`Thank you for clicking me, ${state.name}`)),
           
-          Text({ text: 'An image component is shown below:' })
+          Text({ text: 'An image component is shown below inside a card:' })
             .withStyles({ marginTop: '20px' }),
-          Image({
-            src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png',
-            width: '135px',
-            height: '155px',
-          })
-            .withStyles({ margin: '10px' }),
+          Card().withChildren([
+            Image({
+              src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png',
+              width: '135px',
+              height: '155px',
+            })
+              .withStyles({ margin: '10px' }),
+          ]),
+
+          Text({ text: 'Some pills are also shown below:' })
+            .withStyles({ marginTop: '20px' }),
+          Row().withChildren(['red', 'green', 'blue'].map(p => Pill({ text: p }))),
         ]);
 
       const pageContainer = Column()
         .withChildren([
-          NavBar({ title: 'Fabricate example app'}),
+          NavBar({ title: 'Fabricate example app'})
+            .withChildren([Button({ text: 'Home' })]),
           contentContainer,
-          Row()
-            .withChildren(['foo', 'bar', 'baz'].map(p => Pill({ text: p }))),
         ]);
 
       fabricate.app(pageContainer, { name: 'Unknown' });

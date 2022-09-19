@@ -488,7 +488,7 @@ fabricate.Button = ({
   highlight = true,
 } = {}) => fabricate.Column()
   .withStyles({
-    minWidth: '100px',
+    minWidth: '80px',
     width: 'max-content',
     height: '20px',
     color,
@@ -503,10 +503,10 @@ fabricate.Button = ({
     userSelect: 'none',
     filter: 'brightness(1)',
   })
-  .onHover((el, hovering) => {
+  .onHover((el, isHovered) => {
     if (!highlight) return;
 
-    el.addStyles({ filter: `brightness(${hovering ? '1.2' : '1'})` });
+    el.addStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
   })
   .setText(text);
 
@@ -539,6 +539,7 @@ fabricate.NavBar = ({
         fontWeight: 'bold',
         fontSize: '1.2rem',
         cursor: 'default',
+        marginRight: '20px',
       })
       .setText(title),
   ]);
@@ -580,19 +581,18 @@ fabricate.TextInput = ({
  * @param {number} [props.size] - Loader size.
  * @param {number} [props.lineWidth] - Stroke width.
  * @param {string} [props.color] - Color.
+ * @param {string} [props.backgroundColor] - Background color.
  * @returns {HTMLElement}
  */
 fabricate.Loader = ({
   size = 48,
   lineWidth = 5,
   color = 'red',
+  backgroundColor = '#ddd',
 } = {}) => {
   const container = fabricate('div')
     .asFlex('column')
-    .withStyles({
-      width: `${size}px`,
-      height: `${size}px`,
-    });
+    .withStyles({ width: `${size}px`, height: `${size}px` });
 
   const canvas = fabricate('canvas')
     .withStyles({
@@ -600,10 +600,7 @@ fabricate.Loader = ({
       height: `${size}px`,
       animation: 'spin 0.7s linear infinite',
     })
-    .withAttributes({
-      width: size,
-      height: size,
-    });
+    .withAttributes({ width: size, height: size });
 
   // Get context and draw arcs
   const ctx = canvas.getContext('2d');
@@ -612,7 +609,7 @@ fabricate.Loader = ({
   ctx.lineWidth = lineWidth;
   ctx.beginPath();
   ctx.arc(center, center, radius, 0, 2 * Math.PI);
-  ctx.strokeStyle = '#ddd';
+  ctx.strokeStyle = backgroundColor;
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(center, center, radius, 0, 1);
@@ -686,10 +683,10 @@ fabricate.Pill = ({
     filter: 'brightness(1)',
     width: 'fit-content',
   })
-  .onHover((el, hovering) => {
+  .onHover((el, isHovered) => {
     if (!highlight) return;
 
-    el.addStyles({ filter: `brightness(${hovering ? '1.2' : '1'})` });
+    el.addStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
   })
   .setText(text);
 
