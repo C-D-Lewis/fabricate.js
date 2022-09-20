@@ -357,6 +357,16 @@ fabricate.app = (root, initialState, opts) => {
 
   // Show app
   document.body.appendChild(root);
+
+  // Power onDestroy
+  _fabricate.observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.removedNodes.forEach((node) => {
+        if (node.onDestroy) node.onDestroy();
+      });
+    });
+  });
+  _fabricate.observer.observe(root, { subtree: true, childList: true });
 };
 
 /**
@@ -396,7 +406,7 @@ fabricate.when = (stateTestCb, builderCb) => {
     if (watcher) watcher.cb(child, newState);
 
     // Show
-    el.addChildren([child]);
+    el.setChildren([child]);
   };
 
   const host = fabricate('div').onUpdate(onStateUpdate);
@@ -510,7 +520,7 @@ fabricate.declare(
     .onHover((el, isHovered) => {
       if (!highlight) return;
 
-      el.addStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
+      el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
     })
     .setText(text),
 );
@@ -629,7 +639,7 @@ fabricate.declare(
     ctx.strokeStyle = color;
     ctx.stroke();
 
-    container.addChildren([canvas]);
+    container.setChildren([canvas]);
     return container;
   },
 );
@@ -668,7 +678,7 @@ fabricate.declare(
   } = {}) => fabricate('div')
     .setStyles({ opacity: 0, transition: `opacity ${durationS}s` })
     .onCreate((el) => {
-      setTimeout(() => el.addStyles({ opacity: 1 }), delayMs);
+      setTimeout(() => el.setStyles({ opacity: 1 }), delayMs);
     }),
 );
 
@@ -704,7 +714,7 @@ fabricate.declare(
     .onHover((el, isHovered) => {
       if (!highlight) return;
 
-      el.addStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
+      el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
     })
     .setText(text),
 );

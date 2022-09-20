@@ -31,14 +31,14 @@ describe('fabricate.js', () => {
 
     it('should create a div with styles', () => {
       const styles = { color: 'white' };
-      const el = fabricate('div').withStyles(styles);
+      const el = fabricate('div').setStyles(styles);
 
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should create a img with attrbutes', () => {
       const attrbutes = { src: 'http://foo.bar/image.png' };
-      const el = fabricate('img').withAttributes(attrbutes);
+      const el = fabricate('img').setAttributes(attrbutes);
 
       expect(hasAttributes(el, attrbutes)).to.equal(true);
     });
@@ -67,15 +67,9 @@ describe('fabricate.js', () => {
     });
 
     it('should add child elements', () => {
-      const el = fabricate('div').withChildren([fabricate('div')]);
+      const el = fabricate('div').setChildren([fabricate('div')]);
 
       expect(el.children[0].tagName).to.equal('DIV');
-    });
-
-    it('should add child text', () => {
-      const el = fabricate('div').withChildren(['some text']);
-
-      expect(el.children[0].tagName).to.equal('SPAN');
     });
 
     it('should set element text', () => {
@@ -85,15 +79,15 @@ describe('fabricate.js', () => {
     });
 
     it('should clear all child element', () => {
-      const el = fabricate('div').withChildren([fabricate('div')]);
-      el.clear();
+      const el = fabricate('div').setChildren([fabricate('div')]);
+      el.empty();
 
       expect(el.childElementCount).to.equal(0);
     });
 
     it('should allow doing something after component creation', () => {
       let updated;
-      fabricate('div').then(() => updated = true);
+      fabricate('div').onCreate(() => updated = true);
 
       expect(updated).to.equal(true);
     });
@@ -117,7 +111,7 @@ describe('fabricate.js', () => {
     it('should attach a change handler', () => {
       let changed;
       const el = fabricate('input')
-        .withAttributes({ type: 'text' })
+        .setAttributes({ type: 'text' })
         .onChange(() => (changed = true));
 
       el.dispatchEvent(new Event('input'));
@@ -154,39 +148,39 @@ describe('fabricate.js', () => {
   describe('App state', () => {
     it('should allow watching app state', () => {
       let updatedKey;
-      fabricate('div').watchState((el, newState, key) => (updatedKey = key));
+      fabricate('div').onUpdate((el, newState, key) => (updatedKey = key));
 
-      fabricate.updateState('counter', () => 1);
+      fabricate.update('counter', () => 1);
 
       expect(updatedKey).to.equal('counter');
     });
 
     it('should allow watching app state with key list', () => {
       let updatedKey;
-      fabricate('div').watchState(
+      fabricate('div').onUpdate(
         (el, newState, key) => (updatedKey = key),
         ['counter'],
       );
 
-      fabricate.updateState('counter', () => 1);
-      fabricate.updateState('counter2', () => 1);
+      fabricate.update('counter', () => 1);
+      fabricate.update('counter2', () => 1);
 
       expect(updatedKey).to.equal('counter');
     });
 
     it('should throw if state update key not specified', () => {
-      expect(() => fabricate.updateState(undefined, () => false)).to.throw(Error);
+      expect(() => fabricate.update(undefined, () => false)).to.throw(Error);
     });
 
     it('should allow data state update', () => {
-      fabricate.updateState('counter', 23);
+      fabricate.update('counter', 23);
       const value = _fabricate.state.counter;
 
       expect(value).to.equal(23);
     });
 
     it('should allow updating specific state', () => {
-      fabricate.updateState('counter', () => 42);
+      fabricate.update('counter', () => 42);
       const value = _fabricate.state.counter;
 
       expect(value).to.equal(42);
@@ -224,7 +218,7 @@ describe('fabricate.js', () => {
     it('should allow creation of root app element with initial state update', () => {
       let updatedKey;
 
-      const Component = () => fabricate('div').watchState(
+      const Component = () => fabricate('div').onUpdate(
         (el, newState, key) => (updatedKey = key),
         ['fabricate:init'],
       );
@@ -239,13 +233,13 @@ describe('fabricate.js', () => {
     it('should conditionally render a component only once per state value', () => {
       let renderCount = 0;
 
-      const Component = () => fabricate('div').then(() => (renderCount += 1));
+      const Component = () => fabricate('div').onCreate(() => (renderCount += 1));
 
       fabricate.when((state) => state.visible, Component);
-      fabricate.updateState('visible', () => true);
+      fabricate.update('visible', () => true);
 
       // Should not re-render for same value
-      fabricate.updateState('visible', () => true);
+      fabricate.update('visible', () => true);
 
       expect(renderCount).to.equal(1);
     });
@@ -253,11 +247,11 @@ describe('fabricate.js', () => {
     it('should conditionally render a component and notify it immediately', () => {
       let watcherUsed;
 
-      const Component = () => fabricate('div').watchState(() => (watcherUsed = true));
+      const Component = () => fabricate('div').onUpdate(() => (watcherUsed = true));
 
       fabricate.when((state) => state.visible, Component);
-      fabricate.updateState('visible', () => true);
-      fabricate.updateState('visible', () => true);
+      fabricate.update('visible', () => true);
+      fabricate.update('visible', () => true);
 
       expect(watcherUsed).to.equal(true);
     });
@@ -265,7 +259,7 @@ describe('fabricate.js', () => {
     it('should allow declaring a component for re-use with props', () => {
       const styles = { color: 'red' };
 
-      fabricate.declare('ColorfulText', ({ color }) => fabricate('div').withStyles({ color }));
+      fabricate.declare('ColorfulText', ({ color }) => fabricate('div').setStyles({ color }));
       const el = fabricate('ColorfulText', { color: 'red' });
 
       expect(hasStyles(el, styles));
@@ -282,21 +276,21 @@ describe('fabricate.js', () => {
 
   describe('Basic components', () => {
     it('should provide Row', () => {
-      const el = fabricate.Row();
+      const el = fabricate('Row');
       const styles = { display: 'flex', flexDirection: 'row' };
 
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should provide Column', () => {
-      const el = fabricate.Column();
+      const el = fabricate('Column');
       const styles = { display: 'flex', flexDirection: 'column' };
 
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should provide Text', () => {
-      const el = fabricate.Text({ text: 'foo' });
+      const el = fabricate('Text');
       const styles = { fontSize: '1.1rem', margin: '5px' };
 
       expect(hasStyles(el, styles)).to.equal(true);
@@ -304,13 +298,13 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Text with default props', () => {
-      const el = fabricate.Text();
+      const el = fabricate('Text');
 
       expect(el.innerText).to.equal(undefined);
     });
 
     it('should provide Image with default props', () => {
-      const el = fabricate.Image();
+      const el = fabricate('Image');
       const styles = { width: '256px', height: '256px' };
       const attributes = { src: '' };
 
@@ -319,7 +313,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Image with custom props', () => {
-      const el = fabricate.Image({
+      const el = fabricate('Image', {
         src: 'https://example.com/image.png',
         width: '24px',
         height: '24px',
@@ -332,7 +326,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Button with default props', () => {
-      const el = fabricate.Button();
+      const el = fabricate('Button');
       const styles = {
         minWidth: '80px',
         height: '20px',
@@ -354,7 +348,7 @@ describe('fabricate.js', () => {
     it('should provide Button with custom props', () => {
       const color = 'pink';
       const backgroundColor = 'blue';
-      const el = fabricate.Button({
+      const el = fabricate('Button', {
         text: 'Example',
         color,
         backgroundColor,
@@ -379,7 +373,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Button with highlight behavior', () => {
-      const el = fabricate.Button();
+      const el = fabricate('Button');
       const styles = {
         minWidth: '80px',
         height: '20px',
@@ -407,7 +401,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Button with no highlight behavior', () => {
-      const el = fabricate.Button({ highlight: false });
+      const el = fabricate('Button', { highlight: false });
       const styles = {
         minWidth: '80px',
         height: '20px',
@@ -430,7 +424,7 @@ describe('fabricate.js', () => {
 
     it('should provide NavBar with default props', () => {
       // Parent
-      const navbar = fabricate.NavBar();
+      const navbar = fabricate('NavBar');
       const navbarStyles = {
         padding: '10px 20px',
         height: '40px',
@@ -455,7 +449,7 @@ describe('fabricate.js', () => {
 
     it('should provide NavBar with custom props', () => {
       // Parent
-      const navbar = fabricate.NavBar({
+      const navbar = fabricate('NavBar', {
         title: 'Custom Title',
         color: 'pink',
         backgroundColor: 'blue',
@@ -483,7 +477,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide TextInput with default props', () => {
-      const el = fabricate.TextInput();
+      const el = fabricate('TextInput');
       const styles = {
         border: '1px solid white',
         color: 'black',
@@ -503,7 +497,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide TextInput with custom props', () => {
-      const el = fabricate.TextInput({
+      const el = fabricate('TextInput', {
         placeholder: 'Email address',
         color: 'white',
         backgroundColor: 'red',
@@ -577,7 +571,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Fader with default props', (done) => {
-      const el = fabricate.Fader();
+      const el = fabricate('Fader');
       const styles = {
         opacity: '0',
         transition: 'opacity 0.6s',
@@ -593,7 +587,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Fader with custom props', (done) => {
-      const el = fabricate.Fader({
+      const el = fabricate('Fader', {
         durationS: '1',
         delayMs: 100,
       });
@@ -612,7 +606,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Pill with default props', () => {
-      const el = fabricate.Pill();
+      const el = fabricate('Pill');
       const styles = {
         display: 'flex',
         flexDirection: 'column',
@@ -630,7 +624,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Pill with custom props', () => {
-      const el = fabricate.Pill({
+      const el = fabricate('Pill', {
         text: 'Example',
         color: 'red',
         backgroundColor: 'blue',
@@ -653,7 +647,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Pill with highlight behavior', () => {
-      const el = fabricate.Pill();
+      const el = fabricate('Pill');
       const styles = {
         display: 'flex',
         flexDirection: 'column',
@@ -678,7 +672,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Pill with no highlight behavior', () => {
-      const el = fabricate.Pill({ highlight: false });
+      const el = fabricate('Pill', { highlight: false });
       const styles = {
         display: 'flex',
         flexDirection: 'column',
@@ -697,7 +691,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Card', () => {
-      const el = fabricate.Card();
+      const el = fabricate('Card');
       const styles = { display: 'flex', flexDirection: 'column' };
 
       expect(hasStyles(el, styles)).to.equal(true);
@@ -712,7 +706,7 @@ describe('fabricate.js', () => {
     it('should persist certain state', () => {
       fabricate.app(fabricate('div'), { counter: 12, name: 'foo' }, { persistState: ['counter'] });
 
-      fabricate.updateState('counter', 64);
+      fabricate.update('counter', 64);
 
       const stored = localStorage.getItem(_fabricate.STORAGE_KEY_STATE);
       expect(stored).to.equal(JSON.stringify({ counter: 64 }));
