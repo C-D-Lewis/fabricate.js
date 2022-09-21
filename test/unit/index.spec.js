@@ -86,10 +86,25 @@ describe('fabricate.js', () => {
     });
 
     it('should allow doing something after component creation', () => {
-      let updated;
-      fabricate('div').onCreate(() => updated = true);
+      let created;
+      fabricate('div').onCreate(() => {
+        created = true;
+      });
 
-      expect(updated).to.equal(true);
+      expect(created).to.equal(true);
+    });
+
+    it('should detect element removal', () => {
+      let destoyed;
+
+      const child = fabricate('div').onDestroy(() => {
+        destoyed = true;
+      });
+
+      const parent = fabricate('div').setChildren([child]);
+      parent.empty();
+
+      expect(destoyed).to.equal(true);
     });
   });
 
@@ -290,7 +305,7 @@ describe('fabricate.js', () => {
     });
 
     it('should provide Text', () => {
-      const el = fabricate('Text');
+      const el = fabricate('Text').setText('foo');
       const styles = { fontSize: '1.1rem', margin: '5px' };
 
       expect(hasStyles(el, styles)).to.equal(true);
@@ -522,7 +537,7 @@ describe('fabricate.js', () => {
 
     it('should provide Loader with default props', () => {
       // Parent
-      const loader = fabricate.Loader();
+      const loader = fabricate('Loader');
       const loaderStyles = {
         display: 'flex',
         flexDirection: 'column',
@@ -545,7 +560,7 @@ describe('fabricate.js', () => {
 
     it('should provide Loader with custom props', () => {
       // Parent
-      const loader = fabricate.Loader({
+      const loader = fabricate('Loader', {
         size: 128,
         lineWidth: 1,
         color: 'green',

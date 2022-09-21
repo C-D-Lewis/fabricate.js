@@ -59,48 +59,6 @@ const fabricate = (tagName, customProps) => {
   };
 
   /**
-   * Convenience method for adding a click handler.
-   *
-   * @param {function} handler - Function to call when click happens, with element and state.
-   * @returns {HTMLElement}
-   */
-  el.onClick = (handler) => {
-    el.addEventListener('click', () => handler(el, _fabricate.state));
-    return el;
-  };
-
-  /**
-   * Convenience method for adding an input handler.
-   *
-   * @param {function} handler - Function to call when text input happens.
-   * @returns {HTMLElement}
-   */
-  el.onChange = (handler) => {
-    el.addEventListener('input', ({ target }) => handler(el, target.value));
-    return el;
-  };
-
-  /**
-   * Convenience method for start and end of hover.
-   *
-   * @param {object} opts - start and end of hover handlers, or a callback.
-   * @returns {HTMLElement}
-   */
-  el.onHover = (opts) => {
-    // cb(isHovered) style
-    if (typeof opts === 'function') {
-      el.addEventListener('mouseenter', () => opts(el, true));
-      el.addEventListener('mouseleave', () => opts(el, false));
-      return el;
-    }
-
-    const { start, end } = opts;
-    el.addEventListener('mouseenter', () => start(el));
-    el.addEventListener('mouseleave', () => end(el));
-    return el;
-  };
-
-  /**
    * Convenience method to set as a flex container.
    *
    * @param {string} flexDirection - Either 'row' or 'column'.
@@ -178,6 +136,48 @@ const fabricate = (tagName, customProps) => {
   };
 
   /**
+   * Convenience method for adding a click handler.
+   *
+   * @param {function} handler - Function to call when click happens, with element and state.
+   * @returns {HTMLElement}
+   */
+  el.onClick = (handler) => {
+    el.addEventListener('click', () => handler(el, _fabricate.state));
+    return el;
+  };
+
+  /**
+   * Convenience method for adding an input handler.
+   *
+   * @param {function} handler - Function to call when text input happens.
+   * @returns {HTMLElement}
+   */
+  el.onChange = (handler) => {
+    el.addEventListener('input', ({ target }) => handler(el, target.value));
+    return el;
+  };
+
+  /**
+   * Convenience method for start and end of hover.
+   *
+   * @param {object} opts - start and end of hover handlers, or a callback.
+   * @returns {HTMLElement}
+   */
+  el.onHover = (opts) => {
+    // cb(isHovered) style
+    if (typeof opts === 'function') {
+      el.addEventListener('mouseenter', () => opts(el, true));
+      el.addEventListener('mouseleave', () => opts(el, false));
+      return el;
+    }
+
+    const { start, end } = opts;
+    el.addEventListener('mouseenter', () => start(el));
+    el.addEventListener('mouseleave', () => end(el));
+    return el;
+  };
+
+  /**
    * Watch the state for changes.
    *
    * @param {function} cb - Callback to be notified.
@@ -201,7 +201,17 @@ const fabricate = (tagName, customProps) => {
     return el;
   };
 
-  // TODO: onDestroy with MutationObserver
+  /**
+   * Convenience method to run some statements when a component is removed from
+   * the DOM/it's parent.
+   *
+   * @param {function} f - Function to run immediately, with this element and current state.
+   * @returns {HTMLElement}
+   */
+  el.onDestroy = (f) => {
+    f(el, _fabricate.state);
+    return el;
+  };
 
   // TODO: Component-local state?
   // el.withState = (initialState) => {

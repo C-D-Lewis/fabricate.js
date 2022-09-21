@@ -2,7 +2,7 @@
 
 > n. To create quickly and easily.
 
-![](logo.png)
+![](assets/logo.png)
 
 A tiny vanilla JS webapp framework with a fluent API and zero dependencies,
 intended for small apps with relatively simply layouts. Includes with some
@@ -594,9 +594,9 @@ V2 - Changes for syntax:
 - [x] - `updateState` -> `update`
 - [x] - `watchState` -> `onUpdate`
 - [x] - `then` -> `onCreate`
-- [ ] - MutationObserver for `onDestroy` handler?
+- [x] - MutationObserver for `onDestroy` handler?
 - [ ] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
 - [ ] - Component-local state? Reuable state machine from global?
 - [ ] - New symbolic logo
 - [ ] - Comprehensive update release notes
-- [ ] - Predictable callback ctx ({ el, state, newValue }) etc.
+- [ ] - Predictable callback (el, state, value...) etc.
