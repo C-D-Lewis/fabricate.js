@@ -15,6 +15,7 @@ const _fabricate = {
   stateWatchers: [],
   customComponents: {},
   options: undefined,
+  onDestroyObserver: undefined,
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
@@ -24,17 +25,17 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  * Create an element of a given tag type, with fluent methods for continuing
  * to define it. When done, use 'build()' to get the element itself.
  *
- * @param {string} tagName - HTML tag name, such as 'div', or declared custom component name.
+ * @param {string} name - HTML tag name, such as 'div', or declared custom component name.
  * @param {object} [customProps] - Props to pass to a custom component being instantiated.
  * @returns {HTMLElement}
  */
-const fabricate = (tagName, customProps) => {
+const fabricate = (name, customProps) => {
   const { customComponents } = _fabricate;
 
   // Could be custom component
-  const el = customComponents[tagName]
-    ? customComponents[tagName](customProps)
-    : document.createElement(tagName);
+  const el = customComponents[name]
+    ? customComponents[name](customProps)
+    : document.createElement(name);
 
   /**
    * Augment existing styles with new ones.
@@ -138,22 +139,23 @@ const fabricate = (tagName, customProps) => {
   /**
    * Convenience method for adding a click handler.
    *
-   * @param {function} handler - Function to call when click happens, with element and state.
+   * @param {function} cb - Function to call when click happens, with element and state.
    * @returns {HTMLElement}
    */
-  el.onClick = (handler) => {
-    el.addEventListener('click', () => handler(el, _fabricate.state));
+  el.onClick = (cb) => {
+    const { state } = _fabricate;
+    el.addEventListener('click', () => cb(el, Object.freeze({ ...state })));
     return el;
   };
 
   /**
    * Convenience method for adding an input handler.
    *
-   * @param {function} handler - Function to call when text input happens.
+   * @param {function} cb - Function to call when text input happens.
    * @returns {HTMLElement}
    */
-  el.onChange = (handler) => {
-    el.addEventListener('input', ({ target }) => handler(el, target.value));
+  el.onChange = (cb) => {
+    el.addEventListener('input', ({ target }) => cb(el, target.value));
     return el;
   };
 
@@ -181,11 +183,11 @@ const fabricate = (tagName, customProps) => {
    * Watch the state for changes.
    *
    * @param {function} cb - Callback to be notified.
-   * @param {Array<string>} keyList - List of keys to listen to.
+   * @param {Array<string>} keyFilter - List of keys to listen to.
    * @returns {HTMLElement}
    */
-  el.onUpdate = (cb, keyList) => {
-    _fabricate.stateWatchers.push({ el, cb, keyList });
+  el.onUpdate = (cb, keyFilter) => {
+    _fabricate.stateWatchers.push({ el, cb, keyFilter });
     return el;
   };
 
@@ -193,11 +195,12 @@ const fabricate = (tagName, customProps) => {
    * Convenience method to run some statements when a component is constructed
    * using only these chainable methods.
    *
-   * @param {function} f - Function to run immediately, with this element and current state.
+   * @param {function} cb - Function to run immediately, with this element and current state.
    * @returns {HTMLElement}
    */
-  el.onCreate = (f) => {
-    f(el, _fabricate.state);
+  el.onCreate = (cb) => {
+    const { state } = _fabricate;
+    cb(el, Object.freeze({ ...state }));
     return el;
   };
 
@@ -205,11 +208,12 @@ const fabricate = (tagName, customProps) => {
    * Convenience method to run some statements when a component is removed from
    * the DOM/it's parent.
    *
-   * @param {function} f - Function to run immediately, with this element and current state.
+   * @param {function} cb - Function to run immediately, with this element and current state.
    * @returns {HTMLElement}
    */
-  el.onDestroy = (f) => {
-    f(el, _fabricate.state);
+  el.onDestroy = (cb) => {
+    const { state } = _fabricate;
+    cb(el, Object.freeze({ ...state }));
     return el;
   };
 
@@ -250,7 +254,9 @@ const _savePersistState = () => {
  * Load persisted state if it exists.
  */
 const _loadPersistState = () => {
-  const loaded = JSON.parse(localStorage.getItem(_fabricate.STORAGE_KEY_STATE) || '{}');
+  const { STORAGE_KEY_STATE } = _fabricate;
+
+  const loaded = JSON.parse(localStorage.getItem(STORAGE_KEY_STATE) || '{}');
   _fabricate.state = {
     ..._fabricate.state,
     ...loaded,
@@ -259,43 +265,51 @@ const _loadPersistState = () => {
 
 /**
  * Notify watchers of a state change.
- * Watchers receive (el, state, changedKey)
+ * Watchers receive (el, state, changedKeys)
  *
- * @param {string} key - Key that was updated.
+ * @param {Array<string>} keys - Key that was updated.
  */
-const _notifyStateChange = (key) => {
+const _notifyStateChange = (keys) => {
   const { stateWatchers, state, options } = _fabricate;
 
   // Log to console for debugging
-  if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: key=${key} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
+  if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
   // Persist to LocalStorage if required
   if (options.persistState) _savePersistState();
 
-  stateWatchers.forEach(({ el, cb, keyList }) => {
-    // If keyList is specified, filter state updates
-    if (keyList && !keyList.includes(key)) return;
+  stateWatchers.forEach(({ el, cb, keyFilter }) => {
+    // If keyFilter is specified, filter state updates
+    if (keyFilter && !keys.some((p) => keyFilter.includes(p))) return;
 
     // Notify the watching component
-    cb(el, Object.freeze({ ...state }), key);
+    cb(el, Object.freeze({ ...state }), keys);
   });
 };
 
 /**
  * Update the state.
  *
- * @param {string} key - State key to update.
- * @param {function|object} update - Data or callback transforming old state, returning new value.
+ * @param {string|object} param1 - Either key or object state slice.
+ * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
  */
-fabricate.update = (key, update) => {
+fabricate.update = (param1, param2) => {
   const { state } = _fabricate;
 
-  if (typeof key !== 'string') throw new Error(`State key must be string, was "${key}" (${typeof key})`);
+  // State slice?
+  if (typeof param1 === 'object') {
+    _fabricate.state = { ...state, ...param1 };
+    _notifyStateChange(Object.keys(param1));
+    return;
+  }
 
-  // Can be function or object
-  state[key] = typeof update === 'function' ? update(state) : update;
+  // Keyed update?
+  if (typeof param1 === 'string') {
+    state[param1] = typeof param2 === 'function' ? param2(state) : param2;
+    _notifyStateChange([param1]);
+    return;
+  }
 
-  // Update elements watching this key
-  _notifyStateChange(key);
+  throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);
 };
 
 /**
@@ -330,10 +344,11 @@ fabricate.manageState = (componentName, stateName, initialValue) => {
 };
 
 /**
- * Clear all state.
+ * Clear all state and state watchers.
  */
 fabricate.clearState = () => {
   _fabricate.state = {};
+  _fabricate.stateWatchers = [];
 };
 
 ////////////////////////////////////////////// Helpers /////////////////////////////////////////////
@@ -363,20 +378,20 @@ fabricate.app = (root, initialState, opts) => {
   if (persistState) _loadPersistState();
 
   // Trigger initial state update
-  _notifyStateChange('fabricate:init');
+  _notifyStateChange(['fabricate:init']);
 
   // Show app
   document.body.appendChild(root);
 
-  // Power onDestroy
-  _fabricate.observer = new MutationObserver((mutations) => {
+  // Power onDestroy handlers
+  _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.removedNodes.forEach((node) => {
         if (node.onDestroy) node.onDestroy();
       });
     });
   });
-  _fabricate.observer.observe(root, { subtree: true, childList: true });
+  _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
 };
 
 /**
@@ -623,9 +638,7 @@ fabricate.declare(
     color = 'red',
     backgroundColor = '#ddd',
   } = {}) => {
-    const container = fabricate('div')
-      .asFlex('column')
-      .setStyles({ width: `${size}px`, height: `${size}px` });
+    const container = fabricate('Column').setStyles({ width: `${size}px`, height: `${size}px` });
 
     const canvas = fabricate('canvas')
       .setStyles({
@@ -661,15 +674,13 @@ fabricate.declare(
    *
    * @returns {HTMLElement}
    */
-  () => fabricate('div')
-    .asFlex('column')
-    .setStyles({
-      width: 'max-content',
-      borderRadius: '5px',
-      boxShadow: '2px 2px 3px 1px #5555',
-      backgroundColor: 'white',
-      overflow: 'hidden',
-    }),
+  () => fabricate('Column').setStyles({
+    width: 'max-content',
+    borderRadius: '5px',
+    boxShadow: '2px 2px 3px 1px #5555',
+    backgroundColor: 'white',
+    overflow: 'hidden',
+  }),
 );
 
 fabricate.declare(
@@ -739,7 +750,9 @@ fabricate.declare(
 //     });
 //   });
 
-// TODO: Checkbox, radio group
+// TODO: Checkbox
+
+// TODO: Radio group
 
 ///////////////////////////////////////// Convenience alias ////////////////////////////////////////
 

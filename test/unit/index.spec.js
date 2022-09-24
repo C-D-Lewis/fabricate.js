@@ -66,10 +66,22 @@ describe('fabricate.js', () => {
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
-    it('should add child elements', () => {
+    it('should set child elements', () => {
       const el = fabricate('div').setChildren([fabricate('div')]);
 
       expect(el.children[0].tagName).to.equal('DIV');
+    });
+
+    it('should only allow element type children', () => {
+      expect(() => fabricate('div').setChildren(['text'])).to.throw(Error);
+    });
+
+    it('should add more child elements', () => {
+      const el = fabricate('div').setChildren([fabricate('div')]);
+
+      el.addChildren([fabricate('span')]);
+
+      expect(el.children[1].tagName).to.equal('SPAN');
     });
 
     it('should set element text', () => {
@@ -162,43 +174,52 @@ describe('fabricate.js', () => {
 
   describe('App state', () => {
     it('should allow watching app state', () => {
-      let updatedKey;
-      fabricate('div').onUpdate((el, newState, key) => (updatedKey = key));
+      let updatedKeys;
+      fabricate('div').onUpdate((el, newState, keys) => {
+        updatedKeys = keys;
+      });
 
       fabricate.update('counter', () => 1);
 
-      expect(updatedKey).to.equal('counter');
+      expect(updatedKeys).to.deep.equal(['counter']);
     });
 
-    it('should allow watching app state with key list', () => {
-      let updatedKey;
+    it('should allow watching app state with key filter', () => {
+      let updatedKeys;
       fabricate('div').onUpdate(
-        (el, newState, key) => (updatedKey = key),
+        (el, newState, keys) => {
+          updatedKeys = keys;
+        },
         ['counter'],
       );
 
       fabricate.update('counter', () => 1);
-      fabricate.update('counter2', () => 1);
+      fabricate.update('ignored', () => 1);
 
-      expect(updatedKey).to.equal('counter');
+      expect(updatedKeys).to.deep.equal(['counter']);
     });
 
     it('should throw if state update key not specified', () => {
       expect(() => fabricate.update(undefined, () => false)).to.throw(Error);
     });
 
-    it('should allow data state update', () => {
+    it('should allow data value state update', () => {
       fabricate.update('counter', 23);
-      const value = _fabricate.state.counter;
 
-      expect(value).to.equal(23);
+      expect(_fabricate.state.counter).to.equal(23);
     });
 
-    it('should allow updating specific state', () => {
+    it('should allow function value state update', () => {
       fabricate.update('counter', () => 42);
-      const value = _fabricate.state.counter;
+      fabricate.update('counter', ({ counter }) => counter + 1);
 
-      expect(value).to.equal(42);
+      expect(_fabricate.state.counter).to.equal(43);
+    });
+
+    it('should allow data state update', () => {
+      fabricate.update({ counter: 23 });
+
+      expect(_fabricate.state.counter).to.equal(23);
     });
 
     it('should allow managing component-local state', () => {
@@ -231,17 +252,19 @@ describe('fabricate.js', () => {
     });
 
     it('should allow creation of root app element with initial state update', () => {
-      let updatedKey;
+      let updatedKeys;
 
       const Component = () => fabricate('div').onUpdate(
-        (el, newState, key) => (updatedKey = key),
+        (el, newState, keys) => {
+          updatedKeys = keys;
+        },
         ['fabricate:init'],
       );
       const initialState = { counter: 0 };
 
       fabricate.app(Component(), initialState);
 
-      expect(updatedKey).to.equal('fabricate:init');
+      expect(updatedKeys).to.deep.equal(['fabricate:init']);
       expect(document.body.childElementCount).to.equal(1);
     });
 

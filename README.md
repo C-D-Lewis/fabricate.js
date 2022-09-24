@@ -595,7 +595,7 @@ V2 - Changes for syntax:
 - [x] - `watchState` -> `onUpdate`
 - [x] - `then` -> `onCreate`
 - [x] - MutationObserver for `onDestroy` handler?
-- [ ] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
+- [x] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
 - [ ] - Component-local state? Reuable state machine from global?
 - [ ] - New symbolic logo
 - [ ] - Comprehensive update release notes
