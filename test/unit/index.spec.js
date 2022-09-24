@@ -294,6 +294,20 @@ describe('fabricate.js', () => {
       expect(watcherUsed).to.equal(true);
     });
 
+    it('should conditionally render a component in both state cases', () => {
+      let trueElementShown;
+      let elseElementShown;
+
+      const TrueComponent = () => fabricate('div').onUpdate(() => (trueElementShown = true));
+      const ElseComponent = () => fabricate('div').onUpdate(() => (elseElementShown = true));
+
+      fabricate.when((state) => state.visible, TrueComponent, ElseComponent);
+      fabricate.update('visible', () => true);
+
+      expect(trueElementShown).to.equal(true);
+      expect(elseElementShown).to.equal(true);
+    });
+
     it('should allow declaring a component for re-use with props', () => {
       const styles = { color: 'red' };
 

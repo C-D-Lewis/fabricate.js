@@ -77,8 +77,11 @@
       const App = () => fab('Column')
         .setStyles({ padding: '40px' })
         .setChildren([
-          fab.when(state => !state.isCompleted, () => fab('Fader').setChildren([LoginBox()])),
-          fab.when(state => state.isCompleted, () => fab('Text').setText('Login completed!')),
+          fab.when(
+            state => state.isCompleted,
+            () => fab('Text').setText('Login completed!'),
+            () => fab('Fader').setChildren([LoginBox()]),
+          ),
         ]);
 
       const initialState = {

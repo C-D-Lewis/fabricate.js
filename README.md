@@ -596,8 +596,8 @@ V2 - Changes for syntax:
 - [x] - `then` -> `onCreate`
 - [x] - MutationObserver for `onDestroy` handler?
 - [x] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
-- [ ] - Enhance .when with second builder for the 'else' case
+- [x] - Predictable callback (el, state, ...rest) type
+- [x] - Enhance .when with second builder for the 'else' case
 - [ ] - Component-local state? Reuable state machine from global?
 - [ ] - New symbolic logo
-- [ ] - Comprehensive update release notes
-- [ ] - Predictable callback (el, state, ...rest) type
+- [ ] - Comprehensive changes in Release

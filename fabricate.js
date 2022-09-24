@@ -217,20 +217,6 @@ const fabricate = (name, customProps) => {
     return el;
   };
 
-  // TODO: Component-local state?
-  // el.withState = (initialState) => {
-  //   el.state = { ...initialState };
-  //   return el;
-  // };
-
-  // el.update = (newState) => {
-  //   el.state = {
-  //     ...el.state,
-  //     ...newState,
-  //   };
-  //   return el;
-  // };
-
   return el;
 };
 
@@ -377,11 +363,11 @@ fabricate.app = (root, initialState, opts) => {
   if (logStateUpdates) _fabricate.options.logStateUpdates = !!logStateUpdates;
   if (persistState) _loadPersistState();
 
-  // Show app
-  document.body.appendChild(root);
-
   // Trigger initial state update
   _notifyStateChange(['fabricate:init']);
+
+  // Show app
+  document.body.appendChild(root);
 
   // Power onDestroy handlers
   if (!_fabricate.onDestroyObserver) {
@@ -400,10 +386,11 @@ fabricate.app = (root, initialState, opts) => {
   * Conditionally render a child in response to state update.
   *
   * @param {function} stateTestCb - Callback to test the state.
-  * @param {function} builderCb - Callback that should return the element to show.
+  * @param {function} trueCb - Callback that should return the element to show.
+  * @param {function} [falseCb] - Callback that should return the element to show otherwise.
   * @returns {HTMLElement}
   */
-fabricate.when = (stateTestCb, builderCb) => {
+fabricate.when = (stateTestCb, trueCb, elseCb) => {
   let lastResult = false;
 
   /**
@@ -411,7 +398,6 @@ fabricate.when = (stateTestCb, builderCb) => {
   *
   * @param {HTMLElement} el - The host element.
   * @param {object} newState - State object.
-  * @returns {void}
   */
   const onStateUpdate = (el, newState) => {
     const { stateWatchers } = _fabricate;
@@ -424,15 +410,21 @@ fabricate.when = (stateTestCb, builderCb) => {
     // Should not be shown - falsey was returned
     if (!newResult) {
       el.empty();
+
+      // Optionally render with elseCb and notify child of latest state
+      if (elseCb) {
+        const child = elseCb();
+        const watcher = stateWatchers.find((p) => p.el === child);
+        if (watcher) watcher.cb(child, newState);
+        el.setChildren([child]);
+      }
       return;
     }
 
-    // Render with builderCb and notify child of latest state
-    const child = builderCb();
+    // Render with trueCb and notify child of latest state
+    const child = trueCb();
     const watcher = stateWatchers.find((p) => p.el === child);
     if (watcher) watcher.cb(child, newState);
-
-    // Show
     el.setChildren([child]);
   };
 
