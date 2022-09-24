@@ -20,7 +20,7 @@
 
           fab('TextInput', { placeholder: 'Enter your name' })
             .setStyles({ marginLeft: '5px', marginTop: '20px' })
-            .onChange((el, newValue) => fab.update({ name: newValue })),
+            .onChange((el, state, newValue) => fab.update({ name: newValue })),
           fab('Button', { text: 'Submit'})
             .onClick((el, state) => alert(`Thank you for clicking me, ${state.name}`)),
 

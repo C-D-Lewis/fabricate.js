@@ -202,7 +202,7 @@ For inputs, the `change` even can also be used:
 
 ```js
 fabricate.TextInput({ placeholder: 'Email address' })
-  .onChange((el, value) => console.log(`Entered ${value}`));
+  .onChange((el, state, value) => console.log(`Entered ${value}`));
 ```
 
 #### `.setText()` / `.setHtml()`
@@ -511,7 +511,7 @@ fabricate.TextInput({
   color: '#444',
   backgroundColor: 'white'
 })
-  .onChange((el, newVal) => console.log(`Email now ${newVal}`));
+  .onChange((el, state, newVal) => console.log(`Email now ${newVal}`));
 ```
 
 #### `Loader`
@@ -600,4 +600,4 @@ V2 - Changes for syntax:
 - [ ] - Component-local state? Reuable state machine from global?
 - [ ] - New symbolic logo
 - [ ] - Comprehensive update release notes
-- [ ] - Predictable callback (el, state, value...) etc.
+- [ ] - Predictable callback (el, state, ...rest) type

@@ -1,4 +1,4 @@
-// Private data
+// Private data - NOT FOR EXTERNAL USE
 const _fabricate = {
   /** Max mobile width. */
   MOBILE_MAX_WIDTH: 1000,
@@ -16,6 +16,9 @@ const _fabricate = {
   customComponents: {},
   options: undefined,
   onDestroyObserver: undefined,
+
+  // Internal helpers
+  getStateCopy: () => Object.freeze({ ..._fabricate.state }),
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
@@ -143,7 +146,7 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.onClick = (cb) => {
-    el.addEventListener('click', () => cb(el, Object.freeze({ ..._fabricate.state })));
+    el.addEventListener('click', () => cb(el, _fabricate.getStateCopy()));
     return el;
   };
 
@@ -154,7 +157,7 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.onChange = (cb) => {
-    el.addEventListener('input', ({ target }) => cb(el, target.value));
+    el.addEventListener('input', ({ target }) => cb(el, _fabricate.getStateCopy(), target.value));
     return el;
   };
 
@@ -198,7 +201,7 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.onCreate = (cb) => {
-    cb(el, Object.freeze({ ..._fabricate.state }));
+    cb(el, _fabricate.getStateCopy());
     return el;
   };
 
@@ -210,7 +213,7 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.onDestroy = (cb = () => {}) => {
-    cb(el, Object.freeze({ ..._fabricate.state }));
+    cb(el, _fabricate.getStateCopy());
     return el;
   };
 
@@ -279,7 +282,7 @@ const _notifyStateChange = (keys) => {
     if (keyFilter && !keys.some((p) => keyFilter.includes(p))) return;
 
     // Notify the watching component
-    cb(el, Object.freeze({ ...state }), keys);
+    cb(el, _fabricate.getStateCopy(), keys);
   });
 };
 
@@ -374,21 +377,23 @@ fabricate.app = (root, initialState, opts) => {
   if (logStateUpdates) _fabricate.options.logStateUpdates = !!logStateUpdates;
   if (persistState) _loadPersistState();
 
-  // Trigger initial state update
-  _notifyStateChange(['fabricate:init']);
-
   // Show app
   document.body.appendChild(root);
 
+  // Trigger initial state update
+  _notifyStateChange(['fabricate:init']);
+
   // Power onDestroy handlers
-  _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.removedNodes.forEach((node) => {
-        if (node.onDestroy) node.onDestroy();
+  if (!_fabricate.onDestroyObserver) {
+    _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+          if (node.onDestroy) node.onDestroy();
+        });
       });
     });
-  });
-  _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
+    _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
+  }
 };
 
 /**

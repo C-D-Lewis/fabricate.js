@@ -21,11 +21,11 @@
         .setChildren([
           fab('TextInput', { placeholder: 'Email' })
             .setStyles({ margin: 'auto' })
-            .onChange((el, value) => fab.update({ email: value })),
+            .onChange((el, state, value) => fab.update({ email: value })),
           fab('TextInput', { placeholder: 'Password' })
             .setStyles({ margin: 'auto' })
             .setAttributes({ type: 'password' })
-            .onChange((el, value) => fab.update({ password: value })),
+            .onChange((el, state, value) => fab.update({ password: value })),
 
           fab('Button', { text: 'Submit' })
             .setStyles({ margin: '15px auto' })
