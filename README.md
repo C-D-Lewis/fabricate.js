@@ -598,6 +598,6 @@ V2 - Changes for syntax:
 - [x] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
 - [x] - Predictable callback (el, state, ...rest) type
 - [x] - Enhance .when with second builder for the 'else' case
-- [ ] - Component-local state? Reuable state machine from global?
+- [x] - Remove props - Text.text, Image.width/height...
 - [ ] - New symbolic logo
 - [ ] - Comprehensive changes in Release

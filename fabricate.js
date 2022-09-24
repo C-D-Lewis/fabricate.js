@@ -489,21 +489,19 @@ fabricate.declare(
 fabricate.declare(
   'Image',
   /**
-   * Basic Image component.
+   * Basic Image component. Default size can be overridden with setStyles().
    *
    * @param {object} props - Component props.
    * @param {string} props.src - Image URL to show.
-   * @param {number} [props.width] - Image width.
-   * @param {number} [props.height] - Image height.
    * @returns {HTMLElement}
    */
-  ({
-    src = '',
-    width = '256px',
-    height = '256px',
-  } = {}) => fabricate('img')
-    .setStyles({ width, height })
-    .setAttributes({ src }),
+  ({ src = '', width, height } = {}) => {
+    if (width || height) throw new Error('Image component width/height params removed - use setStyles instead');
+
+    return fabricate('img')
+      .setStyles({ width: '128px', height: '128px' })
+      .setAttributes({ src });
+  },
 );
 
 fabricate.declare(

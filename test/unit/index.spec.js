@@ -357,7 +357,7 @@ describe('fabricate.js', () => {
 
     it('should provide Image with default props', () => {
       const el = fabricate('Image');
-      const styles = { width: '256px', height: '256px' };
+      const styles = { width: '128px', height: '128px' };
       const attributes = { src: '' };
 
       expect(hasStyles(el, styles)).to.equal(true);
@@ -367,14 +367,19 @@ describe('fabricate.js', () => {
     it('should provide Image with custom props', () => {
       const el = fabricate('Image', {
         src: 'https://example.com/image.png',
-        width: '24px',
-        height: '24px',
       });
-      const styles = { width: '24px', height: '24px' };
+      const styles = { width: '128px', height: '128px' };
       const attributes = { src: 'https://example.com/image.png' };
 
       expect(hasStyles(el, styles)).to.equal(true);
       expect(hasAttributes(el, attributes)).to.equal(true);
+    });
+
+    it('should reject Image with old props', () => {
+      const width = '128px';
+      const height = '128px';
+
+      expect(() => fabricate('Image', { width, height })).to.throw(Error);
     });
 
     it('should provide Button with default props', () => {
@@ -570,6 +575,10 @@ describe('fabricate.js', () => {
 
       expect(hasStyles(el, styles)).to.equal(true);
       expect(hasAttributes(el, attrbutes)).to.equal(true);
+    });
+
+    it('should reject Text with old props', () => {
+      expect(() => fabricate('Text', { text: 'foo' })).to.throw(Error);
     });
 
     it('should provide Loader with default props', () => {
