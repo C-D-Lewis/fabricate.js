@@ -11,54 +11,51 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      // Destructuring is useful if permitted by the project structure
-      const { Column, Text, Button, NavBar, Image, TextInput, Loader, Card, Fader, Pill, updateState, when } = fabricate;
+      const Title = () => fab('Text').setStyles({ fontSize: '2rem', marginTop: '30px' });
 
-      /**
-       * Simple title component.
-       *
-       * @returns {HTMLElement}
-       */
-      const Title = () => Text().withStyles({ fontSize: '2rem', marginTop: '30px' });
-
-      const pageContainer = Column()
-        .withChildren([
+      const App = () => fab('Column')
+        .setChildren([
           Title().setText('Text'),
-          Text().setText('This is some example text to show the Text component.'),
+          fab('Text').setText('This is some example text to show the Text component.'),
 
           Title().setText('Image'),
-          Image({ src: '../assets/account.png', width: '64px', height: '64px' }),
+          fab('Image', { src: '../assets/account.png', width: '64px', height: '64px' }),
 
           Title().setText('Button'),
-          Button({ text: 'Confirm', backgroundColor: 'royalblue' }),
+          fab('Button', { text: 'Confirm', backgroundColor: 'royalblue' }),
 
           Title().setText('NavBar'),
-          NavBar({ title: 'Example NavBar Title' }),
+          fab('NavBar', { title: 'Example NavBar Title' }),
 
           Title().setText('TextInput'),
-          TextInput({ placeholder: 'Enter text here' }),
+          fab('TextInput', { placeholder: 'Enter text here' }),
 
           Title().setText('Loader'),
-          Loader(),
+          fab('Loader'),
 
           Title().setText('Card'),
-          Card().withChildren([
-            Text().setText('Some text inside the card'),
+          fab('Card').setChildren([
+            fab('Text').setText('Some text inside the card'),
           ]),
 
           Title().setText('Pill'),
-          Pill({ text: 'Example Pill' }),
+          fab('Pill', { text: 'Example Pill' }),
 
           Title().setText('Fader'),
-          when(
-            ({ showFader }) => showFader,
-            () => Fader().withChildren([Text().setText('Text fades in')]),
-          ),
+          fab('Column').setStyles({ height: '50px' })
+            .setChildren([
+              fab.when(
+                ({ showFader }) => showFader,
+                () => fab('Fader').setChildren([
+                  fab('Text').setText('Text fades in'),
+                ]),
+              ),
+          ]),
         ]);
 
-      fabricate.app(pageContainer, { showFader: false });
+      fabricate.app(App(), { showFader: false });
 
-      setInterval(() => updateState('showFader', prev => !prev.showFader), 1000);
+      setInterval(() => fab.update('showFader', prev => !prev.showFader), 1000);
     </script>
   </body>
 </html>

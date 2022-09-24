@@ -11,15 +11,14 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      const pageContainer = fabricate('div')
-        .asFlex('column')
-        .withStyles({ padding: '10px' })
-        .withChildren([
-          fab.Text({ text: 'Hello, world!' }),
+      const App = () => fabricate('div')
+        .setStyles({ padding: '10px' })
+        .setChildren([
+          fab('Text').setText('Hello, world!'),
         ]);
 
       // Use as the root app element
-      fabricate.app(pageContainer);
+      fabricate.app(App());
     </script>
   </body>
 </html>

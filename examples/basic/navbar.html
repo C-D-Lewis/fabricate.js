@@ -12,44 +12,41 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      // Destructuring is useful if permitted by the project structure
-      const { Column, Row, Text, Button, NavBar, Image, TextInput, updateState, Pill, Card } = fabricate;
+      const Content = () => fab('Column')
+        .setStyles({ padding: '15px' })
+        .setChildren([
+          fab('Text')
+            .setText(`Your device appears to be a ${fab.isMobile() ? 'mobile' : 'desktop'} device.`),
 
-      const contentContainer = Column()
-        .withStyles({ padding: '15px' })
-        .withChildren([
-          Text({ text: `Your device appears to be a ${fabricate.isMobile() ? 'mobile' : 'desktop'} device.` }),
-          
-          TextInput({ placeholder: 'Enter your name' })
-            .withStyles({ marginLeft: '5px', marginTop: '20px' })
-            .onChange((el, newValue) => updateState('name', () => newValue)),
-          Button({ text: 'Submit'})
+          fab('TextInput', { placeholder: 'Enter your name' })
+            .setStyles({ marginLeft: '5px', marginTop: '20px' })
+            .onChange((el, newValue) => fab.update({ name: newValue })),
+          fab('Button', { text: 'Submit'})
             .onClick((el, state) => alert(`Thank you for clicking me, ${state.name}`)),
-          
-          Text({ text: 'An image component is shown below inside a card:' })
-            .withStyles({ marginTop: '20px' }),
-          Card().withChildren([
-            Image({
+
+          fab('Text').setText('An image component is shown below inside a card:')
+            .setStyles({ marginTop: '20px' }),
+          fab('Card').setChildren([
+            fab('Image', {
               src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png',
               width: '135px',
               height: '155px',
             })
-              .withStyles({ margin: '10px' }),
+              .setStyles({ margin: '10px' }),
           ]),
 
-          Text({ text: 'Some pills are also shown below:' })
-            .withStyles({ marginTop: '20px' }),
-          Row().withChildren(['red', 'green', 'blue'].map(p => Pill({ text: p }))),
+          fab('Text').setText('Some pills are also shown below:')
+            .setStyles({ marginTop: '20px' }),
+          fab('Row').setChildren(['red', 'green', 'blue'].map(p => fab('Pill', { text: p }))),
         ]);
 
-      const pageContainer = Column()
-        .withChildren([
-          NavBar({ title: 'Fabricate example app'})
-            .withChildren([Button({ text: 'Home' })]),
-          contentContainer,
+      const App = () => fab('Column')
+        .setChildren([
+          fab('NavBar', { title: 'Fabricate example app' }).addChildren([fab('Button', { text: 'Home' })]),
+          Content(),
         ]);
 
-      fabricate.app(pageContainer, { name: 'Unknown' });
+      fabricate.app(App(), { name: 'Unknown' });
     </script>
   </body>
 </html>

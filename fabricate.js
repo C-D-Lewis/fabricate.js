@@ -143,8 +143,7 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.onClick = (cb) => {
-    const { state } = _fabricate;
-    el.addEventListener('click', () => cb(el, Object.freeze({ ...state })));
+    el.addEventListener('click', () => cb(el, Object.freeze({ ..._fabricate.state })));
     return el;
   };
 
@@ -199,8 +198,7 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.onCreate = (cb) => {
-    const { state } = _fabricate;
-    cb(el, Object.freeze({ ...state }));
+    cb(el, Object.freeze({ ..._fabricate.state }));
     return el;
   };
 
@@ -211,9 +209,8 @@ const fabricate = (name, customProps) => {
    * @param {function} cb - Function to run immediately, with this element and current state.
    * @returns {HTMLElement}
    */
-  el.onDestroy = (cb) => {
-    const { state } = _fabricate;
-    cb(el, Object.freeze({ ...state }));
+  el.onDestroy = (cb = () => {}) => {
+    cb(el, Object.freeze({ ..._fabricate.state }));
     return el;
   };
 
@@ -485,7 +482,11 @@ fabricate.declare(
    *
    * @returns {HTMLElement}
    */
-  () => fabricate('p').setStyles({ fontSize: '1.1rem', margin: '5px' }),
+  ({ text } = {}) => {
+    if (text) throw new Error('Text component text param was removed - use setText instead');
+
+    return fabricate('p').setStyles({ fontSize: '1.1rem', margin: '5px' });
+  },
 );
 
 fabricate.declare(
@@ -555,6 +556,8 @@ fabricate.declare(
   /**
    * Basic NavBar component with colors and title.
    *
+   * Note: addChildren should be used to add more components.
+   *
    * TODO: Optional left-hand app icon
    *
    * @param {object} props - Component props.
@@ -582,6 +585,7 @@ fabricate.declare(
           fontSize: '1.2rem',
           cursor: 'default',
           marginRight: '20px',
+          paddingTop: '2px',
         })
         .setText(title),
     ]),

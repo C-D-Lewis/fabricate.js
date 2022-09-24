@@ -12,25 +12,23 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      const { app, when, updateState, Text, Button, TextInput, Card, Loader, Image, Column, Fader } = fabricate;
-
       /**
        * Login form with email, password, and submit button.
        * 
        * @returns {HTMLElement}
        */
       const LoginForm = () => fabricate('div')
-        .withChildren([
-          TextInput({ placeholder: 'Email' })
-            .withStyles({ margin: 'auto' })
-            .onChange((el, value) => updateState('email', () => value)),
-          TextInput({ placeholder: 'Password' })
-            .withStyles({ margin: 'auto' })
-            .withAttributes({ type: 'password' })
-            .onChange((el, value) => updateState('password', () => value)),
+        .setChildren([
+          fab('TextInput', { placeholder: 'Email' })
+            .setStyles({ margin: 'auto' })
+            .onChange((el, value) => fab.update({ email: value })),
+          fab('TextInput', { placeholder: 'Password' })
+            .setStyles({ margin: 'auto' })
+            .setAttributes({ type: 'password' })
+            .onChange((el, value) => fab.update({ password: value })),
 
-          Button({ text: 'Submit' })
-            .withStyles({ margin: '15px auto' })
+          fab('Button', { text: 'Submit' })
+            .setStyles({ margin: '15px auto' })
             .onClick((el, state) => {
               if (!state.email || !state.password) {
                 alert('Please enter your details');
@@ -38,10 +36,10 @@
               }
 
               // Mock login
-              updateState('isLoading', () => true);
+              fab.update({ isLoading: true });
               setTimeout(() => {
-                updateState('isLoading', () => false);
-                updateState('isCompleted', () => true);
+                fab.update({ isLoading: false });
+                fab.update({ isCompleted: true });
               }, 3000);
             }),
         ]);
@@ -51,35 +49,36 @@
        * 
        * @returns {HTMLElement}
        */
-      const LoginBox = () => Card()
-        .withStyles({
+      const LoginBox = () => fab('Card')
+        .setStyles({
           minWidth: '420px',
           minHeight: '300px',
           margin: 'auto',
           textAlign: 'center',
         })
-        .withChildren([
-          Text({ text: 'Login' })
-            .withStyles({ fontWeight: 'bold', fontSize: '1.5rem' }),
-          Image({
+        .setChildren([
+          fab('Text')
+            .setText('Login')
+            .setStyles({ fontWeight: 'bold', fontSize: '1.5rem' }),
+          fab('Image', {
             src: '../assets/account.png',
             width: '100px',
             height: '100px',
           })
-            .withStyles({ margin: '5px auto' }),
+            .setStyles({ margin: '5px auto' }),
 
-          when(state => !state.isLoading, () => LoginForm()),
-          when(
+          fab.when(state => !state.isLoading, () => LoginForm()),
+          fab.when(
             state => state.isLoading && !state.isCompleted,
-            () => Loader().withStyles({ margin: '20px auto' }),
+            () => fab('Loader').setStyles({ margin: '20px auto' }),
           ),
         ]);
 
-      const pageContainer = Column()
-        .withStyles({ padding: '40px' })
-        .withChildren([
-          when(state => !state.isCompleted, () => Fader().withChildren([LoginBox()])),
-          when(state => state.isCompleted, () => Text({ text: 'Login completed!' })),
+      const App = () => fab('Column')
+        .setStyles({ padding: '40px' })
+        .setChildren([
+          fab.when(state => !state.isCompleted, () => fab('Fader').setChildren([LoginBox()])),
+          fab.when(state => state.isCompleted, () => fab('Text').setText('Login completed!')),
         ]);
 
       const initialState = {
@@ -88,7 +87,7 @@
         isLoading: false,
         isCompleted: false,
       };
-      app(pageContainer, initialState);
+      fabricate.app(App(), initialState);
     </script>
   </body>
 </html>

@@ -1,23 +1,17 @@
-const {
-  app, updateState,
-  Column, Row, NavBar, Image, TextInput, Button, Card,
-} = fabricate;
-
 /**
  * When a task should be saved.
  *
- * @param {HTMLElement} input - Input containing the current value. TODO: Use updateState instead.
+ * @param {HTMLElement} input - Input containing the current value.
  */
 const onSaveTask = (input) => {
   const { value } = input;
   if (value.trim().length === 0) return;
 
   // Add new item
-  updateState('tasks', (prev) => [...prev.tasks, value]);
+  fab.update('tasks', (prev) => [...prev.tasks, value]);
 
-  // Reset
+  // Reset (TODO: Controlled input)
   input.value = '';
-  updateState('nextItem', () => '');
 };
 
 /**
@@ -26,40 +20,38 @@ const onSaveTask = (input) => {
  * @returns {HTMLElement}
  */
 const NewItemBox = () => {
-  const icon = Image({
+  const icon = fab('Image', {
     src: './assets/pencil.png',
     width: '28px',
     height: '28px',
   })
-    .withStyles({ padding: '10px' });
+    .setStyles({ padding: '10px' });
 
-  const input = TextInput({
-    placeholder: 'Create a new task...',
-    backgroundColor: '#0000',
-  })
-    .withStyles({
+  const input = fab('TextInput', { placeholder: 'Create a new task...', backgroundColor: '#0000' })
+    .setStyles({
       outline: 'none',
       width: '100%',
       marginRight: '15px',
       marginLeft: 'initial',
     });
 
-  return Row()
-    .withStyles({
-      margin: '20px auto',
-      border: 'solid 1px #3333',
-      borderRadius: '15px',
-      alignItems: 'center',
-      maxWidth: '600px',
-      width: '90%',
-      padding: '3px',
-    })
-    .withChildren([
-      icon,
-      input,
-      Button({ text: 'Create', backgroundColor: 'gold' })
-        .withStyles({ minWidth: '50px' })
-        .onClick(() => onSaveTask(input)),
+  return fab('Card')
+    .setStyles({ margin: 'auto', marginTop: '15px' })
+    .setChildren([
+      fab('Row')
+        .setStyles({
+          alignItems: 'center',
+          maxWidth: '600px',
+          minWidth: '500px',
+          padding: '3px',
+        })
+        .setChildren([
+          icon,
+          input,
+          fab('Button', { text: 'Create', backgroundColor: 'gold' })
+            .setStyles({ minWidth: '50px' })
+            .onClick(() => onSaveTask(input)),
+        ]),
     ]);
 };
 
@@ -69,26 +61,26 @@ const NewItemBox = () => {
  * @param {string} content - Content of the task.
  * @returns {HTMLElement}
  */
-const TaskItem = (content) => Card()
-  .withStyles({
+const TaskCard = (content) => fab('Card')
+  .setStyles({
     backgroundColor: 'gold',
     color: 'black',
     margin: '10px',
   })
-  .withChildren([
+  .setChildren([
     fabricate('div')
-      .withStyles({ padding: '15px', fontSize: '1.6rem' })
+      .setStyles({ padding: '15px', fontSize: '1.6rem' })
       .setText(content),
 
-    Button({
+    fab('Button', {
       text: 'Delete',
       color: 'white',
       backgroundColor: 'darkred',
     })
-      .withStyles({ minWidth: '50px', padding: '5px' })
+      .setStyles({ minWidth: '50px', padding: '5px' })
       .onClick(() => {
         // Remove the item
-        updateState('tasks', ({ tasks }) => tasks.filter((p) => p !== content));
+        fab.update('tasks', ({ tasks }) => tasks.filter((p) => p !== content));
       }),
   ]);
 
@@ -97,34 +89,31 @@ const TaskItem = (content) => Card()
  *
  * @returns {HTMLElement}
  */
-const TaskList = () => Row()
-  .withStyles({ padding: '10px', flexWrap: 'wrap' })
-  .watchState((el, state) => {
-    el.clear();
-    el.addChildren(state.tasks.map(TaskItem));
-  });
+const TaskList = () => fab('Row')
+  .setStyles({ padding: '10px', flexWrap: 'wrap' })
+  .onUpdate((el, state) => {
+    el.setChildren(state.tasks.map(TaskCard));
+  }, ['fabricate:init', 'tasks']);
 
 /**
- * The main function.
+ * App component.
+ *
+ * @returns {HTMLElement}
  */
-const main = () => {
-  const pageContainer = Column()
-    .withChildren([
-      NavBar({
-        title: 'Task List Example',
-        color: 'white',
-        backgroundColor: 'gold',
-      }),
-      NewItemBox(),
-      TaskList(),
-    ]);
+const App = () => fab('Column')
+  .setChildren([
+    fab('NavBar', {
+      title: 'Task List Example',
+      color: 'white',
+      backgroundColor: 'gold',
+    }),
+    NewItemBox(),
+    TaskList(),
+  ]);
 
-  // Start app
-  const initialState = {
-    tasks: ['Take out the tash before going out'],
-  };
-  const options = { persistState: ['tasks'] };
-  app(pageContainer, initialState, options);
+// Start app
+const initialState = {
+  tasks: ['Take out the tash before going out'],
 };
-
-main();
+const options = { persistState: ['tasks'] };
+fabricate.app(App(), initialState, options);

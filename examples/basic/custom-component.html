@@ -12,13 +12,13 @@
 
     <script>
       // Declare a new component with props
-      fabricate.declare('ColorfulText', ({ color }) => fabricate('span').withStyles({ color }));
+      fab.declare('ColorfulText', ({ color }) => fabricate('span').setStyles({ color }));
 
-      const App = () => fabricate.Column()
-        .withChildren([
+      const App = () => fabricate('Column')
+        .setChildren([
           // Use the component and pass props
-          fabricate('ColorfulText', { color: 'blue '})
-            .setText('Custom blue component!'),
+          fabricate('ColorfulText', { color: 'blue' }).setText('Custom blue component!'),
+          fabricate('ColorfulText', { color: 'red' }).setText('Custom red component!'),
         ]);
 
       fabricate.app(App());
