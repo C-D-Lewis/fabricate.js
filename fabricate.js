@@ -168,16 +168,17 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.onHover = (opts) => {
-    // cb(isHovered) style
+    // Callback style
     if (typeof opts === 'function') {
-      el.addEventListener('mouseenter', () => opts(el, true));
-      el.addEventListener('mouseleave', () => opts(el, false));
+      el.addEventListener('mouseenter', () => opts(el, _fabricate.getStateCopy(), true));
+      el.addEventListener('mouseleave', () => opts(el, _fabricate.getStateCopy(), false));
       return el;
     }
 
+    // Object of handlers style
     const { start, end } = opts;
-    el.addEventListener('mouseenter', () => start(el));
-    el.addEventListener('mouseleave', () => end(el));
+    el.addEventListener('mouseenter', () => start(el, _fabricate.getStateCopy()));
+    el.addEventListener('mouseleave', () => end(el, _fabricate.getStateCopy()));
     return el;
   };
 
@@ -214,6 +215,40 @@ const fabricate = (name, customProps) => {
    */
   el.onDestroy = (cb = () => {}) => {
     cb(el, _fabricate.getStateCopy());
+    return el;
+  };
+
+  /**
+   * Conditionally render a child in response to state update.
+   *
+   * @param {function} testCb - Callback to test the state.
+   * @returns {HTMLElement}
+   */
+  el.when = (testCb) => {
+    let lastResult = false;
+
+    /**
+     * When the state updates.
+     *
+     * @param {object} newState - State object.
+     */
+    const onStateUpdate = (newState) => {
+      const newResult = testCb(newState);
+
+      // Only re-render if a new result from the test callback
+      if (newResult === lastResult) return;
+      lastResult = newResult;
+
+      // Update display
+      el.setStyles({ display: newResult ? 'initial' : 'none' });
+    };
+
+    // Register for state updates
+    el.onUpdate((_, state) => onStateUpdate(state));
+
+    // Test state immediately
+    onStateUpdate(_fabricate.state);
+
     return el;
   };
 
@@ -344,7 +379,7 @@ fabricate.clearState = () => {
  *
  * @returns {boolean}
  */
-fabricate.isMobile = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
+fabricate.isNarrow = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
 
 /**
   * Begin a component hierarchy from the body.
@@ -380,60 +415,6 @@ fabricate.app = (root, initialState, opts) => {
     });
     _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
   }
-};
-
-/**
-  * Conditionally render a child in response to state update.
-  *
-  * @param {function} stateTestCb - Callback to test the state.
-  * @param {function} trueCb - Callback that should return the element to show.
-  * @param {function} [falseCb] - Callback that should return the element to show otherwise.
-  * @returns {HTMLElement}
-  */
-fabricate.when = (stateTestCb, trueCb, elseCb) => {
-  let lastResult = false;
-
-  /**
-  * When the state updates.
-  *
-  * @param {HTMLElement} el - The host element.
-  * @param {object} newState - State object.
-  */
-  const onStateUpdate = (el, newState) => {
-    const { stateWatchers } = _fabricate;
-    const newResult = stateTestCb(newState);
-
-    // Only re-render if a new result from the test callback
-    if (newResult === lastResult) return;
-    lastResult = newResult;
-
-    // Should not be shown - falsey was returned
-    if (!newResult) {
-      el.empty();
-
-      // Optionally render with elseCb and notify child of latest state
-      if (elseCb) {
-        const child = elseCb();
-        const watcher = stateWatchers.find((p) => p.el === child);
-        if (watcher) watcher.cb(child, newState);
-        el.setChildren([child]);
-      }
-      return;
-    }
-
-    // Render with trueCb and notify child of latest state
-    const child = trueCb();
-    const watcher = stateWatchers.find((p) => p.el === child);
-    if (watcher) watcher.cb(child, newState);
-    el.setChildren([child]);
-  };
-
-  const host = fabricate('div').onUpdate(onStateUpdate);
-
-  // Test state immediately
-  onStateUpdate(host, _fabricate.state);
-
-  return host;
 };
 
 /**
@@ -538,7 +519,7 @@ fabricate.declare(
       userSelect: 'none',
       filter: 'brightness(1)',
     })
-    .onHover((el, isHovered) => {
+    .onHover((el, state, isHovered) => {
       if (!highlight) return;
 
       el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
@@ -731,7 +712,7 @@ fabricate.declare(
       filter: 'brightness(1)',
       width: 'fit-content',
     })
-    .onHover((el, isHovered) => {
+    .onHover((el, state, isHovered) => {
       if (!highlight) return;
 
       el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });

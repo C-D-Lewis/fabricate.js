@@ -11,14 +11,11 @@
     <script type="text/javascript" src="../../fabricate.js"></script>
 
     <script>
-      const Content = () => fab('Fader')
-        .setChildren([
-          fab('Text').setText('Now you see me!'),
-        ]);
-
       const App = () => fab('Column')
         .setChildren([
-          fab.when(state => state.showText, () => Content()),
+          fab('Text')
+            .setText('Now you see me!')
+            .when(({ showText }) => showText),
         ]);
 
       // Use as the root app element

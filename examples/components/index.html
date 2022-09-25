@@ -19,7 +19,17 @@
           fab('Text').setText('This is some example text to show the Text component.'),
 
           Title().setText('Image'),
-          fab('Image', { src: '../assets/account.png', width: '64px', height: '64px' }),
+          fab('Image', { src: '../assets/account.png' })
+            .setStyles({ width: '64px', height: '64px' }),
+
+          Title().setText('Fader'),
+          fab('Column').setStyles({ height: '50px' })
+            .setChildren([
+                fab('Fader')
+                  .setChildren([
+                    fab('Text').setText('Text fades in'),
+                  ]),
+            ]),
 
           Title().setText('Button'),
           fab('Button', { text: 'Confirm', backgroundColor: 'royalblue' }),
@@ -40,17 +50,6 @@
 
           Title().setText('Pill'),
           fab('Pill', { text: 'Example Pill' }),
-
-          Title().setText('Fader'),
-          fab('Column').setStyles({ height: '50px' })
-            .setChildren([
-              fab.when(
-                ({ showFader }) => showFader,
-                () => fab('Fader').setChildren([
-                  fab('Text').setText('Text fades in'),
-                ]),
-              ),
-          ]),
         ]);
 
       fabricate.app(App(), { showFader: false });

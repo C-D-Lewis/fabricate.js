@@ -16,7 +16,7 @@
         .setStyles({ padding: '15px' })
         .setChildren([
           fab('Text')
-            .setText(`Your device appears to be a ${fab.isMobile() ? 'mobile' : 'desktop'} device.`),
+            .setText(`Your device appears to be a ${fab.isNarrow() ? 'mobile' : 'desktop'} device.`),
 
           fab('TextInput', { placeholder: 'Enter your name' })
             .setStyles({ marginLeft: '5px', marginTop: '20px' })

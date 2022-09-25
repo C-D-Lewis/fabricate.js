@@ -240,7 +240,7 @@ describe('fabricate.js', () => {
 
   describe('Helpers', () => {
     it('should allow detection of narrow screens', () => {
-      expect(fabricate.isMobile()).to.equal(false);
+      expect(fabricate.isNarrow()).to.equal(false);
     });
 
     it('should allow creation of root app element with no initial state', () => {
@@ -271,41 +271,30 @@ describe('fabricate.js', () => {
     it('should conditionally render a component only once per state value', () => {
       let renderCount = 0;
 
-      const Component = () => fabricate('div').onCreate(() => (renderCount += 1));
+      fabricate('div')
+        .when(({ visible }) => visible)
+        .onCreate(() => (renderCount += 1));
 
-      fabricate.when((state) => state.visible, Component);
-      fabricate.update('visible', () => true);
+      fabricate.update({ visible: true });
 
       // Should not re-render for same value
-      fabricate.update('visible', () => true);
+      fabricate.update({ visible: true });
 
       expect(renderCount).to.equal(1);
     });
 
     it('should conditionally render a component and notify it immediately', () => {
-      let watcherUsed;
+      let updated;
 
-      const Component = () => fabricate('div').onUpdate(() => (watcherUsed = true));
+      fabricate('div')
+        .when((state) => state.visible)
+        .onUpdate(() => {
+          updated = true;
+        });
 
-      fabricate.when((state) => state.visible, Component);
-      fabricate.update('visible', () => true);
-      fabricate.update('visible', () => true);
+      fabricate.update({ visible: true });
 
-      expect(watcherUsed).to.equal(true);
-    });
-
-    it('should conditionally render a component in both state cases', () => {
-      let trueElementShown;
-      let elseElementShown;
-
-      const TrueComponent = () => fabricate('div').onUpdate(() => (trueElementShown = true));
-      const ElseComponent = () => fabricate('div').onUpdate(() => (elseElementShown = true));
-
-      fabricate.when((state) => state.visible, TrueComponent, ElseComponent);
-      fabricate.update('visible', () => true);
-
-      expect(trueElementShown).to.equal(true);
-      expect(elseElementShown).to.equal(true);
+      expect(updated).to.equal(true);
     });
 
     it('should allow declaring a component for re-use with props', () => {

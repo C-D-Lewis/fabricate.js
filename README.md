@@ -19,7 +19,7 @@ See `examples` for some simple example apps.
 
 ## Introduction
 
-The aim of `fabricate` is to allow a quick and expressive way to set up UI
+The aim of `fabricate.js` is to allow a quick and expressive way to set up UI
 with a fluent API based on method chaining. This allows creating elements with
 styles, attributes, handlers, and child elements in an easy and predictable
 fashion.
@@ -27,28 +27,29 @@ fashion.
 For example, a text element in a padded container:
 
 ```js
-const Text = ({ text }) => fabricate('span')
-  .withStyles({ fontSize: '1.1rem' })
+const Label = ({ text }) => fabricate('span')
+  .setStyles({ fontSize: '1.1rem' })
   .setText(text);
 
-const Container = () => fabricate.Column().withStyles({ padding: '10px' });
+// Column is one of many included basic components
+const Container = () => fabricate('Column').setStyles({ padding: '10px' });
 
-const ExamplePage = () => Container()
-  .withChildren([
-    Text({ text: 'Hello, world!' }),
-    Text({ text: 'Welcome to fabricate.js!' }),
+const App = () => Container()
+  .setChildren([
+    Label({ text: 'Hello, world!' }),
+    Label({ text: 'Welcome to fabricate.js!' }),
   ]);
 
 // Use as the root app element
-fabricate.app(ExamplePage());
+fabricate.app(App());
 ```
 
-Components can be extended after they are created, for example a button with
-a hover-based highlight effect:
+Components created with `fabricate.js` can be extended after they are created,
+for example this button with a hover-based highlight effect:
 
 ```js
-const BasicButton = () => fabricate.Column()
-  .withStyles({
+const BasicButton = () => fabricate('div')
+  .setStyles({
     padding: '8px 10px',
     color: 'white',
     backgroundColor: 'gray',
@@ -56,6 +57,8 @@ const BasicButton = () => fabricate.Column()
     justifyContent: 'center',
     cursor: 'pointer',
   })
+  .setText('Click me!')
+  .onClick(onButtonClicked)
   .onHover({
     start: el => el.addStyles({ filter: 'brightness(1.1)' }),
     end: el => el.addStyles({ filter: 'brightness(1)' }),
@@ -66,12 +69,12 @@ This component can then be specialised for other uses:
 
 ```js
 const SubmitButton = () => BasicButton()
-  .withStyles({ backgroundColor: 'green' })
+  .setStyles({ backgroundColor: 'green' })
   .setText('Submit')
   .onClick(() => alert('Success!'));
 
 const CancelButton = () => BasicButton()
-  .withStyles({ backgroundColor: 'red' })
+  .setStyles({ backgroundColor: 'red' })
   .setText('Cancel')
   .onClick(() => alert('Cancelled!'));
 ```
@@ -107,27 +110,27 @@ The API is split into two sections - component construction and app helpers.
 
 * [Create `Component`](#component)
   * [`.asFlex()`](#asflex)
-  * [`.withStyles()` / `withAttributes()`](#withstyles--withattributes)
-  * [`.withChildren()`](#withchildren)
+  * [`.setStyles()` / `setAttributes()`](#setstyles--setattributes)
+  * [`.setChildren()` / `addChildren`](#setchildren--addchildren)
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
-  * [`.clear()`](#clear)
-  * [`.then()`](#then)
+  * [`.onCreate()` / `.onDestroy()`](#oncreate--ondestroy)
+  * [`.when()`](#when)
+  * [`.empty()`](#empty)
 
 ### App helpers
 
 * [`fabricate` / `fab` helpers](#fabricate--fab)
-  * [`.isMobile()`](#ismobile)
+  * [`.isNarrow()`](#isnarrow)
   * [`.app()`](#app)
   * [`.declare()`](#declare)
-  * [`.updateState()` / `.watchState()`](#updatestate--watchstate)
+  * [`.update()` / `.onUpdate()`](#update--onupdate)
   * [`.manageState()`](#managestate)
-  * [`.when()`](#when)
   * [`.clearState()`](#clearstate)
 
 
 ### `Component`
 
-To create a `Component`, simply specify the tag name:
+To create a `Component`, simply specify the tag or declared component name:
 
 ```js
 const EmptyDivComponent = () => fabricate('div');
@@ -146,40 +149,46 @@ const Row = () => fabricate('div').asFlex('row');
 
 > The `Row` and `Column` basic components are included for this purpose.
 
-#### `.withStyles()` / `withAttributes()`
+#### `.setStyles()` / `setAttributes()`
 
 Set element styles and tag attributes:
 
 ```js
 const BannerImage = ({ src }) => fabricate('img')
-  .withStyles({ width: '800px', height: 'auto' })
-  .withAttributes({ src });
+  .setStyles({ width: '800px', height: 'auto' })
+  .setAttributes({ src });
 ```
 
-> Semantic aliases `addStyles()` and `addAttributes()` are also available for
-> pre-exiting components.
+#### `.setChildren()` / `.addChildren()`
 
-#### `.withChildren()`
-
-Add other components as children to a parent:
+Set other components as children to a parent, replacing any existing ones:
 
 ```js
 const ButtonRow = () => fabricate.Row()
-  .withChildren([
-    fabricate.Button({ text: 'Submit'}),
-    fabricate.Button({ text: 'Cancel'}),
+  .setChildren([
+    fabricate('Button', { text: 'Submit'}),
+    fabricate('Button', { text: 'Cancel'}),
   ]);
 ```
 
-> A semantic alias `addChildren` is also available.
+Later, add more children to the existing list:
+
+```js
+ButtonRow.addChildren([
+  fabricate('Button', { text: 'Later'}),
+]);
+```
 
 #### `.onClick()` / `onHover()` / `.onChange()`
 
 Add click and hover behaviors, which are provided the same element to allow
 updating styles and attributes etc:
 
+> All component callbacks and handlers have the same signature:
+> `cb(element, state, ...others)`
+
 ```js
-fabricate.Button({ text: 'Click me!' })
+fabricate('Button', { text: 'Click me!' })
   .onClick(el => alert('Clicked!'))
   .onHover({
     start: el => console.log('may be clicked'),
@@ -190,18 +199,18 @@ fabricate.Button({ text: 'Click me!' })
 Hovering can also be implemented with just a callback if preferred:
 
 ```js
-fabricate.Button({ text: 'Click me!' })
+fabricate('Button', { text: 'Click me!' })
   .onClick((el, state) => {
     alert(`Clicked ${state.counter} times!`);
-    fabricate.updateState('counter', ({ counter }) => counter + 1);
+    fabricate.update('counter', ({ counter }) => counter + 1);
   })
-  .onHover((el, isHovered) => console.log(`isHovered: ${isHovered}`));
+  .onHover((el, state, isHovered) => console.log(`isHovered: ${isHovered}`));
 ```
 
 For inputs, the `change` even can also be used:
 
 ```js
-fabricate.TextInput({ placeholder: 'Email address' })
+fabricate('TextInput', { placeholder: 'Email address' })
   .onChange((el, state, value) => console.log(`Entered ${value}`));
 ```
 
@@ -211,61 +220,100 @@ For simple elements, set their `innerHTML` or `innerText`:
 
 ```js
 fabricate('div')
-  .withStyles({ backgroundColor: 'red' })
+  .setStyles({ backgroundColor: 'red' })
   .setText('I am a red <div>');
 ```
 
-Or set HTML directly:
+Or set inner HTML directly:
 
 ```js
 fabricate('div').setHtml('<span>I\'m just more HTML!</div>');
 ```
 
-#### `.clear()`
-
-For components such as lists that refresh data, use `clear()` to remove
-all children:
-
-```js
-const UserList = ({ users }) => fabricate.Column()
-  .withChildren()
-  .watchState((el, { userList }) => {
-    el.clear();
-    el.addChildren(userList.map(User));
-  });
-
-/**
- * When new data is available.
- */
-const refreshUserList = () => {
-  const newUsers = await fetchUsers();
-
-  fabricate.updateState('userList', newUsers);
-};
-```
-
-#### `.then()`
+#### `.onCreate()` / `.onDestroy()`
 
 Simple method to do something immediately after creating a component with
 chain methods:
 
 ```js
-fabricate.Text({ text: 'Example text' })
-  .withStyles({ color: 'blue' })
-  .then((el, state) => el.setText(`Counter now ${state.counter}`));
+fabricate('Text').setText('Example text')
+  .setStyles({ color: 'blue' })
+  .onCreate((el, state) => el.setText(`Counter now ${state.counter}`));
 ```
+
+Or when a component has been removed from the DOM:
+
+```js
+DevicePage()
+  .onCreate(subscribeWebsockets)
+  .onDestroy(unsubscribeWebsockets);
+```
+
+#### `.when()`
+
+Conditionally add or remove a component (or tree of components) using the `when`
+method:
+
+```js
+const pageContainer = fabricate('Column')
+  .setChildren([
+    fabricate('Text')
+      .setText('Now you see me!')
+      .when(state => state.showText),
+  ]);
+
+// Use as the root app element and provide first state values
+fabricate.app(pageContainer, { showText: false });
+
+// Later, add the text
+setInterval(
+  () => fabricate.update('showText', state => !state.showText),
+  2000,
+);
+```
+
+See [`examples/login.html`](examples/login.html) for a more complex example of
+conditional rendering in action.
+
+#### `.empty()`
+
+For components such as lists that refresh data, use `empty()` to remove
+all child elements:
+
+```js
+/**
+ * A list of users, driven by app state.
+ */
+const UserList = () => fabricate('Column')
+  .onUpdate((el, { userList }) => {
+    el.empty();
+    el.addChildren(userList.map(User));
+  });
+
+/**
+ * When new data is available, update state and hence the list.
+ */
+const refreshUserList = () => {
+  const newUsers = await fetchUsers();
+
+  fabricate.update('userList', newUsers);
+};
+```
+
+> Note: `setChildren` clears existing children automatically, so would be a
+> better option for this scenario.
 
 
 ### `fabricate` / `fab`
 
-The imported object also has some helper methods to use:
+The main exported object also has some helper methods to use:
 
-#### `.isMobile()`
+#### `.isNarrow()`
 
 ```js
 // Detect a very narrow device, or mobile device
-fabricate.Text()
-  .withStyles({ fontSize: fabricate.isMobile() ? '1rem' : '1.8rem' })
+fabricate('Text')
+  .setStyles({ fontSize: fabricate.isNarrow() ? '1rem' : '1.8rem' })
 ```
 
 #### `.app()`
@@ -274,13 +322,15 @@ Use `app()` to start an app from the `document.body`. You can also specify an
 initial state and some extra options.
 
 ```js
-const page = PageContainer()
-  .withChildren([
-    fabricate.NavBar({ title: 'My New App' }),
-    MainContent().withChildren([
-      HeroImage({ src }),
-      Article({ article }),
-    ]),
+const App = () => fab('Column')
+  .setChildren([
+    fabricate('NavBar', { title: 'My New App' }),
+    MainContent()
+      .setChildren([
+        HeroImage(),
+        Title(),
+        Article(),
+      ]),
   ]);
 
 const initialState = {
@@ -296,7 +346,7 @@ const options = {
   persistState: ['readingList'],
 };
 
-fabricate.app(page, initialState, options);
+fabricate.app(App(), initialState, options);
 ```
 
 The options available are:
@@ -313,7 +363,7 @@ props, useful in apps with many files:
 
 ```js
 // Declare component name and builder function including props
-fabricate.declare('ColorfulText', ({ color }) => fabricate('span').withStyles({ color }));
+fabricate.declare('ColorfulText', ({ color }) => fabricate('span').setStyles({ color }));
 ```
 
 Then create the component where needed, supplying the required props:
@@ -323,19 +373,19 @@ fabricate('ColorfulText', { color: 'red' })
   .setText('Red custom component!');
 ```
 
-#### `.updateState()` / `.watchState()`
+#### `.update()` / `.onUpdate()`
 
 A few methods are available to make it easy to maintain some basic global state
 and to update components when those states change. A list of keys to watch
 can be provided, otherwise all state updates are notified.
 
-> To receive the initial state update when using a key list, include
+> To receive the initial state update when using a key filter, include
 > `fabricate:init` in the list.
 
 ```js
-// View can watch some state - specifically, 'state.counter'
-const counterView = fabricate.Text()
-  .watchState(
+// View can watch some state - specifically, 'state.counter' and initial update
+const counterView = fabricate('Text')
+  .onUpdate(
     (el, state, key) => el.setText(state.counter),
     ['fabricate:init', 'counter'],
   );
@@ -344,17 +394,19 @@ const counterView = fabricate.Text()
 fabricate.app(counterView, { counter: 0 });
 ```
 
-There are two ways to update state - function providing current state and just
-the new state's value.
+There are three ways to update state:
 
 ```js
 // Update the state using the previous state
 setInterval(() => {
-  fabricate.updateState('counter', prev => prev.counter + 1);
+  fabricate.update('counter', prev => prev.counter + 1);
 }, 1000);
 
 // Or just the new data
-fabricate.updateState('counter', 0);
+fabricate.update('counter', 0);
+
+// Or as a state slice
+fabricate.update({ counter: 0 });
 ```
 
 #### `.manageState()`
@@ -364,44 +416,19 @@ tree or is not used elsewhere in the app. Requires component class name/unique
 name, state key, and an optional initial value.
 
 ```js
-const ValueView = () => {
-  const counterState = fabricate.manageState('ValueView', 'counter', 0);
+const CounterButton = () => {
+  // Managed state with .get() .set() and .key available to use
+  const counterState = fabricate.manageState('CounterButton', 'count', 0);
 
-  return fabricate.Button({ text: 'Click me' })
+  // Button that watches only this managed state value
+  return fabricate('Button', { text: 'Click me' })
     .onClick(() => counterState.set(counterState.get() + 1))
-    .watchState(
-      (el, state, key) => el.setText(`Counted: ${state[counterState.key]})`),
+    .onUpdate(
+      (el, state, key) => el.setText(`Counted: ${state[key]})`),
+      [counterState.key]
     );
 };
 ```
-
-#### `.when()`
-
-Conditionally add or remove a component (or tree of components) using the `when`
-method:
-
-```js
-const pageContainer =  fabricate.Column()
-  .withChildren([
-    fabricate.when(
-      state => state.showText,
-      () => fabricate.Text({ text: 'Now you see me!' }),
-    ),
-  ]);
-
-// Use as the root app element and provide first state values
-fabricate.app(pageContainer, { showText: false });
-
-// Later, add the text
-setInterval(
-  () => fabricate.updateState('showText', state => !state.showText),
-  2000,
-);
-```
-
-See [`examples/login.html`](examples/login.html) for a more complex example of
-conditional rendering in action.
-
 
 #### `.clearState()`
 
@@ -434,9 +461,9 @@ A simple flex row:
 
 ```js
 fabricate.Row()
-  .withChildren([
-    fabricate.Button().setText('Confirm'),
-    fabricate.Button().setText('Cancel'),
+  .setChildren([
+    fabricate('Button').setText('Confirm'),
+    fabricate('Button').setText('Cancel'),
   ]);
 ```
 
@@ -445,10 +472,10 @@ fabricate.Row()
 A simple flex column:
 
 ```js
-fabricate.Column()
-  .withChildren([
-    fabricate.Image({ src: '/assets/images/gallery1.png' }),
-    fabricate.Image({ src: '/assets/images/gallery2.png' }),
+fabricate('Column')
+  .setChildren([
+    fabricate('Image', { src: '/assets/images/gallery1.png' }),
+    fabricate('Image', { src: '/assets/images/gallery2.png' }),
   ]);
 ```
 
@@ -457,7 +484,7 @@ fabricate.Column()
 Basic text component:
 
 ```js
-fabricate.Text({ text: 'Hello, world!' });
+fabricate('Text').setText('Hello, world!');
 ```
 
 #### `Image`
@@ -465,7 +492,7 @@ fabricate.Text({ text: 'Hello, world!' });
 Basic image component:
 
 ```js
-fabricate.Image({
+fabricate('Image', {
   src: '/assets/images/gallery01.png',
   width: 640,
   height: 480,
@@ -477,7 +504,7 @@ fabricate.Image({
 A simple button component with optional hover highlight behavior:
 
 ```js
-fabricate.Button({
+fabricate('Button', {
   text: 'Click me!',
   color: 'white',
   backgroundColor: 'gold',
@@ -490,14 +517,14 @@ fabricate.Button({
 NavBar component for app titles, etc. Can contain more components within itself:
 
 ```js
-fabricate.NavBar({
+fabricate('NavBar', {
   title: 'My Example App',
   color: 'white',
   backgroundColor: 'purple',
 })
-  .withChildren([
-    fabricate.Button({ text: 'Home' }).onClick(goHome),
-    fabricate.Button({ text: 'Gallery' }).onClick(goToGallery),
+  .setChildren([
+    fabricate('Button', { text: 'Home' }).onClick(goHome),
+    fabricate('Button', { text: 'Gallery' }).onClick(goToGallery),
   ]);
 ```
 
@@ -506,7 +533,7 @@ fabricate.NavBar({
 A basic text input box with padding:
 
 ```js
-fabricate.TextInput({
+fabricate('TextInput', {
   placeholder: 'Enter email address',
   color: '#444',
   backgroundColor: 'white'
@@ -533,8 +560,8 @@ Simple Material-like card component for housing sections of other components:
 
 ```js
 fabricate.Card()
-  .withChildren([
-    fabricate.Image({ src: '/assets/images/gallery01.png' }),
+  .setChildren([
+    fabricate('Image', { src: '/assets/images/gallery01.png' }),
   ]);
 ```
 
@@ -555,7 +582,7 @@ Basic pill for category selection or tags etc:
 
 ```js
 fabricate.Row()
-  .withChildren([
+  .setChildren([
     Pill({
       text: 'All',
       color: 'white',
@@ -594,10 +621,13 @@ V2 - Changes for syntax:
 - [x] - `updateState` -> `update`
 - [x] - `watchState` -> `onUpdate`
 - [x] - `then` -> `onCreate`
+- [x] - `isMobile` -> `isNarrow`
 - [x] - MutationObserver for `onDestroy` handler?
 - [x] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
 - [x] - Predictable callback (el, state, ...rest) type
-- [x] - Enhance .when with second builder for the 'else' case
 - [x] - Remove props - Text.text, Image.width/height...
+- [ ] - Better name for `manageState`
+- [ ] - Move `when` to a chainable method!
 - [ ] - New symbolic logo
+- [ ] - Full README.md update
 - [ ] - Comprehensive changes in Release
