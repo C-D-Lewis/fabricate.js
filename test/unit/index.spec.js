@@ -221,21 +221,6 @@ describe('fabricate.js', () => {
 
       expect(_fabricate.state.counter).to.equal(23);
     });
-
-    it('should allow managing component-local state', () => {
-      const { get, set, key } = fabricate.manageState('TestComponent', 'value', 0);
-
-      set(255);
-      expect(get()).to.equal(255);
-      expect(key).to.equal('TestComponent:value');
-      expect(_fabricate.state[key]).to.equal(255);
-    });
-
-    it('should allow managing component-local state with no initial value', () => {
-      const { get } = fabricate.manageState('TestComponent', 'value');
-
-      expect(get()).to.equal(undefined);
-    });
   });
 
   describe('Helpers', () => {
