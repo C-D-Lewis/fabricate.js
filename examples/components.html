@@ -8,7 +8,7 @@
     </style>
   </head>
   <body>
-    <script type="text/javascript" src="../../fabricate.js"></script>
+    <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
       const Title = () => fab('Text').setStyles({ fontSize: '2rem', marginTop: '30px' });
@@ -19,7 +19,7 @@
           fab('Text').setText('This is some example text to show the Text component.'),
 
           Title().setText('Image'),
-          fab('Image', { src: '../assets/account.png' })
+          fab('Image', { src: './assets/account.png' })
             .setStyles({ width: '64px', height: '64px' }),
 
           Title().setText('Fader'),
