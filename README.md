@@ -557,24 +557,11 @@ fabricate('Fader', {
 Basic pill for category selection or tags etc:
 
 ```js
-fabricate('Row')
-  .setChildren([
-    fabricate('Pill', {
-      text: 'All',
-      color: 'white',
-      backgroundColor: 'green',
-    }),
-    fabricate('Pill', {
-      text: 'Favorites',
-      color: 'white',
-      backgroundColor: 'red',
-    }),
-    fabricate('Pill', {
-      text: 'Unread',
-      color: 'white',
-      backgroundColor: 'blue',
-    }),
-  ]);
+fabricate('Pill', {
+  text: 'Favourites',
+  color: 'white',
+  backgroundColor: 'orange',
+});
 ```
 
 ## Run tests
