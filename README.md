@@ -164,7 +164,7 @@ const BannerImage = ({ src }) => fabricate('img')
 Set other components as children to a parent, replacing any existing ones:
 
 ```js
-const ButtonRow = () => fabricate.Row()
+const ButtonRow = () => fabricate('Row')
   .setChildren([
     fabricate('Button', { text: 'Submit'}),
     fabricate('Button', { text: 'Cancel'}),
@@ -460,7 +460,7 @@ See `examples/components` for a page displaying all example components.
 A simple flex row:
 
 ```js
-fabricate.Row()
+fabricate('Row')
   .setChildren([
     fabricate('Button').setText('Confirm'),
     fabricate('Button').setText('Cancel'),
@@ -492,11 +492,7 @@ fabricate('Text').setText('Hello, world!');
 Basic image component:
 
 ```js
-fabricate('Image', {
-  src: '/assets/images/gallery01.png',
-  width: 640,
-  height: 480,
-});
+fabricate('Image', { src: '/assets/images/gallery01.png' });
 ```
 
 #### `Button`
@@ -546,7 +542,7 @@ fabricate('TextInput', {
 Customizable CSS-based spinner/loader:
 
 ```js
-fabricate.Loader({
+fabricate('Loader', {
   size: 48,
   lineWidth: 5,
   color: 'red',
@@ -559,7 +555,7 @@ fabricate.Loader({
 Simple Material-like card component for housing sections of other components:
 
 ```js
-fabricate.Card()
+fabricate('Card')
   .setChildren([
     fabricate('Image', { src: '/assets/images/gallery01.png' }),
   ]);
@@ -570,7 +566,7 @@ fabricate.Card()
 Container that fades in upon creation to smoothly show other components inside:
 
 ```js
-fabricate.Fader({
+fabricate('Fader', {
   durationS: 0.6,
   delayMs: 300,
 });
@@ -581,19 +577,19 @@ fabricate.Fader({
 Basic pill for category selection or tags etc:
 
 ```js
-fabricate.Row()
+fabricate('Row')
   .setChildren([
-    Pill({
+    fabricate('Pill', {
       text: 'All',
       color: 'white',
       backgroundColor: 'green',
     }),
-    Pill({
+    fabricate('Pill', {
       text: 'Favorites',
       color: 'white',
       backgroundColor: 'red',
     }),
-    Pill({
+    fabricate('Pill', {
       text: 'Unread',
       color: 'white',
       backgroundColor: 'blue',
@@ -626,8 +622,8 @@ V2 - Changes for syntax:
 - [x] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
 - [x] - Predictable callback (el, state, ...rest) type
 - [x] - Remove props - Text.text, Image.width/height...
+- [x] - Move `when` to a chainable method!
 - [ ] - Better name for `manageState`
-- [ ] - Move `when` to a chainable method!
 - [ ] - New symbolic logo
 - [ ] - Full README.md update
 - [ ] - Comprehensive changes in Release

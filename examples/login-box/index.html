@@ -60,28 +60,27 @@
           fab('Text')
             .setText('Login')
             .setStyles({ fontWeight: 'bold', fontSize: '1.5rem' }),
-          fab('Image', {
-            src: '../assets/account.png',
-            width: '100px',
-            height: '100px',
-          })
-            .setStyles({ margin: '5px auto' }),
+          fab('Image', { src: '../assets/account.png' })
+            .setStyles({
+              margin: '5px auto',
+              width: '100px',
+              height: '100px',
+            }),
 
-          fab.when(state => !state.isLoading, () => LoginForm()),
-          fab.when(
-            state => state.isLoading && !state.isCompleted,
-            () => fab('Loader').setStyles({ margin: '20px auto' }),
-          ),
+          LoginForm()
+            .when(({ isLoading }) => !isLoading),
+          fab('Loader')
+            .setStyles({ margin: '20px auto' })
+            .when((state) => state.isLoading && !state.isCompleted),
         ]);
 
       const App = () => fab('Column')
         .setStyles({ padding: '40px' })
         .setChildren([
-          fab.when(
-            state => state.isCompleted,
-            () => fab('Text').setText('Login completed!'),
-            () => fab('Fader').setChildren([LoginBox()]),
-          ),
+          fab('Text').setText('Login completed!')
+            .when(({ isCompleted }) => isCompleted),
+          fab('Fader').setChildren([LoginBox()])
+            .when(({ isCompleted }) => !isCompleted),
         ]);
 
       const initialState = {

@@ -20,12 +20,12 @@ const onSaveTask = (input) => {
  * @returns {HTMLElement}
  */
 const NewItemBox = () => {
-  const icon = fab('Image', {
-    src: './assets/pencil.png',
-    width: '28px',
-    height: '28px',
-  })
-    .setStyles({ padding: '10px' });
+  const icon = fab('Image', { src: './assets/pencil.png' })
+    .setStyles({
+      padding: '10px',
+      width: '28px',
+      height: '28px',
+    });
 
   const input = fab('TextInput', { placeholder: 'Create a new task...', backgroundColor: '#0000' })
     .setStyles({

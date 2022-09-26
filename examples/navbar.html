@@ -27,12 +27,12 @@
           fab('Text').setText('An image component is shown below inside a card:')
             .setStyles({ marginTop: '20px' }),
           fab('Card').setChildren([
-            fab('Image', {
-              src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png',
-              width: '135px',
-              height: '155px',
-            })
-              .setStyles({ margin: '10px' }),
+            fab('Image', { src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png' })
+              .setStyles({
+                margin: '10px',
+                width: '135px',
+                height: '155px',
+              }),
           ]),
 
           fab('Text').setText('Some pills are also shown below:')
