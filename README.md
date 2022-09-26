@@ -1,8 +1,8 @@
 # fabricate
 
-> n. To create quickly and easily.
-
 ![](logo.png)
+
+> n. To create quickly and easily.
 
 A tiny vanilla JS webapp framework with a fluent API and zero dependencies,
 intended for small apps with relatively simply layouts. Includes with some
