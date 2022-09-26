@@ -2,7 +2,9 @@
 
 > n. To create quickly and easily.
 
-![](assets/logo.png)
+<p align="center">
+  <img src="assets/logo.png">
+</p>
 
 A tiny vanilla JS webapp framework with a fluent API and zero dependencies,
 intended for small apps with relatively simply layouts. Includes with some
@@ -602,6 +604,6 @@ V2 - Changes for syntax:
 - [x] - Remove props - Text.text, Image.width/height...
 - [x] - Move `when` to a chainable method!
 - [x] - `manageState` removed - use state key constants or builders for dynamic state sharing
-- [ ] - New symbolic logo
+- [x] - New symbolic logo
 - [ ] - Full README.md update
 - [ ] - Comprehensive changes in Release
