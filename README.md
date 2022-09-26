@@ -571,26 +571,3 @@ Run unit tests:
 ```
 npm test
 ```
-
-## TODO
-
-V2 - Changes for syntax:
-
-- [x] - `fabricate(tagName)` always, disallowing declaring existing components.
-- [x] - `withStyles`/`addStyles` -> `setStyles`
-- [x] - `withAttributes`/`addAttributes` -> `setAttributes` (`attributes` is taken)
-- [x] - `withChildren`/`addChildren` -> `setChildren` + new `addChildren`
-- [x] - `clear` -> `empty`
-- [x] - `updateState` -> `update`
-- [x] - `watchState` -> `onUpdate`
-- [x] - `then` -> `onCreate`
-- [x] - `isMobile` -> `isNarrow`
-- [x] - MutationObserver for `onDestroy` handler?
-- [x] - State updates with objects (spread internally) `fabricate.update({ counter: 0 })`
-- [x] - Predictable callback (el, state, ...rest) type
-- [x] - Remove props - Text.text, Image.width/height...
-- [x] - Move `when` to a chainable method!
-- [x] - `manageState` removed - use state key constants or builders for dynamic state sharing
-- [x] - New symbolic logo
-- [ ] - Full README.md update
-- [ ] - Comprehensive changes in Release
