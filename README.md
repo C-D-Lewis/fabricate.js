@@ -124,7 +124,6 @@ The API is split into two sections - component construction and app helpers.
   * [`.app()`](#app)
   * [`.declare()`](#declare)
   * [`.update()` / `.onUpdate()`](#update--onupdate)
-  * [`.manageState()`](#managestate)
   * [`.clearState()`](#clearstate)
 
 
@@ -409,27 +408,6 @@ fabricate.update('counter', 0);
 fabricate.update({ counter: 0 });
 ```
 
-#### `.manageState()`
-
-Manage some component-local state, useful for state that is deep in a component
-tree or is not used elsewhere in the app. Requires component class name/unique
-name, state key, and an optional initial value.
-
-```js
-const CounterButton = () => {
-  // Managed state with .get() .set() and .key available to use
-  const counterState = fabricate.manageState('CounterButton', 'count', 0);
-
-  // Button that watches only this managed state value
-  return fabricate('Button', { text: 'Click me' })
-    .onClick(() => counterState.set(counterState.get() + 1))
-    .onUpdate(
-      (el, state, key) => el.setText(`Counted: ${state[key]})`),
-      [counterState.key]
-    );
-};
-```
-
 #### `.clearState()`
 
 Clear all state stored in `fabricate.js`:
@@ -623,7 +601,7 @@ V2 - Changes for syntax:
 - [x] - Predictable callback (el, state, ...rest) type
 - [x] - Remove props - Text.text, Image.width/height...
 - [x] - Move `when` to a chainable method!
-- [ ] - Better name for `manageState`
+- [x] - `manageState` removed - use state key constants or builders for dynamic state sharing
 - [ ] - New symbolic logo
 - [ ] - Full README.md update
 - [ ] - Comprehensive changes in Release

@@ -35,10 +35,12 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 const fabricate = (name, customProps) => {
   const { customComponents } = _fabricate;
 
-  // Could be custom component
+  // Could be custom component or a HTML type
   const el = customComponents[name]
     ? customComponents[name](customProps)
     : document.createElement(name);
+
+  el.componentName = name;
 
   /**
    * Augment existing styles with new ones.
@@ -219,7 +221,7 @@ const fabricate = (name, customProps) => {
   };
 
   /**
-   * Conditionally render a child in response to state update.
+   * Conditionally display a child in response to state update.
    *
    * @param {function} testCb - Callback to test the state.
    * @returns {HTMLElement}
@@ -235,7 +237,7 @@ const fabricate = (name, customProps) => {
     const onStateUpdate = (newState) => {
       const newResult = testCb(newState);
 
-      // Only re-render if a new result from the test callback
+      // Only re-display if a new result from the test callback
       if (newResult === lastResult) return;
       lastResult = newResult;
 
@@ -331,37 +333,6 @@ fabricate.update = (param1, param2) => {
   }
 
   throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);
-};
-
-/**
- * Manage state for a specific component
- *
- * @param {string} componentName - Name of the component class.
- * @param {string} stateName - Name of the state key within the component.
- * @param {*} [initialValue] - Initial value of the state.
- * @returns {object} Object with getter, setter, and full state key name.
- */
-fabricate.manageState = (componentName, stateName, initialValue) => {
-  const key = `${componentName}:${stateName}`;
-
-  /**
-   * State getter.
-   *
-   * @returns {*} State value.
-   */
-  const get = () => _fabricate.state[key];
-
-  /**
-   * State setter.
-   *
-   * @param {*} newValue - New state value.
-   */
-  const set = (newValue) => fabricate.update(key, () => newValue);
-
-  // TODO: Why did typeof !== 'undefined' cause issue here?
-  if (initialValue) set(initialValue);
-
-  return { get, set, key };
 };
 
 /**
