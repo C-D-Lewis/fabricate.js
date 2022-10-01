@@ -227,7 +227,8 @@ const fabricate = (name, customProps) => {
    * @returns {HTMLElement}
    */
   el.when = (testCb) => {
-    let lastResult = false;
+    // First result is always negative to hide until shown
+    let lastResult;
 
     /**
      * When the state updates.
@@ -235,7 +236,7 @@ const fabricate = (name, customProps) => {
      * @param {object} newState - State object.
      */
     const onStateUpdate = (newState) => {
-      const newResult = testCb(newState);
+      const newResult = !!testCb(newState);
 
       // Only re-display if a new result from the test callback
       if (newResult === lastResult) return;

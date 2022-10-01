@@ -282,13 +282,20 @@ describe('fabricate.js', () => {
       expect(updated).to.equal(true);
     });
 
+    it('should not initially conditionally render a component', () => {
+      const div = fabricate('div')
+        .when((state) => state.visible);
+
+      expect(hasStyles(div, { display: 'none' })).to.equal(true);
+    });
+
     it('should allow declaring a component for re-use with props', () => {
       const styles = { color: 'red' };
 
       fabricate.declare('ColorfulText', ({ color }) => fabricate('div').setStyles({ color }));
       const el = fabricate('ColorfulText', { color: 'red' });
 
-      expect(hasStyles(el, styles));
+      expect(hasStyles(el, styles)).to.equal(true);
     });
 
     it('should not allow re-declaring a built-in component', () => {
