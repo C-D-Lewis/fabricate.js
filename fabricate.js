@@ -144,7 +144,7 @@ const fabricate = (name, customProps) => {
   /**
    * Convenience method for adding a click handler.
    *
-   * @param {function} cb - Function to call when click happens, with element and state.
+   * @param {Function} cb - Function to call when click happens, with element and state.
    * @returns {HTMLElement}
    */
   el.onClick = (cb) => {
@@ -155,7 +155,7 @@ const fabricate = (name, customProps) => {
   /**
    * Convenience method for adding an input handler.
    *
-   * @param {function} cb - Function to call when text input happens.
+   * @param {Function} cb - Function to call when text input happens.
    * @returns {HTMLElement}
    */
   el.onChange = (cb) => {
@@ -187,7 +187,7 @@ const fabricate = (name, customProps) => {
   /**
    * Watch the state for changes.
    *
-   * @param {function} cb - Callback to be notified.
+   * @param {Function} cb - Callback to be notified.
    * @param {Array<string>} keyFilter - List of keys to listen to.
    * @returns {HTMLElement}
    */
@@ -200,7 +200,7 @@ const fabricate = (name, customProps) => {
    * Convenience method to run some statements when a component is constructed
    * using only these chainable methods.
    *
-   * @param {function} cb - Function to run immediately, with this element and current state.
+   * @param {Function} cb - Function to run immediately, with this element and current state.
    * @returns {HTMLElement}
    */
   el.onCreate = (cb) => {
@@ -212,45 +212,45 @@ const fabricate = (name, customProps) => {
    * Convenience method to run some statements when a component is removed from
    * the DOM/it's parent.
    *
-   * @param {function} cb - Function to run immediately, with this element and current state.
+   * @param {Function} cb - Function to run when removed, with this element and current state.
    * @returns {HTMLElement}
    */
-  el.onDestroy = (cb = () => {}) => {
-    cb(el, _fabricate.getStateCopy());
+  el.onDestroy = (cb) => {
+    el.onDestroyHandler = () => cb(el, _fabricate.getStateCopy());
     return el;
   };
 
   /**
    * Conditionally display a child in response to state update.
    *
-   * @param {function} testCb - Callback to test the state.
+   * @param {Function} testCb - Callback to test the state.
+   * @param {Function} changeCb - Callback when the display state changes.
    * @returns {HTMLElement}
    */
-  el.when = (testCb) => {
+  el.when = (testCb, changeCb) => {
     // First result is always negative to hide until shown
     let lastResult;
 
     /**
      * When the state updates.
-     *
-     * @param {object} newState - State object.
      */
-    const onStateUpdate = (newState) => {
-      const newResult = !!testCb(newState);
+    const onStateUpdate = () => {
+      const newResult = !!testCb(_fabricate.getStateCopy());
 
       // Only re-display if a new result from the test callback
       if (newResult === lastResult) return;
       lastResult = newResult;
 
-      // Update display
+      // Update
+      if (changeCb) changeCb(el, _fabricate.getStateCopy(), newResult);
       el.setStyles({ display: newResult ? 'initial' : 'none' });
     };
 
     // Register for state updates
-    el.onUpdate((_, state) => onStateUpdate(state));
+    el.onUpdate(() => onStateUpdate());
 
     // Test state immediately
-    onStateUpdate(_fabricate.state);
+    onStateUpdate();
 
     return el;
   };
@@ -381,7 +381,7 @@ fabricate.app = (root, initialState, opts) => {
     _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.removedNodes.forEach((node) => {
-          if (node.onDestroy) node.onDestroy();
+          if (node.onDestroyHandler) node.onDestroyHandler();
         });
       });
     });

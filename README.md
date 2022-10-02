@@ -252,7 +252,7 @@ DevicePage()
 
 #### `.when()`
 
-Conditionally add or remove a component (or tree of components) using the `when`
+Conditionally show or hide a component (or tree of components) using the `when`
 method:
 
 ```js
@@ -271,6 +271,21 @@ setInterval(
   () => fabricate.update('showText', state => !state.showText),
   2000,
 );
+```
+
+> Note `onCreate()` is called immediately. The second callback can be used to
+> know when the element is shown or hidden.
+
+```js
+const pageContainer = fabricate('Column')
+  .setChildren([
+    fabricate('Text')
+      .setText('Now you see me!')
+      .when(
+        state => state.showText,
+        (el, state, isVisible) => console.log(`Am I visible now? ${isVisible}`),
+      ),
+  ]);
 ```
 
 See [`examples/login.html`](examples/login.html) for a more complex example of
