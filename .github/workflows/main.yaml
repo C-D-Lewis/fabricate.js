@@ -9,5 +9,6 @@ jobs:
         with:
           # dispatchEvent breaks in tests on 16
           node-version: '14'
+      - run: npm i -g npm@^7
       - run: npm ci
       - run: npm test
