@@ -257,11 +257,14 @@ describe('fabricate.js', () => {
     it('should conditionally render a component only once per state value', () => {
       let renderCount = 0;
 
-      fabricate('div')
+      const el = fabricate('Row')
         .when(({ visible }) => visible)
         .onCreate(() => (renderCount += 1));
 
       fabricate.update({ visible: true });
+
+      // Original display should be respected
+      expect(el.style.display).to.equal('flex');
 
       // Should not re-render for same value
       fabricate.update({ visible: true });

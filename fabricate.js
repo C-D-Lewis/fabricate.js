@@ -231,6 +231,9 @@ const fabricate = (name, customProps) => {
     // First result is always negative to hide until shown
     let lastResult;
 
+    // Remember original display
+    const originalDisplay = el.style.display;
+
     /**
      * When the state updates.
      */
@@ -243,7 +246,7 @@ const fabricate = (name, customProps) => {
 
       // Update
       if (changeCb) changeCb(el, _fabricate.getStateCopy(), newResult);
-      el.setStyles({ display: newResult ? 'initial' : 'none' });
+      el.setStyles({ display: newResult ? originalDisplay : 'none' });
     };
 
     // Register for state updates
