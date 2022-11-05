@@ -7,11 +7,13 @@
     "test": "nyc mocha test/unit/**",
     "prepublishOnly": "npm run test"
   },
+  "engines": {
+    "node": "<= 14"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/c-d-lewis/fabricate.git"
   },
-  "keywords": [],
   "author": "C-D-Lewis",
   "license": "Apache-2.0",
   "bugs": {
@@ -19,35 +21,16 @@
   },
   "homepage": "https://github.com/c-d-lewis/fabricate#readme",
   "devDependencies": {
+    "@chris-lewis/eslint-config": "^1.0.2",
     "browser-env": "^3.3.0",
     "chai": "^4.3.6",
-    "eslint": "^8.3.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.25.3",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0"
   },
   "eslintConfig": {
-    "extends": "eslint-config-airbnb-base",
+    "extends": "@chris-lewis/eslint-config",
     "env": {
-      "browser": true,
       "mocha": true
-    },
-    "rules": {
-      "no-multi-spaces": 0,
-      "global-require": 0,
-      "import/no-dynamic-require": 0,
-      "no-await-in-loop": 0,
-      "no-console": 0,
-      "no-alert": 0,
-      "no-param-reassign": [
-        "error",
-        {
-          "props": false
-        }
-      ],
-      "spaced-comment": 0,
-      "no-underscore-dangle": 0
     },
     "globals": {
       "fabricate": "readonly",
