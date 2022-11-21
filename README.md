@@ -519,6 +519,10 @@ fabricate('NavBar', {
   ]);
 ```
 
+NavBar has the following extra methods:
+
+* `setTitle` - (string) Set the new title.
+
 #### `TextInput`
 
 A basic text input box with padding:

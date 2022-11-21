@@ -541,25 +541,37 @@ fabricate.declare(
     title = 'NavBar Title',
     color = 'white',
     backgroundColor = 'forestgreen',
-  } = {}) => fabricate('Row')
-    .setStyles({
-      padding: '10px 20px',
-      height: '40px',
-      backgroundColor,
-      alignItems: 'center',
-    })
-    .setChildren([
-      fabricate('h1')
-        .setStyles({
-          color,
-          fontWeight: 'bold',
-          fontSize: '1.2rem',
-          cursor: 'default',
-          marginRight: '20px',
-          paddingTop: '2px',
-        })
-        .setText(title),
-    ]),
+  } = {}) => {
+    const titleH1 = fabricate('h1')
+      .setStyles({
+        color,
+        fontWeight: 'bold',
+        fontSize: '1.2rem',
+        cursor: 'default',
+        marginRight: '20px',
+        paddingTop: '2px',
+      })
+      .setText(title);
+
+    const navbar = fabricate('Row')
+      .setStyles({
+        padding: '10px 20px',
+        height: '40px',
+        backgroundColor,
+        alignItems: 'center',
+      })
+      .setChildren([titleH1]);
+
+    /**
+     * Set the navbar title.
+     *
+     * @param {string} t - New title.
+     * @returns {FabricateComponent} Fabricate component.
+     */
+    navbar.setTitle = (t) => titleH1.setText(t);
+
+    return navbar;
+  },
 );
 
 fabricate.declare(

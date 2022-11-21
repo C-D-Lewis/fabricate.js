@@ -536,6 +536,17 @@ describe('fabricate.js', () => {
       expect(title.innerText).to.equal('Custom Title');
     });
 
+    it('should provide NavBar with setTitle method', () => {
+      // Initial state
+      const navbar = fabricate('NavBar');
+      const title = navbar.childNodes[0];
+      expect(title.innerText).to.equal('NavBar Title');
+
+      // Change title
+      navbar.setTitle('new title');
+      expect(title.innerText).to.equal('new title');
+    });
+
     it('should provide TextInput with default props', () => {
       const el = fabricate('TextInput');
       const styles = {
