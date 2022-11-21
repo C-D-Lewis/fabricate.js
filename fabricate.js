@@ -18,11 +18,22 @@ const _fabricate = {
   onDestroyObserver: undefined,
 
   // Internal helpers
+  /**
+   * Get a copy of the state for reading.
+   *
+   * @returns {object} The copy.
+   */
   getStateCopy: () => Object.freeze({ ..._fabricate.state }),
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
-/////////////////////////////////////////// Main factory ///////////////////////////////////////////
+/**
+ * @typedef FabricateComponent
+ *
+ * Enhanced HTMLElement with Fabricate.js methods.
+ */
+
+/// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
 /**
  * Create an element of a given tag type, with fluent methods for continuing
@@ -30,7 +41,7 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  *
  * @param {string} name - HTML tag name, such as 'div', or declared custom component name.
  * @param {object} [customProps] - Props to pass to a custom component being instantiated.
- * @returns {HTMLElement}
+ * @returns {FabricateComponent} Fabricate component.
  */
 const fabricate = (name, customProps) => {
   const { customComponents } = _fabricate;
@@ -46,7 +57,7 @@ const fabricate = (name, customProps) => {
    * Augment existing styles with new ones.
    *
    * @param {object} newStyles - New styles to apply.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.setStyles = (newStyles) => {
     Object.assign(el.style, newStyles);
@@ -57,7 +68,7 @@ const fabricate = (name, customProps) => {
    * Augment existing attributes with new ones.
    *
    * @param {object} newAttributes - New attributes to apply.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.setAttributes = (newAttributes) => {
     Object.assign(el, newAttributes);
@@ -68,7 +79,7 @@ const fabricate = (name, customProps) => {
    * Convenience method to set as a flex container.
    *
    * @param {string} flexDirection - Either 'row' or 'column'.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.asFlex = (flexDirection = 'row') => {
     el.setStyles({ display: 'flex', flexDirection });
@@ -79,7 +90,7 @@ const fabricate = (name, customProps) => {
    * Add new children in addition to any existing ones.
    *
    * @param {Array<HTMLElement>} newChildren - Children to append inside.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.addChildren = (newChildren) => {
     newChildren.forEach((child) => {
@@ -100,7 +111,7 @@ const fabricate = (name, customProps) => {
    * Set all child elements, removing any existing.
    *
    * @param {Array<HTMLElement>} children - Children to append inside.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.setChildren = (children) => {
     el.empty();
@@ -113,7 +124,7 @@ const fabricate = (name, customProps) => {
    * Set the inner HTML.
    *
    * @param {string} html - HTML to set.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.setHtml = (html) => {
     el.innerHTML = html;
@@ -124,7 +135,7 @@ const fabricate = (name, customProps) => {
    * Set the inner text.
    *
    * @param {string} text - Text to set.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.setText = (text) => {
     el.innerText = text;
@@ -134,7 +145,7 @@ const fabricate = (name, customProps) => {
   /**
    * Clear all child content.
    *
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.empty = () => {
     el.innerHTML = '';
@@ -145,7 +156,7 @@ const fabricate = (name, customProps) => {
    * Convenience method for adding a click handler.
    *
    * @param {Function} cb - Function to call when click happens, with element and state.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.onClick = (cb) => {
     el.addEventListener('click', () => cb(el, _fabricate.getStateCopy()));
@@ -156,7 +167,7 @@ const fabricate = (name, customProps) => {
    * Convenience method for adding an input handler.
    *
    * @param {Function} cb - Function to call when text input happens.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.onChange = (cb) => {
     el.addEventListener('input', ({ target }) => cb(el, _fabricate.getStateCopy(), target.value));
@@ -167,7 +178,7 @@ const fabricate = (name, customProps) => {
    * Convenience method for start and end of hover.
    *
    * @param {object} opts - start and end of hover handlers, or a callback.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.onHover = (opts) => {
     // Callback style
@@ -189,7 +200,7 @@ const fabricate = (name, customProps) => {
    *
    * @param {Function} cb - Callback to be notified.
    * @param {Array<string>} keyFilter - List of keys to listen to.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.onUpdate = (cb, keyFilter) => {
     _fabricate.stateWatchers.push({ el, cb, keyFilter });
@@ -201,7 +212,7 @@ const fabricate = (name, customProps) => {
    * using only these chainable methods.
    *
    * @param {Function} cb - Function to run immediately, with this element and current state.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.onCreate = (cb) => {
     cb(el, _fabricate.getStateCopy());
@@ -213,9 +224,14 @@ const fabricate = (name, customProps) => {
    * the DOM/it's parent.
    *
    * @param {Function} cb - Function to run when removed, with this element and current state.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.onDestroy = (cb) => {
+    /**
+     * Callback when the element is destroyed.
+     *
+     * @returns {void}
+     */
     el.onDestroyHandler = () => cb(el, _fabricate.getStateCopy());
     return el;
   };
@@ -225,7 +241,7 @@ const fabricate = (name, customProps) => {
    *
    * @param {Function} testCb - Callback to test the state.
    * @param {Function} changeCb - Callback when the display state changes.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   el.when = (testCb, changeCb) => {
     // First result is always negative to hide until shown
@@ -261,7 +277,7 @@ const fabricate = (name, customProps) => {
   return el;
 };
 
-///////////////////////////////////////// State management /////////////////////////////////////////
+/// ////////////////////////////////////// State management ////////////////////////////////////////
 
 /**
  * Save current state to LocalStorage.
@@ -347,22 +363,22 @@ fabricate.clearState = () => {
   _fabricate.stateWatchers = [];
 };
 
-////////////////////////////////////////////// Helpers /////////////////////////////////////////////
+/// /////////////////////////////////////////// Helpers ////////////////////////////////////////////
 
 /**
  * Determine if a mobile device is being used which has a narrow screen.
  *
- * @returns {boolean}
+ * @returns {boolean} true if running on a 'narrow' screen device.
  */
 fabricate.isNarrow = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
 
 /**
-  * Begin a component hierarchy from the body.
-  *
-  * @param {HTMLElement} root - First element in the app tree.
-  * @param {object} [initialState] - Optional, initial state.
-  * @param {object} [opts] - Extra options.
-  */
+ * Begin a component hierarchy from the body.
+ *
+ * @param {HTMLElement} root - First element in the app tree.
+ * @param {object} [initialState] - Optional, initial state.
+ * @param {object} [opts] - Extra options.
+ */
 fabricate.app = (root, initialState, opts) => {
   // Reset state
   _fabricate.state = initialState || {};
@@ -406,14 +422,14 @@ fabricate.declare = (name, builderCb) => {
   _fabricate.customComponents[name] = builderCb;
 };
 
-/////////////////////////////////////// Built-in Components ////////////////////////////////////////
+/// //////////////////////////////////// Built-in Components ///////////////////////////////////////
 
 fabricate.declare(
   'Row',
   /**
    * Basic Row component.
    *
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   () => fabricate('div').asFlex('row'),
 );
@@ -423,7 +439,7 @@ fabricate.declare(
   /**
    * Basic Column component.
    *
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   () => fabricate('div').asFlex('column'),
 );
@@ -433,7 +449,9 @@ fabricate.declare(
   /**
    * Basic Text component.
    *
-   * @returns {HTMLElement}
+   * @param {object} props - Component props.
+   * @param {string} [props.text] Text content (deprecated)
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({ text } = {}) => {
     if (text) throw new Error('Text component text param was removed - use setText instead');
@@ -449,7 +467,9 @@ fabricate.declare(
    *
    * @param {object} props - Component props.
    * @param {string} props.src - Image URL to show.
-   * @returns {HTMLElement}
+   * @param {number} props.width - Image width (deprecated)
+   * @param {number} props.height - Image height (deprecated)
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({ src = '', width, height } = {}) => {
     if (width || height) throw new Error('Image component width/height params removed - use setStyles instead');
@@ -470,7 +490,7 @@ fabricate.declare(
    * @param {string} [props.color] - Button text and border color.
    * @param {string} [props.backgroundColor] - Button background color.
    * @param {boolean} [props.highlight] - True to enable highlight colors on hover.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({
     text = 'Button',
@@ -515,7 +535,7 @@ fabricate.declare(
    * @param {string} [props.title] - NavBar title text.
    * @param {string} [props.color] - NavBar text color.
    * @param {string} [props.backgroundColor] - NavBar background color.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({
     title = 'NavBar Title',
@@ -551,7 +571,7 @@ fabricate.declare(
    * @param {string} [props.placeholder] - TextInput placeholder text.
    * @param {string} [props.color] - TextInput text color.
    * @param {string} [props.backgroundColor] - TextInput background color.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({
     placeholder = 'Enter value',
@@ -585,7 +605,7 @@ fabricate.declare(
    * @param {number} [props.lineWidth] - Stroke width.
    * @param {string} [props.color] - Color.
    * @param {string} [props.backgroundColor] - Background color.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({
     size = 48,
@@ -627,7 +647,7 @@ fabricate.declare(
   /**
    * Basic Card component.
    *
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   () => fabricate('Column').setStyles({
     width: 'max-content',
@@ -646,7 +666,7 @@ fabricate.declare(
    * @param {object} props - Component props.
    * @param {number} [props.durationS] - Duration in seconds of the fade-in.
    * @param {number} [props.delayMs] - Delay in milliseconds before fade begins.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({
     durationS = '0.6',
@@ -668,7 +688,7 @@ fabricate.declare(
    * @param {string} [props.color] - Pill color.
    * @param {string} [props.backgroundColor] - Pill backgroundColor.
    * @param {boolean} [props.highlight] - True to enable highlight colors on hover.
-   * @returns {HTMLElement}
+   * @returns {FabricateComponent} Fabricate component.
    */
   ({
     text = 'Pill',
@@ -709,12 +729,12 @@ fabricate.declare(
 
 // TODO: Radio group
 
-///////////////////////////////////////// Convenience alias ////////////////////////////////////////
+/// ////////////////////////////////////// Convenience alias ///////////////////////////////////////
 
 // Convenient alternative
 window.fab = fabricate;
 
-////////////////////////////////////////////// Styles //////////////////////////////////////////////
+/// /////////////////////////////////////////// Styles /////////////////////////////////////////////
 
 document.head.appendChild(fabricate('style')
   .setHtml(`@keyframes spin {
