@@ -742,7 +742,7 @@ fabricate.declare(
       objectFit: 'cover',
       cursor: 'pointer',
     })
-    .onClick(() => window.open('https://github.com/C-D-Lewis/heroesofmirren.com', '_blank')),
+    .onClick(() => window.open('https://github.com/C-D-Lewis/fabricate.js', '_blank')),
 );
 
 // TODO: Unfinished Select component
