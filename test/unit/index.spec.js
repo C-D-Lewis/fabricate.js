@@ -808,8 +808,9 @@ describe('fabricate.js', () => {
     it('should provide FabricateAttribution', () => {
       const el = fabricate('FabricateAttribution');
       const styles = {
-        width: '32px',
-        height: '32px',
+        width: '64px',
+        height: 'auto',
+        objectFit: 'cover',
         cursor: 'pointer',
       };
 

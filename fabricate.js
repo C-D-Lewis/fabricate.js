@@ -737,8 +737,9 @@ fabricate.declare(
   () => fabricate('img')
     .setAttributes({ src: 'https://raw.githubusercontent.com/C-D-Lewis/fabricate.js/main/assets/logo_small.png' })
     .setStyles({
-      width: '32px',
-      height: '32px',
+      width: '64px',
+      height: 'auto',
+      objectFit: 'cover',
       cursor: 'pointer',
     })
     .onClick(() => window.open('https://github.com/C-D-Lewis/heroesofmirren.com', '_blank')),
