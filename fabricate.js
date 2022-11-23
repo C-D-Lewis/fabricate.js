@@ -727,6 +727,23 @@ fabricate.declare(
     .setText(text),
 );
 
+fabricate.declare(
+  'FabricateAttribution',
+  /**
+   * Footer logo that can be used to link to fabricate.js.
+   *
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  () => fabricate('img')
+    .setAttributes({ src: 'https://raw.githubusercontent.com/C-D-Lewis/fabricate.js/main/assets/logo_small.png' })
+    .setStyles({
+      width: '32px',
+      height: '32px',
+      cursor: 'pointer',
+    })
+    .onClick(() => window.open('https://github.com/C-D-Lewis/heroesofmirren.com', '_blank')),
+);
+
 // TODO: Unfinished Select component
 // fabricate.Select = ({
 //   options = ['foo', 'bar', 'baz'],

@@ -10,10 +10,23 @@ const { hasStyles, hasAttributes } = require('../util');
 
 describe('fabricate.js', () => {
   before(() => {
-    // Mock
+    /**
+     * Mock getContext.
+     *
+     * @returns {object} Mock getContext data.
+     */
     HTMLCanvasElement.prototype.getContext = () => ({
+      /**
+       *
+       */
       beginPath: () => {},
+      /**
+       *
+       */
       arc: () => {},
+      /**
+       *
+       */
       stroke: () => {},
     });
   });
@@ -162,7 +175,17 @@ describe('fabricate.js', () => {
       let counter = 0;
       const el = fabricate('div')
         .onHover({
+          /**
+           * When hover starts.
+           *
+           * @returns {void}
+           */
           start: () => (counter += 1),
+          /**
+           * When hover ends.
+           *
+           * @returns {void}
+           */
           end: () => (counter += 1),
         });
 
@@ -230,6 +253,11 @@ describe('fabricate.js', () => {
     });
 
     it('should allow creation of root app element with no initial state', () => {
+      /**
+       * Test component.
+       *
+       * @returns {HTMLElement} Fabricate component.
+       */
       const Component = () => fabricate('div');
 
       fabricate.app(Component());
@@ -240,6 +268,11 @@ describe('fabricate.js', () => {
     it('should allow creation of root app element with initial state update', () => {
       let updatedKeys;
 
+      /**
+       * Test component.
+       *
+       * @returns {HTMLElement} Fabricate component.
+       */
       const Component = () => fabricate('div').onUpdate(
         (el, newState, keys) => {
           updatedKeys = keys;
@@ -768,6 +801,17 @@ describe('fabricate.js', () => {
     it('should provide Card', () => {
       const el = fabricate('Card');
       const styles = { display: 'flex', flexDirection: 'column' };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+    });
+
+    it('should provide FabricateAttribution', () => {
+      const el = fabricate('FabricateAttribution');
+      const styles = {
+        width: '32px',
+        height: '32px',
+        cursor: 'pointer',
+      };
 
       expect(hasStyles(el, styles)).to.equal(true);
     });
