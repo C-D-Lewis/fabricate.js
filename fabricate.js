@@ -255,14 +255,16 @@ const fabricate = (name, customProps) => {
      */
     const onStateUpdate = () => {
       const newResult = !!testCb(_fabricate.getStateCopy());
-
-      // Only re-display if a new result from the test callback
       if (newResult === lastResult) return;
-      lastResult = newResult;
 
-      // Update
-      if (changeCb) changeCb(el, _fabricate.getStateCopy(), newResult);
+      // Update if displayed
       el.setStyles({ display: newResult ? originalDisplay : 'none' });
+
+      // Emit update only if not initial render
+      if (changeCb && typeof lastResult !== 'undefined') changeCb(el, _fabricate.getStateCopy(), newResult);
+
+      // Update display state
+      lastResult = newResult;
     };
 
     // Register for state updates

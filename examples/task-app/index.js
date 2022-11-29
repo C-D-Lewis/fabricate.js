@@ -11,13 +11,14 @@ const onSaveTask = (input) => {
   fab.update('tasks', (prev) => [...prev.tasks, value]);
 
   // Reset (TODO: Controlled input)
+  // eslint-disable-next-line no-param-reassign
   input.value = '';
 };
 
 /**
  * Component to add a new task item.
  *
- * @returns {HTMLElement}
+ * @returns {HTMLElement} Fabricate component.
  */
 const NewItemBox = () => {
   const icon = fab('Image', { src: './assets/pencil.png' })
@@ -59,17 +60,18 @@ const NewItemBox = () => {
  * Component for each task item.
  *
  * @param {string} content - Content of the task.
- * @returns {HTMLElement}
+ * @returns {HTMLElement} Fabricate component.
  */
 const TaskCard = (content) => fab('Card')
   .setStyles({
     backgroundColor: 'gold',
     color: 'black',
     margin: '10px',
+    padding: '5px',
   })
   .setChildren([
     fabricate('div')
-      .setStyles({ padding: '15px', fontSize: '1.6rem' })
+      .setStyles({ padding: '5px', fontSize: '1.6rem' })
       .setText(content),
 
     fab('Button', {
@@ -87,7 +89,7 @@ const TaskCard = (content) => fab('Card')
 /**
  * Component to view all existing tasks.
  *
- * @returns {HTMLElement}
+ * @returns {HTMLElement} Fabricate component.
  */
 const TaskList = () => fab('Row')
   .setStyles({ padding: '10px', flexWrap: 'wrap' })
@@ -98,7 +100,7 @@ const TaskList = () => fab('Row')
 /**
  * App component.
  *
- * @returns {HTMLElement}
+ * @returns {HTMLElement} Fabricate component.
  */
 const App = () => fab('Column')
   .setChildren([

@@ -294,6 +294,9 @@ describe('fabricate.js', () => {
         .when(({ visible }) => visible)
         .onCreate(() => (renderCount += 1));
 
+      // Initially hidden
+      expect(el.style.display).to.equal('none');
+
       fabricate.update({ visible: true });
 
       // Original display should be respected
@@ -324,6 +327,18 @@ describe('fabricate.js', () => {
         .when((state) => state.visible);
 
       expect(hasStyles(div, { display: 'none' })).to.equal(true);
+    });
+
+    it('should not initially notify a conditionally rendered component', () => {
+      let notified;
+
+      fabricate('div')
+        .when(
+          (state) => state.visible,
+          () => (notified = true),
+        );
+
+      expect(notified).to.equal(undefined);
     });
 
     it('should conditionally render a component and inform visibility', () => {

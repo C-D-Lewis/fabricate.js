@@ -44,9 +44,11 @@
           fab('Loader'),
 
           Title().setText('Card'),
-          fab('Card').setChildren([
-            fab('Text').setText('Some text inside the card'),
-          ]),
+          fab('Card')
+            .setStyles({ padding: '10px' })
+            .setChildren([
+              fab('Text').setText('Some text inside the card'),
+            ]),
 
           Title().setText('Pill'),
           fab('Pill', { text: 'Example Pill' }),
