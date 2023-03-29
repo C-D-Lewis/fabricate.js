@@ -89,11 +89,11 @@ const fabricate = (name, customProps) => {
   /**
    * Add new children in addition to any existing ones.
    *
-   * @param {Array<HTMLElement>} newChildren - Children to append inside.
+   * @param {Array<HTMLElement>} children - Children to append inside.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.addChildren = (newChildren) => {
-    newChildren.forEach((child) => {
+  el.addChildren = (children) => {
+    children.forEach((child) => {
       // It's another element
       if (typeof child === 'object' && child.tagName) {
         el.appendChild(child);
@@ -108,7 +108,7 @@ const fabricate = (name, customProps) => {
   };
 
   /**
-   * Set all child elements, removing any existing.
+   * Set all child elements, removing any existing ones.
    *
    * @param {Array<HTMLElement>} children - Children to append inside.
    * @returns {FabricateComponent} Fabricate component.
