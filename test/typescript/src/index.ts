@@ -1,4 +1,4 @@
-import { Fabricate, FabricateComponent } from "../../../types/fabricate";
+import { Fabricate, FabricateComponent, FabricateOptions } from "../../../types/fabricate";
 
 declare const fabricate: Fabricate<AppState>;
 
@@ -24,8 +24,12 @@ const App = (): FabricateComponent<AppState> => fabricate('Column')
   ]);
 
 const initialState = { counter: 0 };
+const options: FabricateOptions = {
+  logStateUpdates: true,
+  persistState: ['counter'],
+};
 
-fabricate.app(App(), initialState);
+fabricate.app(App(), initialState, options);
 
 setInterval(() => fabricate.update('counter', ({ counter }) => counter + 1), 1000);
 
@@ -40,3 +44,18 @@ fabricate('div')
   .setText('foo')
   .onClick((el, state) => console.log(state))
   .onChange((el, state, newValue) => console.log(newValue))
+  .onHover((el, state, isHovered) => console.log(isHovered))
+  .onUpdate((el, state, updatedKeys) => console.log(updatedKeys), ['example'])
+  .onDestroy((el, state) => console.log('destroyed'))
+  .when((state => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
+
+// Three forms
+fabricate.update({ foo: 'bar' })
+fabricate.update('foo', 'bar');
+fabricate.update('foo', state => state.counter);
+
+fabricate.declare(
+  'FooComponent',
+  (props): FabricateComponent<AppState> =>
+    fabricate('div').setText(props.label),
+);

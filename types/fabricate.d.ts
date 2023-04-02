@@ -99,7 +99,13 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
       isHovered: boolean,
     ) => void,
   ) => FabricateComponent<StateShape>;
-
+  /**
+   * When a fabricate.js state update occurs.
+   *
+   * @param {function(el, state, updatedKeys)} cb - Callback when update occurs.
+   * @param {string[]} watchKeys - Keys in state to watch.
+   * @returns {FabricateComponent<StateShape>} This component.
+   */
   onUpdate: (
     cb: (
       el: FabricateComponent<StateShape>,
@@ -108,29 +114,112 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
     ) => void,
     watchKeys?: string[],
   ) => FabricateComponent<StateShape>;
+  /**
+   * Convenience method to run some statements when a component is constructed
+   * using only these chainable methods.
+   *
+   * @param {function(el, state)} cb - Callback when main component created.
+   * @returns {FabricateComponent<StateShape>} This component.
+   */
   onCreate: (
     cb: (
       el: FabricateComponent<StateShape>,
       state: StateShape,
     ) => void,
   ) => FabricateComponent<StateShape>;
-
-  when: (
-    cb: (state: StateShape) => boolean,
+  /**
+   * Convenience method to run some statements when a component is removed from
+   * the DOM/it's parent.
+   * 
+   * @param {function(el, state)} cb - Callback when component destroyed.
+   * @returns {FabricateComponent<StateShape>} This component. 
+   */
+  onDestroy: (
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+    ) => void,
   ) => FabricateComponent<StateShape>;
+  /**
+   * Display this component only when a state test is met.
+   *
+   * @param {function(state)} testCb - Callback to test the state.
+   * @param {function(el, state, isDisplayed)} changeCb - Callback when display state changes.
+   * @returns {FabricateComponent<StateShape>} This component. 
+   */
+  when: (
+    testCb: (state: StateShape) => boolean,
+    changeCb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      isDisplayed: boolean,
+    ) => void,
+  ) => FabricateComponent<StateShape>;
+};
+
+/** Options for fabricate.js behavior */
+export type FabricateOptions = {
+  /** Log all state changes in console */
+  logStateUpdates?: boolean;
+  /** Persist some state keys in localStorage */
+  persistState?: string[] | undefined;
 }
 
 /** Fabricate.js library */
 export type Fabricate<StateShape> = {
+  /**
+   * Main component builder, using component name or HTML tag name.
+   *
+   * @param {string} componentName - Component or HTML tag name.
+   * @param {object} props - Component props.
+   * @returns {FabricateComponent<StateShape>} New component.
+   */
   (componentName: string, props?: object): FabricateComponent<StateShape>;
 
+  /**
+   * Update fabricate.js app state.
+   *
+   * @param {string|object} param1 - Either key or object state slice.
+   * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
+   * @returns {void}
+   */
+  update: (
+    param1: string | object,
+    param2?: ((oldState: StateShape) => keyof typeof StateShape) | object | string | number | undefined,
+  ) => void;
+  /**
+   * Clear entire fabricate.js app state.
+   * 
+   * @returns {void}
+   */
+  clearState: () => void,
+  /**
+   * Test if on a 'narrow' device.
+   *
+   * @returns {boolean} true if the device is 'narrow' or phone-like.
+   */
+  isNarrow: () => boolean;
+  /**
+   * Begin a component hierarchy from the body.
+   *
+   * @param {FabricateComponent<AppendMode>} root - First element in the app tree.
+   * @param {StateShape} [initialState] - Optional, initial state.
+   * @param {FabricateOptions} [opts] - Extra options.
+   */
   app: (
     root: FabricateComponent<StateShape>,
     initialState: StateShape,
+    options?: FabricateOptions,
   ) => FabricateComponent<StateShape>;
-  update: (
-    param1: string | object,
-    param2?: (oldState: StateShape) => keyof typeof StateShape | object | undefined,
+  /**
+   * Declare a new component so it can be instantiated using fabricate().
+   * 
+   * @param {string} name - Component name. Some are reserved.
+   * @param {function(props)} builderCb - Builder callback, receiving passed props.
+   * @returns {void}
+   */
+  declare: (
+    name: string,
+    builderCb: (props?: any) => FabricateComponent<StateShape>,
   ) => void;
-  isNarrow: () => boolean;
-}
+};
