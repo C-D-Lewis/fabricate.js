@@ -47,7 +47,9 @@ fabricate('div')
   .onHover((el, state, isHovered) => console.log(isHovered))
   .onUpdate((el, state, updatedKeys) => console.log(updatedKeys), ['example'])
   .onDestroy((el, state) => console.log('destroyed'))
+  // Two forms
   .when((state => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
+  .when((state => !!state))
 
 // Three forms
 fabricate.update({ foo: 'bar' })

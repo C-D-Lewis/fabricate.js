@@ -104,6 +104,15 @@ reference `fabricate.js` from `node_modules`:
 ```
 
 
+### Types
+
+TypeScript users can import types from the `types/fabricate.d.ts` file:
+
+```js
+import { Fabricate } from '../node_modules/fabricate.js/types/fabricate';
+```
+
+
 ## API
 
 The API is split into two sections - component construction and app helpers.

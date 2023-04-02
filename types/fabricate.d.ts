@@ -149,7 +149,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
    */
   when: (
     testCb: (state: StateShape) => boolean,
-    changeCb: (
+    changeCb?: (
       el: FabricateComponent<StateShape>,
       state: StateShape,
       isDisplayed: boolean,
