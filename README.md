@@ -125,7 +125,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.setChildren()` / `addChildren`](#setchildren--addchildren)
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
   * [`.onCreate()` / `.onDestroy()`](#oncreate--ondestroy)
-  * [`.onEVent()`](#onevent)
+  * [`.onEvent()`](#onevent)
   * [`.when()`](#when)
   * [`.empty()`](#empty)
 
