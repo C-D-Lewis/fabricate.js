@@ -47,6 +47,7 @@ fabricate('div')
   .onHover((el, state, isHovered) => console.log(isHovered))
   .onUpdate((el, state, updatedKeys) => console.log(updatedKeys), ['example'])
   .onDestroy((el, state) => console.log('destroyed'))
+  .onEvent('load', (el, state, event) => console.log(event))
   // Two forms
   .when((state => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
   .when((state => !!state))
@@ -61,3 +62,5 @@ fabricate.declare(
   (props): FabricateComponent<AppState> =>
     fabricate('div').setText(props.label),
 );
+
+fabricate.onKeyDown((state, key) => console.log(key));

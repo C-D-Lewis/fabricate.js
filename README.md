@@ -125,6 +125,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.setChildren()` / `addChildren`](#setchildren--addchildren)
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
   * [`.onCreate()` / `.onDestroy()`](#oncreate--ondestroy)
+  * [`.onEVent()`](#onevent)
   * [`.when()`](#when)
   * [`.empty()`](#empty)
 
@@ -134,6 +135,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.isNarrow()`](#isnarrow)
   * [`.app()`](#app)
   * [`.declare()`](#declare)
+  * [`.onKeyDown()`](#onkeydown)
   * [`.update()` / `.onUpdate()`](#update--onupdate)
   * [`.clearState()`](#clearstate)
 
@@ -257,6 +259,15 @@ Or when a component has been removed from the DOM:
 DevicePage()
   .onCreate(subscribeWebsockets)
   .onDestroy(unsubscribeWebsockets);
+```
+
+#### `.onEvent()`
+
+Add an event listener for any other kind of event, such as 'load':
+
+```js
+fabricate('Image', { src })
+  .onEvent('load', (el, state, event) => console.log(event));
 ```
 
 #### `.when()`
@@ -396,6 +407,18 @@ Then create the component where needed, supplying the required props:
 ```js
 fabricate('ColorfulText', { color: 'red' })
   .setText('Red custom component!');
+```
+
+#### `.onKeyDown`
+
+Listen globally for 'keydown' events. Useful for keyboard shortcuts.
+
+```js
+fabricate.onKeyDown((state, key) => {
+  if (key === 'Enter') {
+    console.log('Enter was pressed');
+  }
+});
 ```
 
 #### `.update()` / `.onUpdate()`

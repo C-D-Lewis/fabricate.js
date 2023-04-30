@@ -141,6 +141,21 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
     ) => void,
   ) => FabricateComponent<StateShape>;
   /**
+   * Listen for any other Event type, such as 'load'.
+   *
+   * @param {string} type - Event type.
+   * @param {function(el, state, event)} cb - Callback when event listener fires.
+   * @returns {FabricateComponent<StateShape>} This component.
+   */
+  onEvent: (
+    type: string,
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      event: Event,
+    ) => void,
+  ) => FabricateComponent<StateShape>;
+  /**
    * Display this component only when a state test is met.
    *
    * @param {function(state)} testCb - Callback to test the state.
@@ -222,4 +237,15 @@ export type Fabricate<StateShape> = {
     name: string,
     builderCb: (props?: any) => FabricateComponent<StateShape>,
   ) => void;
+  /**
+   * Listen globally for any keydown event. Good for keyboard shortcuts.
+   *
+   * @param {function(state, key)} cb - Callback when key pressed.
+   */
+  onKeyDown: (
+    cb: (
+      state: StateShape,
+      key: string,
+    ) => void,
+  ) => void,
 };

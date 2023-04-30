@@ -132,6 +132,17 @@ describe('fabricate.js', () => {
 
     //   expect(destoyed).to.equal(true);
     // });
+
+    // TODO Works in browser, but not in mocked tests
+    // it('should allow listening for other Events', (done) => {
+    //   fabricate('Image', {
+    //     src: 'https://en.wikipedia.org/static/images/icons/wikipedia.png',
+    //   })
+    //     .onEvent('load', (el, state, event) => {
+    //       console.log({ event });
+    //       done();
+    //     });
+    // });
   });
 
   describe('Component behaviours', () => {
@@ -374,6 +385,16 @@ describe('fabricate.js', () => {
 
     it('should not allow invalid names', () => {
       expect(() => fabricate.declare('My Component')).to.throw(Error);
+    });
+
+    it('should allow keyboard shortcuts', () => {
+      let pressed;
+
+      fabricate.onKeyDown(() => pressed = true);
+
+      document.dispatchEvent(new Event('keydown'));
+
+      expect(pressed).to.equal(true);
     });
   });
 

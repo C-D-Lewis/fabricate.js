@@ -237,6 +237,18 @@ const fabricate = (name, customProps) => {
   };
 
   /**
+   * Listen for any other Event type, such as 'load'.
+   *
+   * @param {string} type - Event type.
+   * @param {Function} cb - Callback when event listener fires.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  el.onEvent = (type, cb) => {
+    el.addEventListener(type, (e) => cb(el, _fabricate.getStateCopy(), e));
+    return el;
+  };
+
+  /**
    * Conditionally display a child in response to state update.
    *
    * @param {Function} testCb - Callback to test the state.
@@ -422,6 +434,17 @@ fabricate.declare = (name, builderCb) => {
   if (fabricate[name] || _fabricate.customComponents[name]) throw new Error('Component already declared');
 
   _fabricate.customComponents[name] = builderCb;
+};
+
+/**
+ * Listen globally for any keydown event. Good for keyboard shortcuts.
+ *
+ * @param {Function} cb - Callback when key pressed.
+ */
+fabricate.onKeyDown = (cb) => {
+  document.addEventListener('keydown', ({ key }) => {
+    cb(_fabricate.getStateCopy(), key);
+  });
 };
 
 /// //////////////////////////////////// Built-in Components ///////////////////////////////////////

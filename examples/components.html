@@ -20,7 +20,8 @@
 
           Title().setText('Image'),
           fab('Image', { src: './assets/account.png' })
-            .setStyles({ width: '64px', height: '64px' }),
+            .setStyles({ width: '64px', height: '64px' })
+            .onEvent('load', (el, state, event) => console.log(event)),
 
           Title().setText('Fader'),
           fab('Column').setStyles({ height: '50px' })

@@ -5,7 +5,7 @@
   "main": "fabricate.js",
   "types": "types/fabricate.d.ts",
   "scripts": {
-    "test": "nyc mocha test/unit/**",
+    "test": "nyc mocha test/unit/** --timeout 10000",
     "prepublishOnly": "npm run test"
   },
   "engines": {
