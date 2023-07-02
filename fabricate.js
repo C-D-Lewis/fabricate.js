@@ -8,6 +8,7 @@ const _fabricate = {
   DEFAULT_OPTIONS: {
     logStateUpdates: false,
     persistState: undefined,
+    strict: false,
   },
 
   // Library state
@@ -327,8 +328,20 @@ const _loadPersistState = () => {
  * @param {Array<string>} keys - Key that was updated.
  */
 const _notifyStateChange = (keys) => {
-  const { stateWatchers, state, options } = _fabricate;
+  const {
+    stateWatchers, state, initialState, options,
+  } = _fabricate;
 
+  // Only allow known state key updates
+  if (options.strict) {
+    keys
+      .filter((p) => !p.startsWith('fabricate:'))
+      .forEach((key) => {
+        if (typeof initialState[key] === 'undefined') {
+          throw new Error(`strict mode: Unknown state key ${key}`);
+        }
+      });
+  }
   // Log to console for debugging
   if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
   // Persist to LocalStorage if required
@@ -395,7 +408,9 @@ fabricate.isNarrow = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
  */
 fabricate.app = (root, initialState, opts) => {
   // Reset state
-  _fabricate.state = initialState || {};
+  const finalState = initialState || {};
+  _fabricate.state = finalState;
+  _fabricate.initialState = { ...finalState };
   _fabricate.options = opts || _fabricate.DEFAULT_OPTIONS;
 
   // Options

@@ -4,40 +4,6 @@ const results = {
 };
 
 /**
- * Add a result to the page.
- *
- * @param {boolean} passed - If the test passed.
- * @param {string} msg - Test summary.
- */
-const addResult = (passed, msg) => {
-  const span = document.createElement('span');
-  span.classList = passed ? 'pass' : 'fail';
-  span.innerText = `${passed ? '✓' : 'X'} ${msg}`;
-  document.body.appendChild(span);
-};
-
-/**
- * Tester function.
- *
- * @param {string} summary - Test summary.
- * @param {function} cb - Test function, must return true.
- */
-// eslint-disable-next-line no-unused-vars
-const it = async (summary, cb) => {
-  results.total += 1;
-
-  let passed = false;
-  try {
-    passed = cb() === true;
-    results.passed += passed ? 1 : 0;
-  } catch (e) {
-    console.log(e);
-  }
-
-  addResult(passed, summary);
-};
-
-/**
  * Check an element has all the specified styles.
  *
  * @param {HTMLElement} el - Element to test.

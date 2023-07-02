@@ -31,7 +31,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
    * @param {FabricateComponent[]} newChildren - New children to add.
    * @returns {FabricateComponent<StateShape>} This component.
    */
-  addChildren: (newChildren: FabricateComponent[]) => FabricateComponent<StateShape>;
+  addChildren: (newChildren: FabricateComponent<StateShape>[]) => FabricateComponent<StateShape>;
   /**
    * Set all child elements, removing any existing ones.
    *
@@ -170,7 +170,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
       isDisplayed: boolean,
     ) => void,
   ) => FabricateComponent<StateShape>;
-};
+}
 
 /** Options for fabricate.js behavior */
 export type FabricateOptions = {
@@ -178,6 +178,8 @@ export type FabricateOptions = {
   logStateUpdates?: boolean;
   /** Persist some state keys in localStorage */
   persistState?: string[] | undefined;
+  /** Only allow updating known state */
+  strict?: boolean;
 }
 
 /** Fabricate.js library */
@@ -200,7 +202,7 @@ export type Fabricate<StateShape> = {
    */
   update: (
     param1: string | object,
-    param2?: ((oldState: StateShape) => keyof typeof StateShape) | object | string | number | boolean | undefined,
+    param2?: ((oldState: StateShape) => keyof StateShape) | object | string | number | boolean | undefined,
   ) => void;
   /**
    * Clear entire fabricate.js app state.

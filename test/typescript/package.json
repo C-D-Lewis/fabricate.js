@@ -4,8 +4,7 @@
   "description": "Test script for fabricate.js TypeScript types file",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode development",
-    "start": "npm run build && http-server"
+    "build": "webpack --mode development"
   },
   "author": "C-D-Lewis",
   "devDependencies": {

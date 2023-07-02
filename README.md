@@ -391,11 +391,14 @@ The options available are:
 |------|------|-------------|
 | `logStateUpdates` | `boolean` | Log all state updates in the console. |
 | `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
+| `strict` | `boolean` | Strict mode - only allow updating known state keys. |
 
 #### `.declare()`
 
 Declare a custom component that can be instantiated elsewhere in the app, with
 props, useful in apps with many files:
+
+> When using TypeScript, simply exporting components is usually preferable.
 
 ```js
 // Declare component name and builder function including props

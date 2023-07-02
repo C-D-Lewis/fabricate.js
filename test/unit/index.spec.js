@@ -867,5 +867,15 @@ describe('fabricate.js', () => {
       const stored = localStorage.getItem(_fabricate.STORAGE_KEY_STATE);
       expect(stored).to.equal(JSON.stringify({ counter: 64 }));
     });
+
+    it('should only allow updating known state in strict mode', () => {
+      const initialState = { known: true };
+      fabricate.app(fabricate('div'), initialState, { strict: true });
+
+      expect(() => fabricate.update('unknown', true)).to.throw(Error);
+
+      // Reset options to default
+      fabricate.app(fabricate('div'));
+    });
   });
 });

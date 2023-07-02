@@ -6,6 +6,7 @@
   "types": "types/fabricate.d.ts",
   "scripts": {
     "test": "nyc mocha test/unit/** --timeout 10000",
+    "start": "http-server",
     "prepublishOnly": "npm run test"
   },
   "engines": {
