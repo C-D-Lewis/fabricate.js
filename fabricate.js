@@ -329,19 +329,9 @@ const _loadPersistState = () => {
  */
 const _notifyStateChange = (keys) => {
   const {
-    stateWatchers, state, initialState, options,
+    stateWatchers, state, options,
   } = _fabricate;
 
-  // Only allow known state key updates
-  if (options.strict) {
-    keys
-      .filter((p) => !p.startsWith('fabricate:'))
-      .forEach((key) => {
-        if (typeof initialState[key] === 'undefined') {
-          throw new Error(`strict mode: Unknown state key ${key}`);
-        }
-      });
-  }
   // Log to console for debugging
   if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
   // Persist to LocalStorage if required
@@ -363,23 +353,56 @@ const _notifyStateChange = (keys) => {
  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
  */
 fabricate.update = (param1, param2) => {
-  const { state } = _fabricate;
+  const { state, options } = _fabricate;
+
+  const keys = typeof param1 === 'object' ? Object.keys(param1) : [param1];
+
+  // Only allow known state key updates
+  if (options.strict) {
+    keys
+      .filter((p) => !p.startsWith('fabricate:'))
+      .forEach((key) => {
+        if (typeof state[key] === 'undefined') {
+          throw new Error(`strict mode: Unknown state key ${key}`);
+        }
+      });
+  }
 
   // State slice?
   if (typeof param1 === 'object') {
     _fabricate.state = { ...state, ...param1 };
-    _notifyStateChange(Object.keys(param1));
+    _notifyStateChange(keys);
     return;
   }
 
   // Keyed update?
   if (typeof param1 === 'string') {
     state[param1] = typeof param2 === 'function' ? param2(state) : param2;
-    _notifyStateChange([param1]);
+    _notifyStateChange(keys);
     return;
   }
 
   throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);
+};
+
+/**
+ * Build a key using dynamic data.
+ *
+ * @param {string} name - State name.
+ * @param  {...any} rest - Remaining qualifiers of the key.
+ * @returns {string} Constructed state key.
+ */
+fabricate.buildKey = (name, ...rest) => {
+  const { strict } = _fabricate.options;
+
+  const key = `${name}:${rest.join(':')}`;
+
+  // Allow this key by adding it, but trigger no updates
+  if (strict) {
+    _fabricate.state[key] = null;
+  }
+
+  return key;
 };
 
 /**
@@ -408,9 +431,7 @@ fabricate.isNarrow = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
  */
 fabricate.app = (root, initialState, opts) => {
   // Reset state
-  const finalState = initialState || {};
-  _fabricate.state = finalState;
-  _fabricate.initialState = { ...finalState };
+  _fabricate.state = initialState || {};
   _fabricate.options = opts || _fabricate.DEFAULT_OPTIONS;
 
   // Options

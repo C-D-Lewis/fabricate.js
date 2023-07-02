@@ -34,6 +34,9 @@ describe('fabricate.js', () => {
   afterEach(() => {
     fabricate.clearState();
 
+    // Reset options to default
+    fabricate.app(fabricate('div'));
+
     document.getElementsByTagName('html')[0].innerHTML = '';
   });
 
@@ -205,6 +208,78 @@ describe('fabricate.js', () => {
 
       expect(counter).to.equal(2);
     });
+
+    it('should conditionally render a component only once per state value', () => {
+      let renderCount = 0;
+
+      const el = fabricate('Row')
+        .when(({ visible }) => visible)
+        .onCreate(() => (renderCount += 1));
+
+      // Initially hidden
+      expect(el.style.display).to.equal('none');
+
+      fabricate.update({ visible: true });
+
+      // Original display should be respected
+      expect(el.style.display).to.equal('flex');
+
+      // Should not re-render for same value
+      fabricate.update({ visible: true });
+
+      expect(renderCount).to.equal(1);
+    });
+
+    it('should conditionally render a component and notify it immediately', () => {
+      let updated;
+
+      fabricate('div')
+        .when((state) => state.visible)
+        .onUpdate(() => {
+          updated = true;
+        });
+
+      fabricate.update({ visible: true });
+
+      expect(updated).to.equal(true);
+    });
+
+    it('should not initially conditionally render a component', () => {
+      const div = fabricate('div')
+        .when((state) => state.visible);
+
+      expect(hasStyles(div, { display: 'none' })).to.equal(true);
+    });
+
+    it('should not initially notify a conditionally rendered component', () => {
+      let notified;
+
+      fabricate('div')
+        .when(
+          (state) => state.visible,
+          () => (notified = true),
+        );
+
+      expect(notified).to.equal(undefined);
+    });
+
+    it('should conditionally render a component and inform visibility', () => {
+      let updated;
+
+      fabricate('div')
+        .when(
+          (state) => state.visible,
+          (el, state, isVisible) => {
+            updated = isVisible;
+          },
+        );
+
+      fabricate.update({ visible: true });
+      expect(updated).to.equal(true);
+
+      fabricate.update({ visible: false });
+      expect(updated).to.equal(false);
+    });
   });
 
   describe('App state', () => {
@@ -298,78 +373,6 @@ describe('fabricate.js', () => {
       expect(document.body.childElementCount).to.equal(1);
     });
 
-    it('should conditionally render a component only once per state value', () => {
-      let renderCount = 0;
-
-      const el = fabricate('Row')
-        .when(({ visible }) => visible)
-        .onCreate(() => (renderCount += 1));
-
-      // Initially hidden
-      expect(el.style.display).to.equal('none');
-
-      fabricate.update({ visible: true });
-
-      // Original display should be respected
-      expect(el.style.display).to.equal('flex');
-
-      // Should not re-render for same value
-      fabricate.update({ visible: true });
-
-      expect(renderCount).to.equal(1);
-    });
-
-    it('should conditionally render a component and notify it immediately', () => {
-      let updated;
-
-      fabricate('div')
-        .when((state) => state.visible)
-        .onUpdate(() => {
-          updated = true;
-        });
-
-      fabricate.update({ visible: true });
-
-      expect(updated).to.equal(true);
-    });
-
-    it('should not initially conditionally render a component', () => {
-      const div = fabricate('div')
-        .when((state) => state.visible);
-
-      expect(hasStyles(div, { display: 'none' })).to.equal(true);
-    });
-
-    it('should not initially notify a conditionally rendered component', () => {
-      let notified;
-
-      fabricate('div')
-        .when(
-          (state) => state.visible,
-          () => (notified = true),
-        );
-
-      expect(notified).to.equal(undefined);
-    });
-
-    it('should conditionally render a component and inform visibility', () => {
-      let updated;
-
-      fabricate('div')
-        .when(
-          (state) => state.visible,
-          (el, state, isVisible) => {
-            updated = isVisible;
-          },
-        );
-
-      fabricate.update({ visible: true });
-      expect(updated).to.equal(true);
-
-      fabricate.update({ visible: false });
-      expect(updated).to.equal(false);
-    });
-
     it('should allow declaring a component for re-use with props', () => {
       const styles = { color: 'red' };
 
@@ -387,7 +390,7 @@ describe('fabricate.js', () => {
       expect(() => fabricate.declare('My Component')).to.throw(Error);
     });
 
-    it('should allow keyboard shortcuts', () => {
+    it('should allow creating keyboard shortcuts', () => {
       let pressed;
 
       fabricate.onKeyDown(() => pressed = true);
@@ -395,6 +398,20 @@ describe('fabricate.js', () => {
       document.dispatchEvent(new Event('keydown'));
 
       expect(pressed).to.equal(true);
+    });
+
+    it('should create dynamic state keys', () => {
+      const key = fabricate.buildKey('isVisible', 'AppCard', '1');
+
+      expect(key).to.equal('isVisible:AppCard:1');
+    });
+
+    it('should allow dynamic state keys in strict mode', () => {
+      fabricate.app(fabricate('div'), {}, { strict: true });
+
+      const key = fabricate.buildKey('isVisible', 'AppCard', '1');
+
+      expect(() => fabricate.update(key, true)).to.not.throw();
     });
   });
 
@@ -873,9 +890,6 @@ describe('fabricate.js', () => {
       fabricate.app(fabricate('div'), initialState, { strict: true });
 
       expect(() => fabricate.update('unknown', true)).to.throw(Error);
-
-      // Reset options to default
-      fabricate.app(fabricate('div'));
     });
   });
 });

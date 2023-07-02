@@ -138,6 +138,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.onKeyDown()`](#onkeydown)
   * [`.update()` / `.onUpdate()`](#update--onupdate)
   * [`.clearState()`](#clearstate)
+  * [`.buildKey()`](#buildkey)
 
 
 ### `Component`
@@ -466,6 +467,37 @@ Clear all state stored in `fabricate.js`:
 
 ```js
 fabricate.clearState();
+```
+
+#### `.buildKey()`
+
+When state keys cannot be known in advance (such as with lists of components
+representing variable data from an API) when using the `strict` option, the
+`buildKey()` helper can be used to construct state keys in a predictable way.
+Keys made this way are allowed by the `strict` mode.
+
+> As much specificity can be used as required, just use more parameters.
+
+```js
+const UserCard = ({ userId }) => fabricate('Column')
+  // ...
+  .onUpdate((el, state) => {
+    // Use key to display state
+    const isOnlineKey = fabricate.buildKey('UserCard', userId, 'isOnline');
+    
+    el.setStyles({ backgroundColor: state[isOnlineKey] ? 'green' : 'grey' });
+  });
+
+// Set state when data is fetched
+API.fetchUsers()
+  .then((users) => {
+    users.forEach((user) => {
+      if (user.online) {
+        const isOnlineKey = fabricate.buildKey('UserCard', userId, 'isOnline');
+        fabricate.update(isOnlineKey, true);
+      }
+    });
+  });
 ```
 
 

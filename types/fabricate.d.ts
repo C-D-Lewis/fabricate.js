@@ -250,4 +250,12 @@ export type Fabricate<StateShape> = {
       key: string,
     ) => void,
   ) => void,
+  /**
+   * Build a key using dynamic data.
+   *
+   * @param {string} name - State name.
+   * @param  {...string} rest - Remaining qualifiers of the key.
+   * @returns {string} Constructed state key.
+   */
+  buildKey: (name: string, ...rest: string) => string,
 };
