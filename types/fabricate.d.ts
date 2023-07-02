@@ -200,7 +200,7 @@ export type Fabricate<StateShape> = {
    */
   update: (
     param1: string | object,
-    param2?: ((oldState: StateShape) => keyof typeof StateShape) | object | string | number | undefined,
+    param2?: ((oldState: StateShape) => keyof typeof StateShape) | object | string | number | boolean | undefined,
   ) => void;
   /**
    * Clear entire fabricate.js app state.

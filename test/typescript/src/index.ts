@@ -7,6 +7,7 @@ declare const fabricate: Fabricate<AppState>;
 /** Example app state type */
 type AppState = {
   counter: number;
+  updated: boolean;
 };
 
 /**
@@ -23,7 +24,7 @@ const App = (): FabricateComponent<AppState> => fabricate('Column')
       }, ['counter']),
   ]);
 
-const initialState = { counter: 0 };
+const initialState = { counter: 0, updated: false };
 const options: FabricateOptions = {
   logStateUpdates: true,
   persistState: ['counter'],
@@ -56,6 +57,7 @@ fabricate('div')
 fabricate.update({ foo: 'bar' })
 fabricate.update('foo', 'bar');
 fabricate.update('foo', state => state.counter);
+fabricate.update('updated', true);
 
 fabricate.declare(
   'FooComponent',
