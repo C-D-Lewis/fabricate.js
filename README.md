@@ -652,6 +652,8 @@ fabricate('Pill', {
 
 ## Run tests
 
+> For DOM mocking, node 14 is required to run unit tests.
+
 Run unit tests:
 
 ```

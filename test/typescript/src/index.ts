@@ -67,3 +67,5 @@ fabricate.declare(
 );
 
 fabricate.onKeyDown((state, key) => console.log(key));
+
+fabricate.buildKey('test', 'prop');

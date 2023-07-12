@@ -9,9 +9,6 @@
     "start": "http-server",
     "prepublishOnly": "npm run test"
   },
-  "engines": {
-    "node": "<= 14"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/c-d-lewis/fabricate.git"

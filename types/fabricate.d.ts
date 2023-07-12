@@ -257,5 +257,5 @@ export type Fabricate<StateShape> = {
    * @param  {...string} rest - Remaining qualifiers of the key.
    * @returns {string} Constructed state key.
    */
-  buildKey: (name: string, ...rest: string) => string,
+  buildKey: (name: string, ...rest: [string]) => string,
 };
