@@ -10,7 +10,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
    * @param {object} styles - CSS JavaScript styles object to apply.
    * @returns {FabricateComponent<StateShape>} This component.
    */
-  setStyles: (styles: object) => FabricateComponent<StateShape>;
+  setStyles: (styles: Partial<CSSStyleDeclaration>) => FabricateComponent<StateShape>;
   /**
    * Set some element attributes.
    *
@@ -196,13 +196,15 @@ export type Fabricate<StateShape> = {
   /**
    * Update fabricate.js app state.
    *
-   * @param {string|object} param1 - Either key or object state slice.
+   * Note: param1 can be string to allow buildKey and dynamic state keys.
+   *
+   * @param {string|Partial<StateShape>} param1 - Either key or object state slice.
    * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
    * @returns {void}
    */
   update: (
-    param1: string | object,
-    param2?: ((oldState: StateShape) => keyof StateShape) | object | string | number | boolean | undefined,
+    param1: string | Partial<StateShape>,
+    param2?: ((oldState: StateShape) => any) | object | string | number | boolean | undefined | null,
   ) => void;
   /**
    * Clear entire fabricate.js app state.

@@ -39,6 +39,7 @@ setInterval(() => fabricate.update('counter', ({ counter }) => counter + 1), 100
 
 fabricate('div')
   .asFlex('column')
+  .setStyles({ color: 'white' })
   .setAttributes({ disabled: true })
   .addChildren([fabricate('div')])
   .setChildren([fabricate('div')])
@@ -55,7 +56,7 @@ fabricate('div')
   .when((state => !!state))
 
 // Three forms
-fabricate.update({ foo: 'bar' })
+fabricate.update({ counter: 1 })
 fabricate.update('foo', 'bar');
 fabricate.update('foo', state => state.counter);
 fabricate.update('updated', true);
