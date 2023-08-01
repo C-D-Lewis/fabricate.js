@@ -139,6 +139,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.update()` / `.onUpdate()`](#update--onupdate)
   * [`.clearState()`](#clearstate)
   * [`.buildKey()`](#buildkey)
+  * [`.conditional()`](#conditional)
 
 
 ### `Component`
@@ -500,6 +501,30 @@ API.fetchUsers()
       }
     });
   });
+```
+
+#### `.conditional()`
+
+Allows creation of components when a state condition is met. The rendered
+component is contained in a persistent wrapper than be styled if required for
+parent layout.
+
+```js
+const mainPage = fabricate.conditional(
+  state => state.page === 'main',
+  MainPage,
+);
+
+const settingsPage = fabricate.conditional(
+  state => state.page === 'settings',
+  SettingsPage,
+);
+
+fabricate('Column')
+  .setChildren([
+    mainPage,
+    settingsPage,
+  ]);
 ```
 
 
