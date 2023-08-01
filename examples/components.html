@@ -23,15 +23,6 @@
             .setStyles({ width: '64px', height: '64px' })
             .onEvent('load', (el, state, event) => console.log(event)),
 
-          Title().setText('Fader'),
-          fab('Column').setStyles({ height: '50px' })
-            .setChildren([
-                fab('Fader')
-                  .setChildren([
-                    fab('Text').setText('Text fades in'),
-                  ]),
-            ]),
-
           Title().setText('Button'),
           fab('Button', { text: 'Confirm', backgroundColor: 'royalblue' }),
 
@@ -53,6 +44,21 @@
 
           Title().setText('Pill'),
           fab('Pill', { text: 'Example Pill' }),
+
+          Title().setText('Fader'),
+          fabricate.conditional(
+            (state) => state.showFader,
+            () => fab('Column').setStyles({ height: '50px' })
+              .setChildren([
+                fab('Fader')
+                  .setChildren([
+                    fab('Text').setText('Text fades in'),
+                  ]),
+              ]),
+          )
+            .setStyles({
+              minHeight: '100px',
+            }),
         ]);
 
       fabricate.app(App(), { showFader: false });

@@ -126,7 +126,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
   * [`.onCreate()` / `.onDestroy()`](#oncreate--ondestroy)
   * [`.onEvent()`](#onevent)
-  * [`.when()`](#when)
+  * [`.displayWhen()`](#displaywhen)
   * [`.empty()`](#empty)
 
 ### App helpers
@@ -271,17 +271,19 @@ fabricate('Image', { src })
   .onEvent('load', (el, state, event) => console.log(event));
 ```
 
-#### `.when()`
+#### `.displayWhen()`
 
-Conditionally show or hide a component (or tree of components) using the `when`
-method:
+> Formally `.when()`
+
+Conditionally show or hide a component (or tree of components) using the
+`displayWhen` method:
 
 ```js
 const pageContainer = fabricate('Column')
   .setChildren([
     fabricate('Text')
       .setText('Now you see me!')
-      .when(state => state.showText),
+      .displayWhen(state => state.showText),
   ]);
 
 // Use as the root app element and provide first state values
@@ -302,7 +304,7 @@ const pageContainer = fabricate('Column')
   .setChildren([
     fabricate('Text')
       .setText('Now you see me!')
-      .when(
+      .displayWhen(
         state => state.showText,
         (el, state, isVisible) => console.log(`Am I visible now? ${isVisible}`),
       ),

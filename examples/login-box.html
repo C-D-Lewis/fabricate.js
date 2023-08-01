@@ -68,19 +68,19 @@
             }),
 
           LoginForm()
-            .when(({ isLoading }) => !isLoading),
+            .displayWhen(({ isLoading }) => !isLoading),
           fab('Loader')
             .setStyles({ margin: '20px auto' })
-            .when((state) => state.isLoading && !state.isCompleted),
+            .displayWhen((state) => state.isLoading && !state.isCompleted),
         ]);
 
       const App = () => fab('Column')
         .setStyles({ padding: '40px' })
         .setChildren([
           fab('Text').setText('Login completed!')
-            .when(({ isCompleted }) => isCompleted),
+            .displayWhen(({ isCompleted }) => isCompleted),
           fab('Fader').setChildren([LoginBox()])
-            .when(({ isCompleted }) => !isCompleted),
+            .displayWhen(({ isCompleted }) => !isCompleted),
         ]);
 
       const initialState = {

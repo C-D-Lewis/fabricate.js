@@ -146,6 +146,78 @@ describe('fabricate.js', () => {
     //       done();
     //     });
     // });
+
+    it('should not create immediately when using conditional', () => {
+      let created;
+
+      /**
+       * TestComponent
+       *
+       * @returns {HTMLElement} TestComponent
+       */
+      const TestComponent = () => fabricate('div')
+        .onCreate(() => {
+          created = true;
+        });
+
+      fabricate('Row')
+        .setChildren([
+          fabricate.conditional(({ visible }) => visible, TestComponent),
+        ]);
+
+      expect(created).to.equal(undefined);
+    });
+
+    it('should be re-created when using conditional', () => {
+      let createdCount = 0;
+
+      /**
+       * TestComponent
+       *
+       * @returns {HTMLElement} TestComponent
+       */
+      const TestComponent = () => fabricate('div')
+        .onCreate(() => {
+          createdCount += 1;
+        });
+
+      fabricate('Row')
+        .setChildren([
+          fabricate.conditional(({ visible }) => visible, TestComponent),
+        ]);
+
+      // Create twice
+      fabricate.update({ visible: true });
+      fabricate.update({ visible: false });
+      fabricate.update({ visible: true });
+
+      expect(createdCount).to.equal(2);
+    });
+
+    it('should not be re-created when state update is the same', () => {
+      let createdCount = 0;
+
+      /**
+       * TestComponent
+       *
+       * @returns {HTMLElement} TestComponent
+       */
+      const TestComponent = () => fabricate('div')
+        .onCreate(() => {
+          createdCount += 1;
+        });
+
+      fabricate('Row')
+        .setChildren([
+          fabricate.conditional(({ visible }) => visible, TestComponent),
+        ]);
+
+      // Create twice
+      fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
+
+      expect(createdCount).to.equal(1);
+    });
   });
 
   describe('Component behaviours', () => {
@@ -213,7 +285,7 @@ describe('fabricate.js', () => {
       let renderCount = 0;
 
       const el = fabricate('Row')
-        .when(({ visible }) => visible)
+        .displayWhen(({ visible }) => visible)
         .onCreate(() => (renderCount += 1));
 
       // Initially hidden
@@ -234,7 +306,7 @@ describe('fabricate.js', () => {
       let updated;
 
       fabricate('div')
-        .when((state) => state.visible)
+        .displayWhen((state) => state.visible)
         .onUpdate(() => {
           updated = true;
         });
@@ -244,9 +316,9 @@ describe('fabricate.js', () => {
       expect(updated).to.equal(true);
     });
 
-    it('should not initially conditionally render a component', () => {
+    it('should not initially conditionally display a component', () => {
       const div = fabricate('div')
-        .when((state) => state.visible);
+        .displayWhen((state) => state.visible);
 
       expect(hasStyles(div, { display: 'none' })).to.equal(true);
     });
@@ -255,7 +327,7 @@ describe('fabricate.js', () => {
       let notified;
 
       fabricate('div')
-        .when(
+        .displayWhen(
           (state) => state.visible,
           () => (notified = true),
         );
@@ -263,11 +335,11 @@ describe('fabricate.js', () => {
       expect(notified).to.equal(undefined);
     });
 
-    it('should conditionally render a component and inform visibility', () => {
+    it('should conditionally display a component and inform visibility', () => {
       let updated;
 
       fabricate('div')
-        .when(
+        .displayWhen(
           (state) => state.visible,
           (el, state, isVisible) => {
             updated = isVisible;

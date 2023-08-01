@@ -52,8 +52,8 @@ fabricate('div')
   .onDestroy((el, state) => console.log('destroyed'))
   .onEvent('load', (el, state, event) => console.log(event))
   // Two forms
-  .when((state => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
-  .when((state => !!state))
+  .displayWhen((state => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
+  .displayWhen((state => !!state))
 
 // Three forms
 fabricate.update({ counter: 1 })

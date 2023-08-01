@@ -37,6 +37,28 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 /// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
 /**
+ * Used for both kinds of conditional display/render, returning new state to remember
+ * in each case.
+ *
+ * @param {FabricateComponent} el - Element being displayed, perhaps.
+ * @param {boolean} lastResult - Last remembered result.
+ * @param {Function} testCb - State test callback.
+ * @param {Function} [changeCb] - Optional change callback.
+ * @returns {boolean} new result.
+ */
+const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
+  const newResult = !!testCb(_fabricate.getStateCopy());
+  if (newResult === lastResult) return lastResult;
+
+  // Emit update only if not initial render
+  if (changeCb && typeof lastResult !== 'undefined') {
+    changeCb(el, _fabricate.getStateCopy(), newResult);
+  }
+
+  return newResult;
+};
+
+/**
  * Create an element of a given tag type, with fluent methods for continuing
  * to define it. When done, use 'build()' to get the element itself.
  *
@@ -200,7 +222,7 @@ const fabricate = (name, customProps) => {
    * Watch the state for changes.
    *
    * @param {Function} cb - Callback to be notified.
-   * @param {Array<string>} keyFilter - List of keys to listen to.
+   * @param {Array<string>} [keyFilter] - List of keys to listen to.
    * @returns {FabricateComponent} Fabricate component.
    */
   el.onUpdate = (cb, keyFilter) => {
@@ -256,34 +278,19 @@ const fabricate = (name, customProps) => {
    * @param {Function} changeCb - Callback when the display state changes.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.when = (testCb, changeCb) => {
-    // First result is always negative to hide until shown
+  el.displayWhen = (testCb, changeCb) => {
+    const originalDisplay = el.style.display;
     let lastResult;
 
-    // Remember original display
-    const originalDisplay = el.style.display;
-
     /**
-     * When the state updates.
+     * When state updates
      */
     const onStateUpdate = () => {
-      const newResult = !!testCb(_fabricate.getStateCopy());
-      if (newResult === lastResult) return;
-
-      // Update if displayed
-      el.setStyles({ display: newResult ? originalDisplay : 'none' });
-
-      // Emit update only if not initial render
-      if (changeCb && typeof lastResult !== 'undefined') changeCb(el, _fabricate.getStateCopy(), newResult);
-
-      // Update display state
-      lastResult = newResult;
+      lastResult = _handleConditionalDisplay(el, lastResult, testCb, changeCb);
+      el.setStyles({ display: lastResult ? originalDisplay : 'none' });
     };
 
-    // Register for state updates
-    el.onUpdate(() => onStateUpdate());
-
-    // Test state immediately
+    el.onUpdate(onStateUpdate);
     onStateUpdate();
 
     return el;
@@ -481,6 +488,42 @@ fabricate.onKeyDown = (cb) => {
   document.addEventListener('keydown', ({ key }) => {
     cb(_fabricate.getStateCopy(), key);
   });
+};
+
+/**
+ * Create a component when a state condition is met, as opposed to merely changing
+ * its display property.
+ *
+ * @param {Function} testCb - State test callback.
+ * @param {Function} builderCb - Component build callback.
+ * @returns {FabricateComponent} Wrapper component.
+ */
+fabricate.conditional = (testCb, builderCb) => {
+  const wrapper = fabricate('div');
+  let lastResult;
+
+  _fabricate.stateWatchers.push({
+    el: wrapper,
+    /**
+     * When state updates.
+     */
+    cb: () => {
+      const newResult = _handleConditionalDisplay(wrapper, lastResult, testCb);
+      if (newResult === lastResult) return;
+      lastResult = newResult;
+
+      if (newResult) {
+        // Insert
+        wrapper.setChildren([builderCb()]);
+      } else {
+        // Remove child
+        wrapper.empty();
+      }
+    },
+  });
+
+  // return wrapper
+  return wrapper;
 };
 
 /// //////////////////////////////////// Built-in Components ///////////////////////////////////////

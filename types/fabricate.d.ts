@@ -162,7 +162,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
    * @param {function(el, state, isDisplayed)} changeCb - Callback when display state changes.
    * @returns {FabricateComponent<StateShape>} This component. 
    */
-  when: (
+  displayWhen: (
     testCb: (state: StateShape) => boolean,
     changeCb?: (
       el: FabricateComponent<StateShape>,
@@ -260,4 +260,15 @@ export type Fabricate<StateShape> = {
    * @returns {string} Constructed state key.
    */
   buildKey: (name: string, ...rest: [string]) => string,
+  /**
+   * Create a component when a state test is passed.
+   *
+   * @param {function(state)} testCb - Callback to test the state.
+   * @param {function} builderCb - Callback to build the inner component.
+   * @returns {FabricateComponent} Wrapper component.
+   */
+  conditional: (
+    testCb: (state: StateShape) => boolean,
+    builderCb: () => FabricateComponent<StateShape>,
+  ) => FabricateComponent<StateShape>;
 };
