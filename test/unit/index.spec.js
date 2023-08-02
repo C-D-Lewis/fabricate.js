@@ -123,7 +123,8 @@ describe('fabricate.js', () => {
     });
 
     // TODO Works in browser, but not in mocked tests
-    // it('should detect element removal', () => {
+    it('should detect element removal');
+    // () => {
     //   let destoyed;
 
     //   const child = fabricate('div').onDestroy(() => {
@@ -137,7 +138,8 @@ describe('fabricate.js', () => {
     // });
 
     // TODO Works in browser, but not in mocked tests
-    // it('should allow listening for other Events', (done) => {
+    it('should allow listening for other Events');
+    // (done) => {
     //   fabricate('Image', {
     //     src: 'https://en.wikipedia.org/static/images/icons/wikipedia.png',
     //   })
@@ -146,6 +148,9 @@ describe('fabricate.js', () => {
     //       done();
     //     });
     // });
+
+    // TODO Test onUpdate and conditional() remove their state watchers
+    it('should remove used stateWatchers');
 
     it('should not create immediately when using conditional', () => {
       let created;

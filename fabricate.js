@@ -59,6 +59,23 @@ const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
 };
 
 /**
+ * Unregister state watcher for this element to prevent leaking them.
+ *
+ * @param {FabricateComponent} el - Element to remove.
+ * @returns {void}
+ */
+const _unregisterStateWatcher = (el) => {
+  const index = _fabricate.stateWatchers.findIndex((p) => p.el === el);
+  if (index < 0) {
+    console.warn('Failed to remove state watcher!');
+    console.warn(el);
+    return;
+  }
+
+  _fabricate.stateWatchers.splice(index, 1);
+};
+
+/**
  * Create an element of a given tag type, with fluent methods for continuing
  * to define it. When done, use 'build()' to get the element itself.
  *
@@ -226,7 +243,11 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.onUpdate = (cb, keyFilter) => {
+    // Register for updates
     _fabricate.stateWatchers.push({ el, cb, keyFilter });
+
+    // Remove watcher on destruction
+    el.onDestroy(_unregisterStateWatcher);
     return el;
   };
 
@@ -423,6 +444,17 @@ fabricate.clearState = () => {
 /// /////////////////////////////////////////// Helpers ////////////////////////////////////////////
 
 /**
+ * Recursively check all children since only parent is reported.
+ *
+ * @param {HTMLElement} parent - Parent node.
+ */
+const _notifyRemovedRecursive = (parent) => {
+  if (parent.onDestroyHandler) parent.onDestroyHandler();
+
+  parent.childNodes.forEach(_notifyRemovedRecursive);
+};
+
+/**
  * Determine if a mobile device is being used which has a narrow screen.
  *
  * @returns {boolean} true if running on a 'narrow' screen device.
@@ -455,11 +487,7 @@ fabricate.app = (root, initialState, opts) => {
   // Power onDestroy handlers
   if (!_fabricate.onDestroyObserver) {
     _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.removedNodes.forEach((node) => {
-          if (node.onDestroyHandler) node.onDestroyHandler();
-        });
-      });
+      mutations.forEach((mutation) => mutation.removedNodes.forEach(_notifyRemovedRecursive));
     });
     _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
   }
@@ -505,24 +533,24 @@ fabricate.conditional = (testCb, builderCb) => {
   _fabricate.stateWatchers.push({
     el: wrapper,
     /**
-     * When state updates.
+     * When state updates, build the child.
      */
     cb: () => {
       const newResult = _handleConditionalDisplay(wrapper, lastResult, testCb);
       if (newResult === lastResult) return;
-      lastResult = newResult;
 
+      lastResult = newResult;
       if (newResult) {
-        // Insert
         wrapper.setChildren([builderCb()]);
       } else {
-        // Remove child
         wrapper.empty();
       }
     },
   });
 
-  // return wrapper
+  // Unregister when wrapper is destroyed
+  wrapper.onDestroy(() => _unregisterStateWatcher(wrapper));
+
   return wrapper;
 };
 

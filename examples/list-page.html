@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../../fabricate.js"></script>
+
+    <script>
+      /**
+       * Testing calling onDestroy for all children for both onUpdate() and conditional()
+       */
+
+      const items = ['apples', 'oranges', 'pears'];
+
+      const HomePage = () => fabricate('h1').setText('HOME PAGE');
+
+      const Item = ({ fruit }) => fabricate('Text')
+        .setText(fruit)
+        .onUpdate((el, state) => console.log(`onUpdate: ${fruit}`));
+
+      const ListPage = () => fabricate('Column')
+        .setChildren(items.map(p => Item({ fruit: p })));
+
+      const App = () => fabricate('Column')
+        .setStyles({ padding: '10px' })
+        .setChildren([
+          fabricate.conditional(
+            ({ page }) => page === 'home',
+            HomePage,
+          ),
+          fabricate.conditional(
+            ({ page }) => page === 'list',
+            ListPage,
+          ),
+          fabricate('Button', { text: 'Change' })
+            .onClick((el, { page }) => {
+              fabricate.update('page', page === 'home' ? 'list' : 'home');
+              console.log(`${_fabricate.stateWatchers.length} watchers`);
+            }),
+        ]);
+
+      fabricate.app(App(), { page: 'home' });
+    </script>
+  </body>
+</html>
