@@ -112,7 +112,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
       state: StateShape,
       keysChanged: string[],
     ) => void,
-    watchKeys?: string[],
+    watchKeys?: (keyof StateShape)[],
   ) => FabricateComponent<StateShape>;
   /**
    * Convenience method to run some statements when a component is constructed

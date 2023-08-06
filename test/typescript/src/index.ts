@@ -48,7 +48,7 @@ fabricate('div')
   .onClick((el, state) => console.log(state))
   .onChange((el, state, newValue) => console.log(newValue))
   .onHover((el, state, isHovered) => console.log(isHovered))
-  .onUpdate((el, state, updatedKeys) => console.log(updatedKeys), ['example'])
+  .onUpdate((el, state, updatedKeys) => console.log(updatedKeys), ["counter"])
   .onDestroy((el, state) => console.log('destroyed'))
   .onEvent('load', (el, state, event) => console.log(event))
   // Two forms
