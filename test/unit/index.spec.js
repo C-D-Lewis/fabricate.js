@@ -490,6 +490,21 @@ describe('fabricate.js', () => {
 
       expect(() => fabricate.update(key, true)).to.not.throw();
     });
+
+    it('should initialise dynamic state keys only once', () => {
+      fabricate.app(fabricate('div'), {}, { strict: true });
+
+      const key = fabricate.buildKey('isVisible', 'AppCard', '1');
+      expect(_fabricate.state[key]).to.equal(null);
+
+      fabricate.update(key, true);
+
+      expect(_fabricate.state[key]).to.equal(true);
+
+      // Retain app-set value
+      fabricate.buildKey('isVisible', 'AppCard', '1');
+      expect(_fabricate.state[key]).to.equal(true);
+    });
   });
 
   describe('Basic components', () => {

@@ -426,7 +426,7 @@ fabricate.buildKey = (name, ...rest) => {
   const key = `${name}:${rest.join(':')}`;
 
   // Allow this key by adding it, but trigger no updates
-  if (strict) {
+  if (strict && typeof _fabricate.state[key] === 'undefined') {
     _fabricate.state[key] = null;
   }
 
