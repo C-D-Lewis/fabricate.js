@@ -395,7 +395,12 @@ The options available are:
 |------|------|-------------|
 | `logStateUpdates` | `boolean` | Log all state updates in the console. |
 | `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
-| `strict` | `boolean` | Strict mode - only allow updating known state keys. |
+| `strict` | `boolean` | Strict mode |
+
+In strict mode, the following extra restrictions apply:
+
+* Only pre-declared state keys can be updated.
+* When using `onUpdate`, a key watch list must be provided.
 
 #### `.declare()`
 

@@ -239,12 +239,18 @@ const fabricate = (name, customProps) => {
    * Watch the state for changes.
    *
    * @param {Function} cb - Callback to be notified.
-   * @param {Array<string>} [keyFilter] - List of keys to listen to.
+   * @param {Array<string>} [watchKeys] - List of keys to listen to.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onUpdate = (cb, keyFilter) => {
+  el.onUpdate = (cb, watchKeys) => {
+    const { strict } = _fabricate.options;
+
+    if (strict && (!watchKeys || !watchKeys.length)) {
+      throw new Error('strict mode: watchKeys option must be provided');
+    }
+
     // Register for updates
-    _fabricate.stateWatchers.push({ el, cb, keyFilter });
+    _fabricate.stateWatchers.push({ el, cb, watchKeys });
 
     // Remove watcher on destruction
     el.onDestroy(_unregisterStateWatcher);
@@ -365,9 +371,9 @@ const _notifyStateChange = (keys) => {
   // Persist to LocalStorage if required
   if (options.persistState) _savePersistState();
 
-  stateWatchers.forEach(({ el, cb, keyFilter }) => {
-    // If keyFilter is specified, filter state updates
-    if (keyFilter && !keys.some((p) => keyFilter.includes(p))) return;
+  stateWatchers.forEach(({ el, cb, watchKeys }) => {
+    // If watchKeys is specified, filter state updates
+    if (watchKeys && !keys.some((p) => watchKeys.includes(p))) return;
 
     // Notify the watching component
     cb(el, _fabricate.getStateCopy(), keys);
