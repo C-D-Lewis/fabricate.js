@@ -989,5 +989,11 @@ describe('fabricate.js', () => {
 
       expect(() => fabricate('div').onUpdate(console.log)).to.throw(Error);
     });
+
+    it('should makles an exception for watchKeys for displayWhen in strict mode', () => {
+      fabricate.app(fabricate('div'), {}, { strict: true });
+
+      expect(() => fabricate('div').displayWhen(() => true)).to.not.throw(Error);
+    });
   });
 });

@@ -17,6 +17,7 @@ const _fabricate = {
   customComponents: {},
   options: undefined,
   onDestroyObserver: undefined,
+  __internal__ignore_strict: false,
 
   // Internal helpers
   /**
@@ -25,6 +26,12 @@ const _fabricate = {
    * @returns {object} The copy.
    */
   getStateCopy: () => Object.freeze({ ..._fabricate.state }),
+  /**
+   * Check if strict mode is in effect.
+   *
+   * @returns {boolean} true if strict mode applies.
+   */
+  isStrictMode: () => !!(_fabricate.options.strict && !_fabricate.__internal__ignore_strict),
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
@@ -243,9 +250,7 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.onUpdate = (cb, watchKeys) => {
-    const { strict } = _fabricate.options;
-
-    if (strict && (!watchKeys || !watchKeys.length)) {
+    if (_fabricate.isStrictMode() && (!watchKeys || !watchKeys.length)) {
       throw new Error('strict mode: watchKeys option must be provided');
     }
 
@@ -302,7 +307,7 @@ const fabricate = (name, customProps) => {
    * Conditionally display a child in response to state update.
    *
    * @param {Function} testCb - Callback to test the state.
-   * @param {Function} changeCb - Callback when the display state changes.
+   * @param {Function} [changeCb] - Callback when the display state changes.
    * @returns {FabricateComponent} Fabricate component.
    */
   el.displayWhen = (testCb, changeCb) => {
@@ -317,7 +322,10 @@ const fabricate = (name, customProps) => {
       el.setStyles({ display: lastResult ? originalDisplay : 'none' });
     };
 
+    // Only known exception - displayWhen does not know what testCb does
+    _fabricate.__internal__ignore_strict = true;
     el.onUpdate(onStateUpdate);
+    _fabricate.__internal__ignore_strict = false;
     onStateUpdate();
 
     return el;
@@ -427,12 +435,10 @@ fabricate.update = (param1, param2) => {
  * @returns {string} Constructed state key.
  */
 fabricate.buildKey = (name, ...rest) => {
-  const { strict } = _fabricate.options;
-
   const key = `${name}:${rest.join(':')}`;
 
   // Allow this key by adding it, but trigger no updates
-  if (strict && typeof _fabricate.state[key] === 'undefined') {
+  if (_fabricate.isStrictMode() && typeof _fabricate.state[key] === 'undefined') {
     _fabricate.state[key] = null;
   }
 
