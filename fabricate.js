@@ -197,7 +197,7 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.empty = () => {
-    el.innerHTML = '';
+    while (el.firstElementChild) el.firstElementChild.remove();
     return el;
   };
 
