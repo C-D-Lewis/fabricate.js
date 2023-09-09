@@ -55,10 +55,12 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  */
 const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
   const newResult = !!testCb(_fabricate.getStateCopy());
+  console.log(`_handleConditionalDisplay: lastResult=${lastResult} newResult=${newResult}`);
   if (newResult === lastResult) return lastResult;
 
   // Emit update only if not initial render
   if (changeCb && typeof lastResult !== 'undefined') {
+    console.log('_handleConditionalDisplay: calling changeCb');
     changeCb(el, _fabricate.getStateCopy(), newResult);
   }
 
@@ -536,9 +538,10 @@ fabricate.onKeyDown = (cb) => {
  *
  * @param {Function} testCb - State test callback.
  * @param {Function} builderCb - Component build callback.
+ * @param {string} [label] - Label for conditional component.
  * @returns {FabricateComponent} Wrapper component.
  */
-fabricate.conditional = (testCb, builderCb) => {
+fabricate.conditional = (testCb, builderCb, label = 'unknown') => {
   const wrapper = fabricate('div');
   let lastResult;
 
@@ -549,12 +552,18 @@ fabricate.conditional = (testCb, builderCb) => {
      */
     cb: () => {
       const newResult = _handleConditionalDisplay(wrapper, lastResult, testCb);
-      if (newResult === lastResult) return;
+      console.log(`conditional [${label}]: lastResult=${lastResult} newResult=${newResult}`);
+      if (newResult === lastResult) {
+        console.log(`conditional [${label}]: doing nothing`);
+        return;
+      }
 
       lastResult = newResult;
       if (newResult) {
+        console.log(`conditional [${label}]: calling builderCb`);
         wrapper.setChildren([builderCb()]);
       } else {
+        console.log(`conditional [${label}]: emptying`);
         wrapper.empty();
       }
     },
