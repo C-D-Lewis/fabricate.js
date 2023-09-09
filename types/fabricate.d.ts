@@ -265,12 +265,10 @@ export type Fabricate<StateShape> = {
    *
    * @param {function(state)} testCb - Callback to test the state.
    * @param {function} builderCb - Callback to build the inner component.
-   * @param {string} [label] - Label for the conditional component.
    * @returns {FabricateComponent} Wrapper component.
    */
   conditional: (
     testCb: (state: StateShape) => boolean,
     builderCb: () => FabricateComponent<StateShape>,
-    label?: string,
   ) => FabricateComponent<StateShape>;
 };
