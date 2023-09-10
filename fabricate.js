@@ -327,6 +327,8 @@ const fabricate = (name, customProps) => {
     _fabricate.__internal__ignore_strict = true;
     el.onUpdate(onStateUpdate);
     _fabricate.__internal__ignore_strict = false;
+
+    // Test right away
     onStateUpdate();
 
     return el;
@@ -563,32 +565,42 @@ fabricate.conditional = (testCb, builderCb) => {
   const wrapper = fabricate('div');
   let lastResult;
 
+  /**
+   * When state updates.
+   *
+   * @returns {void}
+   */
+  const onStateUpdate = () => {
+    const newResult = _handleConditionalDisplay(wrapper, lastResult, testCb);
+    // console.log(`conditional [${label}]: lastResult=${lastResult} newResult=${newResult}`);
+    if (newResult === lastResult) {
+      // console.log(`conditional [${label}]: doing nothing`);
+      return;
+    }
+
+    lastResult = newResult;
+    if (newResult) {
+      // console.log(`conditional [${label}]: calling builderCb`);
+      wrapper.setChildren([builderCb()]);
+    } else {
+      // console.log(`conditional [${label}]: emptying`);
+      wrapper.empty();
+    }
+  };
+
   _fabricate.stateWatchers.push({
     el: wrapper,
     /**
      * When state updates, build the child.
      */
-    cb: () => {
-      const newResult = _handleConditionalDisplay(wrapper, lastResult, testCb);
-      // console.log(`conditional [${label}]: lastResult=${lastResult} newResult=${newResult}`);
-      if (newResult === lastResult) {
-        // console.log(`conditional [${label}]: doing nothing`);
-        return;
-      }
-
-      lastResult = newResult;
-      if (newResult) {
-        // console.log(`conditional [${label}]: calling builderCb`);
-        wrapper.setChildren([builderCb()]);
-      } else {
-        // console.log(`conditional [${label}]: emptying`);
-        wrapper.empty();
-      }
-    },
+    cb: onStateUpdate,
   });
 
   // Unregister when wrapper is destroyed
   wrapper.onDestroy(() => _unregisterStateWatcher(wrapper));
+
+  // Test right away
+  onStateUpdate();
 
   return wrapper;
 };

@@ -173,6 +173,38 @@ describe('fabricate.js', () => {
       expect(created).to.equal(undefined);
     });
 
+    it('should create immediately when using conditional if state allows', () => {
+      let created = false;
+
+      /**
+       * TestComponent
+       *
+       * @returns {HTMLElement} TestComponent
+       */
+      const TestComponent = () => fabricate('div')
+        .onCreate(() => {
+          created = true;
+        });
+
+      /**
+       * Test element.
+       *
+       * @returns {HTMLElement} App
+       */
+      const app = fabricate('Row');
+
+      fabricate.app(app, { visible: true }, {});
+
+      expect(created).to.equal(false);
+
+      // Now, add in conditional component when state is already true
+      app.setChildren([
+        fabricate.conditional(({ visible }) => !!visible, TestComponent),
+      ]);
+
+      expect(created).to.equal(true);
+    });
+
     it('should be re-created when using conditional', () => {
       let createdCount = 0;
 
