@@ -990,10 +990,25 @@ describe('fabricate.js', () => {
       expect(() => fabricate('div').onUpdate(console.log)).to.throw(Error);
     });
 
-    it('should makles an exception for watchKeys for displayWhen in strict mode', () => {
+    it('should make an exception for watchKeys for displayWhen in strict mode', () => {
       fabricate.app(fabricate('div'), {}, { strict: true });
 
       expect(() => fabricate('div').displayWhen(() => true)).to.not.throw(Error);
+    });
+
+    it('should allow async state updates', (done) => {
+      const el = fabricate('div')
+        .onUpdate((el2, state) => {
+          expect(state.counter).to.equal(1);
+          done();
+        }, ['counter']);
+
+      const initialState = { counter: 0 };
+      fabricate.app(el, initialState, { asyncUpdates: true });
+
+      fabricate.update({ counter: 1 });
+
+      expect(_fabricate.state.counter).to.equal(0);
     });
   });
 });

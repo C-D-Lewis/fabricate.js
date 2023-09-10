@@ -9,6 +9,7 @@ const _fabricate = {
     logStateUpdates: false,
     persistState: undefined,
     strict: false,
+    asyncUpdates: false,
   },
 
   // Library state
@@ -389,10 +390,27 @@ const _notifyStateChange = (keys) => {
 };
 
 /**
+ * Apply a state update.
+ *
+ * @param {Function} cb - Callback that modifies the state.
+ * @returns {Promise|void} Promise if required.
+ */
+const _applyUpdate = ((cb) => {
+  const { options } = _fabricate;
+
+  // Update in next loop
+  if (options.asyncUpdates) return Promise.resolve().then(cb);
+
+  // Update now
+  return cb();
+});
+
+/**
  * Update the state.
  *
  * @param {string|object} param1 - Either key or object state slice.
  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
+ * @returns {Promise|void} Promise is asyncUpdates is enabled.
  */
 fabricate.update = (param1, param2) => {
   const { state, options } = _fabricate;
@@ -412,16 +430,18 @@ fabricate.update = (param1, param2) => {
 
   // State slice?
   if (typeof param1 === 'object') {
-    _fabricate.state = { ...state, ...param1 };
-    _notifyStateChange(keys);
-    return;
+    return _applyUpdate(() => {
+      _fabricate.state = { ...state, ...param1 };
+      _notifyStateChange(keys);
+    });
   }
 
   // Keyed update?
   if (typeof param1 === 'string') {
-    state[param1] = typeof param2 === 'function' ? param2(state) : param2;
-    _notifyStateChange(keys);
-    return;
+    return _applyUpdate(() => {
+      _fabricate.state[param1] = typeof param2 === 'function' ? param2(state) : param2;
+      _notifyStateChange(keys);
+    });
   }
 
   throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);
@@ -486,9 +506,10 @@ fabricate.app = (root, initialState, opts) => {
   _fabricate.options = opts || _fabricate.DEFAULT_OPTIONS;
 
   // Options
-  const { logStateUpdates, persistState } = opts || {};
-  if (logStateUpdates) _fabricate.options.logStateUpdates = !!logStateUpdates;
+  const { logStateUpdates, persistState, asyncUpdates } = opts || {};
+  if (logStateUpdates) _fabricate.options.logStateUpdates = true;
   if (persistState) _loadPersistState();
+  if (asyncUpdates) _fabricate.options.asyncUpdates = true;
 
   // Trigger initial state update
   _notifyStateChange(['fabricate:init']);

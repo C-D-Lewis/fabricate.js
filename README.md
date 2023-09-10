@@ -15,6 +15,7 @@ pre-prepared components to get started quickly.
 - [API](#api)
 - [Built-in components](#built-in-components)
 - [Run tests](#run-tests)
+- [Future](#future)
 
 See `examples` for some simple example apps.
 
@@ -396,6 +397,7 @@ The options available are:
 | `logStateUpdates` | `boolean` | Log all state updates in the console. |
 | `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
 | `strict` | `boolean` | Strict mode |
+| `asyncUpdates` | `boolean` | Use Promise to apply state updates. |
 
 In strict mode, the following extra restrictions apply:
 
@@ -691,3 +693,14 @@ Run unit tests:
 ```
 npm test
 ```
+
+
+## Future
+
+Fabricate 3.0:
+
+- All async updates.
+- Cleaner component composition?
+- Util components for simpler grid layouts (centering, standard paddings?)
+- Themeing palette for built-in components
+- Narrow styles
