@@ -29,6 +29,7 @@ const options: FabricateOptions = {
   logStateUpdates: true,
   persistState: ['counter'],
   strict: false,
+  asyncUpdates: false,
 };
 
 fabricate.app(App(), initialState, options);
@@ -42,7 +43,10 @@ fabricate('div')
   .setStyles({ color: 'white' })
   .setAttributes({ disabled: true })
   .addChildren([fabricate('div')])
-  .setChildren([fabricate('div')])
+  .setChildren([
+    fabricate('div'),
+    fabricate.conditional((state) => state.counter > 0, () => fabricate('Text'))
+  ])
   .setHtml('<div/>')
   .setText('foo')
   .onClick((el, state) => console.log(state))
@@ -53,7 +57,7 @@ fabricate('div')
   .onEvent('load', (el, state, event) => console.log(event))
   // Two forms
   .displayWhen((state => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
-  .displayWhen((state => !!state))
+  .displayWhen((state => !!state));
 
 // Three forms
 fabricate.update({ counter: 1 })

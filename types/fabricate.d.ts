@@ -180,6 +180,8 @@ export type FabricateOptions = {
   persistState?: string[] | undefined;
   /** Only allow updating known state */
   strict?: boolean;
+  /** Use a Promise to perform updates asynchronously */
+  asyncUpdates?: boolean;
 }
 
 /** Fabricate.js library */
