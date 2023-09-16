@@ -115,9 +115,9 @@ describe('fabricate.js', () => {
 
     it('should allow doing something after component creation', () => {
       let created;
-      fabricate('div').onCreate(() => {
+      fabricate('div').onUpdate(() => {
         created = true;
-      });
+      }, ['fabricate:created']);
 
       expect(created).to.equal(true);
     });
@@ -161,9 +161,9 @@ describe('fabricate.js', () => {
        * @returns {HTMLElement} TestComponent
        */
       const TestComponent = () => fabricate('div')
-        .onCreate(() => {
+        .onUpdate(() => {
           created = true;
-        });
+        }, ['fabricate:created']);
 
       fabricate('Row')
         .setChildren([
@@ -182,12 +182,12 @@ describe('fabricate.js', () => {
        * @returns {HTMLElement} TestComponent
        */
       const TestComponent = () => fabricate('div')
-        .onCreate(() => {
+        .onUpdate(() => {
           created = true;
-        });
+        }, ['fabricate:created']);
 
       /**
-       * Test element.
+       * Test app.
        *
        * @returns {HTMLElement} App
        */
@@ -214,9 +214,9 @@ describe('fabricate.js', () => {
        * @returns {HTMLElement} TestComponent
        */
       const TestComponent = () => fabricate('div')
-        .onCreate(() => {
+        .onUpdate(() => {
           createdCount += 1;
-        });
+        }, ['fabricate:created']);
 
       fabricate('Row')
         .setChildren([
@@ -240,9 +240,9 @@ describe('fabricate.js', () => {
        * @returns {HTMLElement} TestComponent
        */
       const TestComponent = () => fabricate('div')
-        .onCreate(() => {
+        .onUpdate(() => {
           createdCount += 1;
-        });
+        }, ['fabricate:created']);
 
       fabricate('Row')
         .setChildren([
@@ -323,7 +323,7 @@ describe('fabricate.js', () => {
 
       const el = fabricate('Row')
         .displayWhen(({ visible }) => visible)
-        .onCreate(() => (renderCount += 1));
+        .onUpdate(() => (renderCount += 1), ['fabricate:created']);
 
       // Initially hidden
       expect(el.style.display).to.equal('none');
@@ -392,7 +392,7 @@ describe('fabricate.js', () => {
   });
 
   describe('App state', () => {
-    it('should allow watching app state', () => {
+    it('should allow watching app state', async () => {
       let updatedKeys;
       fabricate('div').onUpdate((el, newState, keys) => {
         updatedKeys = keys;

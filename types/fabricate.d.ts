@@ -115,19 +115,6 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
     watchKeys?: (keyof StateShape)[],
   ) => FabricateComponent<StateShape>;
   /**
-   * Convenience method to run some statements when a component is constructed
-   * using only these chainable methods.
-   *
-   * @param {function(el, state)} cb - Callback when main component created.
-   * @returns {FabricateComponent<StateShape>} This component.
-   */
-  onCreate: (
-    cb: (
-      el: FabricateComponent<StateShape>,
-      state: StateShape,
-    ) => void,
-  ) => FabricateComponent<StateShape>;
-  /**
    * Convenience method to run some statements when a component is removed from
    * the DOM/it's parent.
    * 

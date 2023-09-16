@@ -84,6 +84,58 @@ const _unregisterStateWatcher = (el) => {
 };
 
 /**
+ * Save current state to LocalStorage.
+ */
+const _savePersistState = () => {
+  const { STORAGE_KEY_STATE, state, options: { persistState } } = _fabricate;
+
+  // Store only those keys named for persistence
+  const toSave = Object.entries(state)
+    .filter(([k]) => persistState.includes(k))
+    .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+
+  localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(toSave));
+};
+
+/**
+ * Load persisted state if it exists.
+ */
+const _loadPersistState = () => {
+  const { STORAGE_KEY_STATE } = _fabricate;
+
+  const loaded = JSON.parse(localStorage.getItem(STORAGE_KEY_STATE) || '{}');
+  _fabricate.state = {
+    ..._fabricate.state,
+    ...loaded,
+  };
+};
+
+/**
+ * Notify watchers of a state change.
+ * Watchers receive (el, state, changedKeys)
+ *
+ * @param {Array<string>} keys - Key that was updated.
+ */
+const _notifyStateChange = (keys) => {
+  const {
+    stateWatchers, state, options,
+  } = _fabricate;
+
+  // Log to console for debugging
+  if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
+  // Persist to LocalStorage if required
+  if (options.persistState) _savePersistState();
+
+  stateWatchers.forEach(({ el, cb, watchKeys }) => {
+    // If watchKeys is used, filter state updates
+    if (watchKeys && watchKeys.length > 0 && !keys.some((p) => watchKeys.includes(p))) return;
+
+    // Notify the watching component
+    cb(el, _fabricate.getStateCopy(), keys);
+  });
+};
+
+/**
  * Create an element of a given tag type, with fluent methods for continuing
  * to define it. When done, use 'build()' to get the element itself.
  *
@@ -250,7 +302,7 @@ const fabricate = (name, customProps) => {
    * @param {Array<string>} [watchKeys] - List of keys to listen to.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onUpdate = (cb, watchKeys) => {
+  el.onUpdate = (cb, watchKeys = []) => {
     if (_fabricate.isStrictMode() && (!watchKeys || !watchKeys.length)) {
       throw new Error('strict mode: watchKeys option must be provided');
     }
@@ -260,18 +312,12 @@ const fabricate = (name, customProps) => {
 
     // Remove watcher on destruction
     el.onDestroy(_unregisterStateWatcher);
-    return el;
-  };
 
-  /**
-   * Convenience method to run some statements when a component is constructed
-   * using only these chainable methods.
-   *
-   * @param {Function} cb - Function to run immediately, with this element and current state.
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  el.onCreate = (cb) => {
-    cb(el, _fabricate.getStateCopy());
+    if (watchKeys.includes('fabricate:created')) {
+      // Emulate onCreate if this method is used
+      cb(el, _fabricate.getStateCopy(), ['fabricate:created']);
+    }
+
     return el;
   };
 
@@ -338,58 +384,6 @@ const fabricate = (name, customProps) => {
 };
 
 /// ////////////////////////////////////// State management ////////////////////////////////////////
-
-/**
- * Save current state to LocalStorage.
- */
-const _savePersistState = () => {
-  const { STORAGE_KEY_STATE, state, options: { persistState } } = _fabricate;
-
-  // Store only those keys named for persistence
-  const toSave = Object.entries(state)
-    .filter(([k]) => persistState.includes(k))
-    .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
-
-  localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(toSave));
-};
-
-/**
- * Load persisted state if it exists.
- */
-const _loadPersistState = () => {
-  const { STORAGE_KEY_STATE } = _fabricate;
-
-  const loaded = JSON.parse(localStorage.getItem(STORAGE_KEY_STATE) || '{}');
-  _fabricate.state = {
-    ..._fabricate.state,
-    ...loaded,
-  };
-};
-
-/**
- * Notify watchers of a state change.
- * Watchers receive (el, state, changedKeys)
- *
- * @param {Array<string>} keys - Key that was updated.
- */
-const _notifyStateChange = (keys) => {
-  const {
-    stateWatchers, state, options,
-  } = _fabricate;
-
-  // Log to console for debugging
-  if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
-  // Persist to LocalStorage if required
-  if (options.persistState) _savePersistState();
-
-  stateWatchers.forEach(({ el, cb, watchKeys }) => {
-    // If watchKeys is specified, filter state updates
-    if (watchKeys && !keys.some((p) => watchKeys.includes(p))) return;
-
-    // Notify the watching component
-    cb(el, _fabricate.getStateCopy(), keys);
-  });
-};
 
 /**
  * Apply a state update.
@@ -868,9 +862,9 @@ fabricate.declare(
     delayMs = 300,
   } = {}) => fabricate('div')
     .setStyles({ opacity: 0, transition: `opacity ${durationS}s` })
-    .onCreate((el) => {
+    .onUpdate((el) => {
       setTimeout(() => el.setStyles({ opacity: 1 }), delayMs);
-    }),
+    }, ['fabricate:created']),
 );
 
 fabricate.declare(

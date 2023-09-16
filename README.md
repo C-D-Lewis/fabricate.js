@@ -125,7 +125,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.setStyles()` / `setAttributes()`](#setstyles--setattributes)
   * [`.setChildren()` / `addChildren`](#setchildren--addchildren)
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
-  * [`.onCreate()` / `.onDestroy()`](#oncreate--ondestroy)
+  * [`.onDestroy()`](#ondestroy)
   * [`.onEvent()`](#onevent)
   * [`.displayWhen()`](#displaywhen)
   * [`.empty()`](#empty)
@@ -245,22 +245,13 @@ Or set inner HTML directly:
 fabricate('div').setHtml('<span>I\'m just more HTML!</div>');
 ```
 
-#### `.onCreate()` / `.onDestroy()`
+#### `.onDestroy()`
 
-Simple method to do something immediately after creating a component with
-chain methods:
-
-```js
-fabricate('Text').setText('Example text')
-  .setStyles({ color: 'blue' })
-  .onCreate((el, state) => el.setText(`Counter now ${state.counter}`));
-```
-
-Or when a component has been removed from the DOM:
+Simple method to do something immediately after a component has been removed
+from the DOM:
 
 ```js
 DevicePage()
-  .onCreate(subscribeWebsockets)
   .onDestroy(unsubscribeWebsockets);
 ```
 
@@ -298,8 +289,8 @@ setInterval(
 );
 ```
 
-> Note `onCreate()` is called immediately. The second callback can be used to
-> know when the element is shown or hidden.
+> Note: The second callback can be used to know when the element is shown or
+> hidden.
 
 ```js
 const pageContainer = fabricate('Column')
@@ -441,8 +432,7 @@ A few methods are available to make it easy to maintain some basic global state
 and to update components when those states change. A list of keys to watch
 can be provided, otherwise all state updates are notified.
 
-> To receive the initial state update when using a key filter, include
-> `fabricate:init` in the list.
+> Note: In strict mode, a key filter must always be provided.
 
 ```js
 // View can watch some state - specifically, 'state.counter' and initial update
@@ -470,6 +460,13 @@ fabricate.update('counter', 0);
 // Or as a state slice
 fabricate.update({ counter: 0 });
 ```
+
+If needed, you can `await` the state update.
+
+There are some special events that can be used:
+
+* `fabricate:init` - Called when the application is first run.
+* `fabricate:created` - Called for a particular component when it is first created.
 
 #### `.clearState()`
 
