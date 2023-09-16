@@ -61,7 +61,7 @@
             }),
         ]);
 
-      fabricate.app(App(), { showFader: false });
+      fabricate.app(App, { showFader: false });
 
       setInterval(() => fab.update('showFader', prev => !prev.showFader), 1000);
     </script>

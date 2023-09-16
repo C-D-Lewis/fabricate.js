@@ -43,8 +43,8 @@ const App = () => Container()
     Label({ text: 'Welcome to fabricate.js!' }),
   ]);
 
-// Use as the root app element
-fabricate.app(App());
+// Use as the root app element as a builder
+fabricate.app(App);
 ```
 
 Components created with `fabricate.js` can be extended after they are created,
@@ -272,7 +272,7 @@ Conditionally show or hide a component (or tree of components) using the
 `displayWhen` method:
 
 ```js
-const pageContainer = fabricate('Column')
+const App = () => fabricate('Column')
   .setChildren([
     fabricate('Text')
       .setText('Now you see me!')
@@ -280,7 +280,7 @@ const pageContainer = fabricate('Column')
   ]);
 
 // Use as the root app element and provide first state values
-fabricate.app(pageContainer, { showText: false });
+fabricate.app(App, { showText: false });
 
 // Later, add the text
 setInterval(
@@ -293,7 +293,7 @@ setInterval(
 > hidden.
 
 ```js
-const pageContainer = fabricate('Column')
+const App = () => fabricate('Column')
   .setChildren([
     fabricate('Text')
       .setText('Now you see me!')
@@ -378,7 +378,7 @@ const options = {
   persistState: ['readingList'],
 };
 
-fabricate.app(App(), initialState, options);
+fabricate.app(App, initialState, options);
 ```
 
 The options available are:
@@ -388,7 +388,6 @@ The options available are:
 | `logStateUpdates` | `boolean` | Log all state updates in the console. |
 | `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
 | `strict` | `boolean` | Strict mode |
-| `asyncUpdates` | `boolean` | Use Promise to apply state updates. |
 
 In strict mode, the following extra restrictions apply:
 
@@ -436,14 +435,14 @@ can be provided, otherwise all state updates are notified.
 
 ```js
 // View can watch some state - specifically, 'state.counter' and initial update
-const counterView = fabricate('Text')
+const App = () => fabricate('Text')
   .onUpdate(
     (el, state, key) => el.setText(state.counter),
     ['fabricate:init', 'counter'],
   );
 
 // Initialise first state
-fabricate.app(counterView, { counter: 0 });
+fabricate.app(App, { counter: 0 });
 ```
 
 There are three ways to update state:
@@ -462,6 +461,10 @@ fabricate.update({ counter: 0 });
 ```
 
 If needed, you can `await` the state update.
+
+```js
+await fabricate.update({ counter: 1 });
+```
 
 There are some special events that can be used:
 
@@ -696,8 +699,8 @@ npm test
 
 Fabricate 3.0:
 
-- All async updates.
-- Cleaner component composition?
-- Util components for simpler grid layouts (centering, standard paddings?)
-- Themeing palette for built-in components
-- Narrow styles
+- [x] All async updates.
+- [x] Themeing palette for built-in components
+- [ ] Cleaner component composition?
+- [ ] Util components for simpler grid layouts (centering, standard paddings?)
+- [ ] Narrow styles

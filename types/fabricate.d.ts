@@ -1,3 +1,6 @@
+/** setStyles callback optional form */
+type ThemeCallback = ({ palette: object, styles: object }) => Partial<CSSStyleDeclaration>;
+
 /**
  * Fabricate component extends HTMLElement - and uses shape of app's state.
  *
@@ -7,10 +10,10 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
   /**
    * Set some element styles.
    *
-   * @param {object} styles - CSS JavaScript styles object to apply.
+   * @param {object|Function} param1 - CSS JavaScript styles object to apply.
    * @returns {FabricateComponent<StateShape>} This component.
    */
-  setStyles: (styles: Partial<CSSStyleDeclaration>) => FabricateComponent<StateShape>;
+  setStyles: (param1: Partial<CSSStyleDeclaration> | ThemeCallback) => FabricateComponent<StateShape>;
   /**
    * Set some element attributes.
    *
@@ -167,8 +170,11 @@ export type FabricateOptions = {
   persistState?: string[] | undefined;
   /** Only allow updating known state */
   strict?: boolean;
-  /** Use a Promise to perform updates asynchronously */
-  asyncUpdates?: boolean;
+  /** Custom theme provided in setStyles */
+  theme?: {
+    palette: object,
+    styles?: object,
+  };
 }
 
 /** Fabricate.js library */
@@ -210,12 +216,12 @@ export type Fabricate<StateShape> = {
   /**
    * Begin a component hierarchy from the body.
    *
-   * @param {FabricateComponent<AppendMode>} root - First element in the app tree.
+   * @param {function} rootCb - Builder function returning first element in the app tree.
    * @param {StateShape} [initialState] - Optional, initial state.
    * @param {FabricateOptions} [opts] - Extra options.
    */
   app: (
-    root: FabricateComponent<StateShape>,
+    rootCb: () => FabricateComponent<StateShape>,
     initialState: StateShape,
     options?: FabricateOptions,
   ) => FabricateComponent<StateShape>;

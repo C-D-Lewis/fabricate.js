@@ -118,4 +118,4 @@ const initialState = {
   tasks: ['Take out the tash before going out'],
 };
 const options = { persistState: ['tasks'] };
-fabricate.app(App(), initialState, options);
+fabricate.app(App, initialState, options);

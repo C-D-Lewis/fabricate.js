@@ -9,7 +9,10 @@ const _fabricate = {
     logStateUpdates: false,
     persistState: undefined,
     strict: false,
-    asyncUpdates: false,
+    theme: {
+      palette: {},
+      styles: {},
+    },
   },
 
   // Library state
@@ -156,12 +159,23 @@ const fabricate = (name, customProps) => {
   /**
    * Augment existing styles with new ones.
    *
-   * @param {object} newStyles - New styles to apply.
+   * @param {object|Function} param1 - Either object of styles, or callback.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setStyles = (newStyles) => {
-    Object.assign(el.style, newStyles);
-    return el;
+  el.setStyles = (param1) => {
+    // Callback with the app theme values
+    if (typeof param1 === 'function') {
+      const newStyles = param1({ ..._fabricate.options.theme });
+      Object.assign(el.style, newStyles);
+      return el;
+    }
+
+    if (typeof param1 === 'object') {
+      Object.assign(el.style, param1);
+      return el;
+    }
+
+    throw new Error('Callback or styles object is expected');
   };
 
   /**
@@ -386,27 +400,11 @@ const fabricate = (name, customProps) => {
 /// ////////////////////////////////////// State management ////////////////////////////////////////
 
 /**
- * Apply a state update.
- *
- * @param {Function} cb - Callback that modifies the state.
- * @returns {Promise|void} Promise if required.
- */
-const _applyUpdate = ((cb) => {
-  const { options } = _fabricate;
-
-  // Update in next loop
-  if (options.asyncUpdates) return Promise.resolve().then(cb);
-
-  // Update now
-  return cb();
-});
-
-/**
  * Update the state.
  *
  * @param {string|object} param1 - Either key or object state slice.
  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
- * @returns {Promise|void} Promise is asyncUpdates is enabled.
+ * @returns {Promise} Promise once update has applied.
  */
 fabricate.update = (param1, param2) => {
   const { state, options } = _fabricate;
@@ -426,7 +424,7 @@ fabricate.update = (param1, param2) => {
 
   // State slice?
   if (typeof param1 === 'object') {
-    return _applyUpdate(() => {
+    return Promise.resolve().then(() => {
       _fabricate.state = { ...state, ...param1 };
       _notifyStateChange(keys);
     });
@@ -434,7 +432,7 @@ fabricate.update = (param1, param2) => {
 
   // Keyed update?
   if (typeof param1 === 'string') {
-    return _applyUpdate(() => {
+    return Promise.resolve().then(() => {
       _fabricate.state[param1] = typeof param2 === 'function' ? param2(state) : param2;
       _notifyStateChange(keys);
     });
@@ -483,6 +481,13 @@ const _notifyRemovedRecursive = (parent) => {
 };
 
 /**
+ * Get a copy of default options to prevent modification.
+ *
+ * @returns {object} Default options.
+ */
+const _getDefaultOptions = () => ({ ..._fabricate.DEFAULT_OPTIONS });
+
+/**
  * Determine if a mobile device is being used which has a narrow screen.
  *
  * @returns {boolean} true if running on a 'narrow' screen device.
@@ -492,25 +497,23 @@ fabricate.isNarrow = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
 /**
  * Begin a component hierarchy from the body.
  *
- * @param {HTMLElement} root - First element in the app tree.
+ * @param {Function} rootCb - Callback to build the first element in the app tree.
  * @param {object} [initialState] - Optional, initial state.
  * @param {object} [opts] - Extra options.
  */
-fabricate.app = (root, initialState, opts) => {
+fabricate.app = (rootCb, initialState = {}, opts = {}) => {
+  if (typeof rootCb !== 'function') throw new Error('App root must be a builder function');
+
   // Reset state
-  _fabricate.state = initialState || {};
-  _fabricate.options = opts || _fabricate.DEFAULT_OPTIONS;
+  _fabricate.state = initialState;
+  _fabricate.options = _getDefaultOptions();
 
-  // Options
-  const { logStateUpdates, persistState, asyncUpdates } = opts || {};
-  if (logStateUpdates) _fabricate.options.logStateUpdates = true;
-  if (persistState) _loadPersistState();
-  if (asyncUpdates) _fabricate.options.asyncUpdates = true;
+  // Apply options
+  Object.assign(_fabricate.options, opts);
+  if (opts.persistState) _loadPersistState();
 
-  // Trigger initial state update
-  _notifyStateChange(['fabricate:init']);
-
-  // Show app
+  // Build app
+  const root = rootCb();
   document.body.appendChild(root);
 
   // Power onDestroy handlers
@@ -520,6 +523,9 @@ fabricate.app = (root, initialState, opts) => {
     });
     _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
   }
+
+  // Trigger initial state update
+  _notifyStateChange(['fabricate:init']);
 };
 
 /**

@@ -35,7 +35,7 @@ describe('fabricate.js', () => {
     fabricate.clearState();
 
     // Reset options to default
-    fabricate.app(fabricate('div'));
+    fabricate.app(() => fabricate('div'));
 
     document.getElementsByTagName('html')[0].innerHTML = '';
   });
@@ -50,6 +50,44 @@ describe('fabricate.js', () => {
       const el = fabricate('div').setStyles(styles);
 
       expect(hasStyles(el, styles)).to.equal(true);
+    });
+
+    it('should allow use of the theme through setStyles', (done) => {
+      const theme = {
+        palette: {
+          customBackground: 'rgb(128, 128, 128)',
+        },
+      };
+
+      /**
+       * TestComponent component.
+       *
+       * @returns {HTMLElement} TestComponent component.
+       */
+      const TestComponent = () => fabricate('div')
+        .setStyles(({ palette }) => ({
+          color: 'white',
+          backgroundColor: palette.customBackground,
+        }))
+        .onUpdate((el) => {
+          const expected = {
+            color: 'white',
+            backgroundColor: theme.palette.customBackground,
+          };
+
+          expect((hasStyles(el, expected))).to.equal(true);
+          done();
+        }, ['fabricate:created']);
+
+      /**
+       * App component.
+       *
+       * @returns {HTMLElement} App component.
+       */
+      const App = () => fabricate('div').setChildren([TestComponent()]);
+
+      // Use custom theme
+      fabricate.app(App, {}, { theme });
     });
 
     it('should create a img with attrbutes', () => {
@@ -186,26 +224,28 @@ describe('fabricate.js', () => {
           created = true;
         }, ['fabricate:created']);
 
+      const container = fabricate('div');
+
       /**
        * Test app.
        *
        * @returns {HTMLElement} App
        */
-      const app = fabricate('Row');
+      const App = () => fabricate('Row').setChildren([container]);
 
-      fabricate.app(app, { visible: true }, {});
+      fabricate.app(App, { visible: true }, {});
 
       expect(created).to.equal(false);
 
       // Now, add in conditional component when state is already true
-      app.setChildren([
+      container.setChildren([
         fabricate.conditional(({ visible }) => !!visible, TestComponent),
       ]);
 
       expect(created).to.equal(true);
     });
 
-    it('should be re-created when using conditional', () => {
+    it('should be re-created when using conditional', async () => {
       let createdCount = 0;
 
       /**
@@ -224,14 +264,14 @@ describe('fabricate.js', () => {
         ]);
 
       // Create twice
-      fabricate.update({ visible: true });
-      fabricate.update({ visible: false });
-      fabricate.update({ visible: true });
+      await fabricate.update({ visible: true });
+      await fabricate.update({ visible: false });
+      await fabricate.update({ visible: true });
 
       expect(createdCount).to.equal(2);
     });
 
-    it('should not be re-created when state update is the same', () => {
+    it('should not be re-created when state update is the same', async () => {
       let createdCount = 0;
 
       /**
@@ -250,8 +290,8 @@ describe('fabricate.js', () => {
         ]);
 
       // Create twice
-      fabricate.update({ visible: true });
-      fabricate.update({ visible: true });
+      await fabricate.update({ visible: true });
+      await fabricate.update({ visible: true });
 
       expect(createdCount).to.equal(1);
     });
@@ -318,7 +358,7 @@ describe('fabricate.js', () => {
       expect(counter).to.equal(2);
     });
 
-    it('should conditionally render a component only once per state value', () => {
+    it('should conditionally render a component only once per state value', async () => {
       let renderCount = 0;
 
       const el = fabricate('Row')
@@ -328,18 +368,18 @@ describe('fabricate.js', () => {
       // Initially hidden
       expect(el.style.display).to.equal('none');
 
-      fabricate.update({ visible: true });
+      await fabricate.update({ visible: true });
 
       // Original display should be respected
       expect(el.style.display).to.equal('flex');
 
       // Should not re-render for same value
-      fabricate.update({ visible: true });
+      await fabricate.update({ visible: true });
 
       expect(renderCount).to.equal(1);
     });
 
-    it('should conditionally render a component and notify it immediately', () => {
+    it('should conditionally render a component and notify it immediately', async () => {
       let updated;
 
       fabricate('div')
@@ -348,7 +388,7 @@ describe('fabricate.js', () => {
           updated = true;
         });
 
-      fabricate.update({ visible: true });
+      await fabricate.update({ visible: true });
 
       expect(updated).to.equal(true);
     });
@@ -372,7 +412,7 @@ describe('fabricate.js', () => {
       expect(notified).to.equal(undefined);
     });
 
-    it('should conditionally display a component and inform visibility', () => {
+    it('should conditionally display a component and inform visibility', async () => {
       let updated;
 
       fabricate('div')
@@ -383,10 +423,10 @@ describe('fabricate.js', () => {
           },
         );
 
-      fabricate.update({ visible: true });
+      await fabricate.update({ visible: true });
       expect(updated).to.equal(true);
 
-      fabricate.update({ visible: false });
+      await fabricate.update({ visible: false });
       expect(updated).to.equal(false);
     });
   });
@@ -398,12 +438,12 @@ describe('fabricate.js', () => {
         updatedKeys = keys;
       });
 
-      fabricate.update('counter', () => 1);
+      await fabricate.update('counter', () => 1);
 
       expect(updatedKeys).to.deep.equal(['counter']);
     });
 
-    it('should allow watching app state with key filter', () => {
+    it('should allow watching app state with key filter', async () => {
       let updatedKeys;
       fabricate('div').onUpdate(
         (el, newState, keys) => {
@@ -412,8 +452,8 @@ describe('fabricate.js', () => {
         ['counter'],
       );
 
-      fabricate.update('counter', () => 1);
-      fabricate.update('ignored', () => 1);
+      await fabricate.update('counter', () => 1);
+      await fabricate.update('ignored', () => 1);
 
       expect(updatedKeys).to.deep.equal(['counter']);
     });
@@ -422,21 +462,21 @@ describe('fabricate.js', () => {
       expect(() => fabricate.update(undefined, () => false)).to.throw(Error);
     });
 
-    it('should allow data value state update', () => {
-      fabricate.update('counter', 23);
+    it('should allow data value state update', async () => {
+      await fabricate.update('counter', 23);
 
       expect(_fabricate.state.counter).to.equal(23);
     });
 
-    it('should allow function value state update', () => {
-      fabricate.update('counter', () => 42);
-      fabricate.update('counter', ({ counter }) => counter + 1);
+    it('should allow function value state update', async () => {
+      await fabricate.update('counter', () => 42);
+      await fabricate.update('counter', ({ counter }) => counter + 1);
 
       expect(_fabricate.state.counter).to.equal(43);
     });
 
-    it('should allow data state update', () => {
-      fabricate.update({ counter: 23 });
+    it('should allow data state update', async () => {
+      await fabricate.update({ counter: 23 });
 
       expect(_fabricate.state.counter).to.equal(23);
     });
@@ -455,7 +495,7 @@ describe('fabricate.js', () => {
        */
       const Component = () => fabricate('div');
 
-      fabricate.app(Component());
+      fabricate.app(Component);
 
       expect(document.body.childElementCount).to.equal(1);
     });
@@ -476,7 +516,7 @@ describe('fabricate.js', () => {
       );
       const initialState = { counter: 0 };
 
-      fabricate.app(Component(), initialState);
+      fabricate.app(Component, initialState);
 
       expect(updatedKeys).to.deep.equal(['fabricate:init']);
       expect(document.body.childElementCount).to.equal(1);
@@ -516,20 +556,20 @@ describe('fabricate.js', () => {
     });
 
     it('should allow dynamic state keys in strict mode', () => {
-      fabricate.app(fabricate('div'), {}, { strict: true });
+      fabricate.app(() => fabricate('div'), {}, { strict: true });
 
       const key = fabricate.buildKey('isVisible', 'AppCard', '1');
 
       expect(() => fabricate.update(key, true)).to.not.throw();
     });
 
-    it('should initialise dynamic state keys only once', () => {
-      fabricate.app(fabricate('div'), {}, { strict: true });
+    it('should initialise dynamic state keys only once', async () => {
+      fabricate.app(() => fabricate('div'), {}, { strict: true });
 
       const key = fabricate.buildKey('isVisible', 'AppCard', '1');
       expect(_fabricate.state[key]).to.equal(null);
 
-      fabricate.update(key, true);
+      await fabricate.update(key, true);
 
       expect(_fabricate.state[key]).to.equal(true);
 
@@ -997,13 +1037,13 @@ describe('fabricate.js', () => {
 
   describe('Options', () => {
     it('should allow logging of state updates', () => {
-      fabricate.app(fabricate('div'), {}, { logStateUpdates: true });
+      fabricate.app(() => fabricate('div'), {}, { logStateUpdates: true });
     });
 
-    it('should persist certain state', () => {
-      fabricate.app(fabricate('div'), { counter: 12, name: 'foo' }, { persistState: ['counter'] });
+    it('should persist certain state', async () => {
+      fabricate.app(() => fabricate('div'), { counter: 12, name: 'foo' }, { persistState: ['counter'] });
 
-      fabricate.update('counter', 64);
+      await fabricate.update('counter', 64);
 
       const stored = localStorage.getItem(_fabricate.STORAGE_KEY_STATE);
       expect(stored).to.equal(JSON.stringify({ counter: 64 }));
@@ -1011,32 +1051,37 @@ describe('fabricate.js', () => {
 
     it('should only allow updating known state in strict mode', () => {
       const initialState = { known: true };
-      fabricate.app(fabricate('div'), initialState, { strict: true });
+      fabricate.app(() => fabricate('div'), initialState, { strict: true });
 
       expect(() => fabricate.update('unknown', true)).to.throw(Error);
     });
 
     it('should require watchKeys for onUpdate in strict mode', () => {
-      fabricate.app(fabricate('div'), {}, { strict: true });
+      fabricate.app(() => fabricate('div'), {}, { strict: true });
 
       expect(() => fabricate('div').onUpdate(console.log)).to.throw(Error);
     });
 
     it('should make an exception for watchKeys for displayWhen in strict mode', () => {
-      fabricate.app(fabricate('div'), {}, { strict: true });
+      fabricate.app(() => fabricate('div'), {}, { strict: true });
 
       expect(() => fabricate('div').displayWhen(() => true)).to.not.throw(Error);
     });
 
-    it('should allow async state updates', (done) => {
-      const el = fabricate('div')
+    it('should use only async state updates', (done) => {
+      /**
+       * App component.
+       *
+       * @returns {HTMLElement} App component.
+       */
+      const App = () => fabricate('div')
         .onUpdate((el2, state) => {
           expect(state.counter).to.equal(1);
           done();
         }, ['counter']);
 
       const initialState = { counter: 0 };
-      fabricate.app(el, initialState, { asyncUpdates: true });
+      fabricate.app(App, initialState);
 
       fabricate.update({ counter: 1 });
 

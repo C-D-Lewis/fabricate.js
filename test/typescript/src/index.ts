@@ -29,10 +29,17 @@ const options: FabricateOptions = {
   logStateUpdates: true,
   persistState: ['counter'],
   strict: false,
-  asyncUpdates: false,
+  theme: {
+    palette: {
+      custom: '#444',
+    },
+    styles: {
+      dropShadow: '2px 0px 4px black',
+    },
+  },
 };
 
-fabricate.app(App(), initialState, options);
+fabricate.app(App, initialState, options);
 
 setInterval(() => fabricate.update('counter', ({ counter }) => counter + 1), 1000);
 
@@ -41,6 +48,9 @@ setInterval(() => fabricate.update('counter', ({ counter }) => counter + 1), 100
 fabricate('div')
   .asFlex('column')
   .setStyles({ color: 'white' })
+  .setStyles(({ palette, styles }) => ({
+    color: palette.success,
+  }))
   .setAttributes({ disabled: true })
   .addChildren([fabricate('div')])
   .setChildren([

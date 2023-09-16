@@ -21,11 +21,11 @@
         .setChildren([
           fab('TextInput', { placeholder: 'Email' })
             .setStyles({ margin: 'auto' })
-            .onChange((el, state, value) => fab.update({ email: value })),
+            .onChange((el, state, value) => fabricate.update({ email: value })),
           fab('TextInput', { placeholder: 'Password' })
             .setStyles({ margin: 'auto' })
             .setAttributes({ type: 'password' })
-            .onChange((el, state, value) => fab.update({ password: value })),
+            .onChange((el, state, value) => fabricate.update({ password: value })),
 
           fab('Button', { text: 'Submit' })
             .setStyles({ margin: '15px auto' })
@@ -36,10 +36,9 @@
               }
 
               // Mock login
-              fab.update({ isLoading: true });
+              fabricate.update({ isLoading: true });
               setTimeout(() => {
-                fab.update({ isLoading: false });
-                fab.update({ isCompleted: true });
+                fabricate.update({ isLoading: false, isCompleted: true });
               }, 3000);
             }),
         ]);
@@ -89,7 +88,7 @@
         isLoading: false,
         isCompleted: false,
       };
-      fabricate.app(App(), initialState);
+      fabricate.app(App, initialState);
     </script>
   </body>
 </html>
