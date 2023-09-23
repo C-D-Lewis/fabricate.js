@@ -1,8 +1,3 @@
-const results = {
-  passed: 0,
-  total: 0,
-};
-
 /**
  * Check an element has all the specified styles.
  *
@@ -34,19 +29,25 @@ const hasAttributes = (el, attributes) => Object
   .every(([k, v]) => el.getAttribute(k) === v);
 
 /**
- * Print the result to the page.
+ * Mock isNarrow() implementation.
+ *
+ * @param {object} fabricate - fabricate library import.
+ * @param {boolean} isNarrow - true if isNarrow() should return true.
  */
-// eslint-disable-next-line no-unused-vars
-const printResults = () => {
-  const span = document.createElement('span');
-  span.style.marginTop = '20px';
-  span.innerHTML = `${results.passed} / ${results.total} passed`;
-  document.body.appendChild(span);
+const mockIsNarrow = (fabricate, isNarrow) => {
+  /**
+   * Mock isNarrow function.
+   *
+   * @returns {boolean} Mocked result.
+   */
+  // eslint-disable-next-line no-param-reassign
+  fabricate.isNarrow = () => isNarrow;
 };
 
 if (typeof module !== 'undefined') {
   module.exports = {
     hasStyles,
     hasAttributes,
+    mockIsNarrow,
   };
 }

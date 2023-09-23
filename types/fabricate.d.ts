@@ -15,6 +15,15 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
    */
   setStyles: (param1: Partial<CSSStyleDeclaration> | ThemeCallback) => FabricateComponent<StateShape>;
   /**
+   * Set some element styles, if isNarrow() returns true.
+   *
+   * @param {object|Function} param1 - CSS JavaScript styles object to apply.
+   * @returns {FabricateComponent<StateShape>} This component.
+   */
+  setNarrowStyles: (
+    param1: Partial<CSSStyleDeclaration> | ThemeCallback,
+  ) => FabricateComponent<StateShape>;
+  /**
    * Set some element attributes.
    *
    * @param {object} attributes - Attributes to set.

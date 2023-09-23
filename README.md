@@ -700,7 +700,9 @@ npm test
 Fabricate 3.0:
 
 - [x] All async updates.
-- [x] Themeing palette for built-in components
+- [x] Theming palette for built-in components.
+- [x] Narrow styles.
+- [ ] TypeScript conversion with vanilla build.
 - [ ] Cleaner component composition?
 - [ ] Util components for simpler grid layouts (centering, standard paddings?)
-- [ ] Narrow styles
+- [ ] Update unit tests to not require browser-env / node 14.

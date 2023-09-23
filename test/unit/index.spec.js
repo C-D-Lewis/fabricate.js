@@ -6,7 +6,7 @@ browserEnv({ url: 'http://localhost' });
 
 const { expect } = require('chai');
 const { fabricate, _fabricate } = require('../../fabricate');
-const { hasStyles, hasAttributes } = require('../util');
+const { hasStyles, hasAttributes, mockIsNarrow } = require('../util');
 
 describe('fabricate.js', () => {
   before(() => {
@@ -33,6 +33,7 @@ describe('fabricate.js', () => {
 
   afterEach(() => {
     fabricate.clearState();
+    mockIsNarrow(fabricate, false);
 
     // Reset options to default
     fabricate.app(() => fabricate('div'));
@@ -48,6 +49,15 @@ describe('fabricate.js', () => {
     it('should create a div with styles', () => {
       const styles = { color: 'white' };
       const el = fabricate('div').setStyles(styles);
+
+      expect(hasStyles(el, styles)).to.equal(true);
+    });
+
+    it('should create a div with narrow styles', () => {
+      mockIsNarrow(fabricate, true);
+
+      const styles = { color: 'white' };
+      const el = fabricate('div').setNarrowStyles(styles);
 
       expect(hasStyles(el, styles)).to.equal(true);
     });
@@ -485,6 +495,10 @@ describe('fabricate.js', () => {
   describe('Helpers', () => {
     it('should allow detection of narrow screens', () => {
       expect(fabricate.isNarrow()).to.equal(false);
+
+      mockIsNarrow(fabricate, true);
+
+      expect(fabricate.isNarrow()).to.equal(true);
     });
 
     it('should allow creation of root app element with no initial state', () => {

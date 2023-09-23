@@ -179,6 +179,18 @@ const fabricate = (name, customProps) => {
   };
 
   /**
+   * Augment existing styles with new ones, when isNarrow() returns true.
+   *
+   * @param {object|Function} param1 - Either object of styles, or callback.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  el.setNarrowStyles = (param1) => {
+    if (fabricate.isNarrow()) el.setStyles(param1);
+
+    return el;
+  };
+
+  /**
    * Augment existing attributes with new ones.
    *
    * @param {object} newAttributes - New attributes to apply.

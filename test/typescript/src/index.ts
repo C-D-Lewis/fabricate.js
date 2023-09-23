@@ -51,6 +51,9 @@ fabricate('div')
   .setStyles(({ palette, styles }) => ({
     color: palette.success,
   }))
+  .setNarrowStyles(({ palette }) => ({
+    color: palette.success,
+  }))
   .setAttributes({ disabled: true })
   .addChildren([fabricate('div')])
   .setChildren([
