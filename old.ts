@@ -1,49 +1,49 @@
-// Private data - NOT FOR EXTERNAL USE
-const _fabricate = {
-  /** Max mobile width. */
-  MOBILE_MAX_WIDTH: 1000,
-  /** LocalStorage key for persisted state */
-  STORAGE_KEY_STATE: '_fabricate:state',
-  /** Default options */
-  DEFAULT_OPTIONS: {
-    logStateUpdates: false,
-    persistState: undefined,
-    strict: false,
-    theme: {
-      palette: {},
-      styles: {},
-    },
+import {
+  FabricateComponent,
+  FabricateOptions,
+  OnHoverCallback,
+  StateWatcher,
+  ThemeCallback,
+} from './types';
+
+/** Max mobile width. */
+const MOBILE_MAX_WIDTH = 1000;
+
+/** LocalStorage key for persisted state */
+const STORAGE_KEY_STATE = '_fabricate:state';
+
+/** Default options */
+const DEFAULT_OPTIONS: FabricateOptions = {
+  logStateUpdates: false,
+  persistState: [],
+  strict: false,
+  theme: {
+    palette: {},
+    styles: {},
   },
-
-  // Library state
-  state: {},
-  stateWatchers: [],
-  customComponents: {},
-  options: undefined,
-  onDestroyObserver: undefined,
-  __internal__ignore_strict: false,
-
-  // Internal helpers
-  /**
-   * Get a copy of the state for reading.
-   *
-   * @returns {object} The copy.
-   */
-  getStateCopy: () => Object.freeze({ ..._fabricate.state }),
-  /**
-   * Check if strict mode is in effect.
-   *
-   * @returns {boolean} true if strict mode applies.
-   */
-  isStrictMode: () => !!(_fabricate.options.strict && !_fabricate.__internal__ignore_strict),
 };
-_fabricate.options = _fabricate.DEFAULT_OPTIONS;
+
+// Library state
+const customComponents: Record<string, Function> = {};
+let onDestroyObserver: MutationObserver | undefined = undefined;
+let state: Record<string, any> = {};
+let options = DEFAULT_OPTIONS;
+let stateWatchers: StateWatcher[] = [];
+let ignore_strict = false;
 
 /**
- * @typedef FabricateComponent
+ * Get a copy of the state for reading.
  *
- * Enhanced HTMLElement with Fabricate.js methods.
+ * @returns {object} The copy.
  */
+const getStateCopy = () => Object.freeze({ ...state });
+
+/**
+ * Check if strict mode is in effect.
+ *
+ * @returns {boolean} true if strict mode applies.
+ */
+const isStrictMode = () => !!(options.strict && !ignore_strict);
 
 /// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
@@ -57,13 +57,22 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  * @param {Function} [changeCb] - Optional change callback.
  * @returns {boolean} new result.
  */
-const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
-  const newResult = !!testCb(_fabricate.getStateCopy());
+const _handleConditionalDisplay = (
+  el: FabricateComponent,
+  lastResult: boolean | undefined,
+  testCb: (state: StateShape) => boolean,
+  changeCb?: (
+    el: FabricateComponent,
+    state: StateShape,
+    newResult: boolean,
+  ) => void,
+) => {
+  const newResult = !!testCb(getStateCopy());
   if (newResult === lastResult) return lastResult;
 
   // Emit update only if not initial render
   if (changeCb && typeof lastResult !== 'undefined') {
-    changeCb(el, _fabricate.getStateCopy(), newResult);
+    changeCb(el, getStateCopy(), newResult);
   }
 
   return newResult;
@@ -75,26 +84,24 @@ const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
  * @param {FabricateComponent} el - Element to remove.
  * @returns {void}
  */
-const _unregisterStateWatcher = (el) => {
-  const index = _fabricate.stateWatchers.findIndex((p) => p.el === el);
+const _unregisterStateWatcher = (el: FabricateComponent) => {
+  const index = stateWatchers.findIndex((p) => p.el === el);
   if (index < 0) {
     console.warn('Failed to remove state watcher!');
     console.warn(el);
     return;
   }
 
-  _fabricate.stateWatchers.splice(index, 1);
+  stateWatchers.splice(index, 1);
 };
 
 /**
  * Save current state to LocalStorage.
  */
 const _savePersistState = () => {
-  const { STORAGE_KEY_STATE, state, options: { persistState } } = _fabricate;
-
   // Store only those keys named for persistence
   const toSave = Object.entries(state)
-    .filter(([k]) => persistState.includes(k))
+    .filter(([k]) => options.persistState.includes(k))
     .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
 
   localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(toSave));
@@ -104,11 +111,9 @@ const _savePersistState = () => {
  * Load persisted state if it exists.
  */
 const _loadPersistState = () => {
-  const { STORAGE_KEY_STATE } = _fabricate;
-
   const loaded = JSON.parse(localStorage.getItem(STORAGE_KEY_STATE) || '{}');
-  _fabricate.state = {
-    ..._fabricate.state,
+  state = {
+    ...state,
     ...loaded,
   };
 };
@@ -119,11 +124,7 @@ const _loadPersistState = () => {
  *
  * @param {Array<string>} keys - Key that was updated.
  */
-const _notifyStateChange = (keys) => {
-  const {
-    stateWatchers, state, options,
-  } = _fabricate;
-
+const _notifyStateChange = (keys: string[]) => {
   // Log to console for debugging
   if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
   // Persist to LocalStorage if required
@@ -134,7 +135,7 @@ const _notifyStateChange = (keys) => {
     if (watchKeys && watchKeys.length > 0 && !keys.some((p) => watchKeys.includes(p))) return;
 
     // Notify the watching component
-    cb(el, _fabricate.getStateCopy(), keys);
+    cb(el, getStateCopy(), keys);
   });
 };
 
@@ -146,9 +147,7 @@ const _notifyStateChange = (keys) => {
  * @param {object} [customProps] - Props to pass to a custom component being instantiated.
  * @returns {FabricateComponent} Fabricate component.
  */
-const fabricate = (name, customProps) => {
-  const { customComponents } = _fabricate;
-
+const fabricate = (name: string, customProps?: object) => {
   // Could be custom component or a HTML type
   const el = customComponents[name]
     ? customComponents[name](customProps)
@@ -162,10 +161,10 @@ const fabricate = (name, customProps) => {
    * @param {object|Function} param1 - Either object of styles, or callback.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setStyles = (param1) => {
+  el.setStyles = (param1: Partial<CSSStyleDeclaration> | ThemeCallback) => {
     // Callback with the app theme values
     if (typeof param1 === 'function') {
-      const newStyles = param1({ ..._fabricate.options.theme });
+      const newStyles = param1({ ...options.theme });
       Object.assign(el.style, newStyles);
       return el;
     }
@@ -184,7 +183,7 @@ const fabricate = (name, customProps) => {
    * @param {object|Function} param1 - Either object of styles, or callback.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setNarrowStyles = (param1) => {
+  el.setNarrowStyles = (param1: Partial<CSSStyleDeclaration> | ThemeCallback) => {
     if (fabricate.isNarrow()) el.setStyles(param1);
 
     return el;
@@ -196,7 +195,7 @@ const fabricate = (name, customProps) => {
    * @param {object} newAttributes - New attributes to apply.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setAttributes = (newAttributes) => {
+  el.setAttributes = (newAttributes: object) => {
     Object.assign(el, newAttributes);
     return el;
   };
@@ -218,7 +217,7 @@ const fabricate = (name, customProps) => {
    * @param {Array<HTMLElement>} children - Children to append inside.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.addChildren = (children) => {
+  el.addChildren = (children: FabricateComponent[]) => {
     children.forEach((child) => {
       // It's another element
       if (typeof child === 'object' && child.tagName) {
@@ -239,7 +238,7 @@ const fabricate = (name, customProps) => {
    * @param {Array<HTMLElement>} children - Children to append inside.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setChildren = (children) => {
+  el.setChildren = (children: FabricateComponent[]) => {
     el.empty();
     el.addChildren(children);
 
@@ -252,7 +251,7 @@ const fabricate = (name, customProps) => {
    * @param {string} html - HTML to set.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setHtml = (html) => {
+  el.setHtml = (html: string) => {
     el.innerHTML = html;
     return el;
   };
@@ -263,7 +262,7 @@ const fabricate = (name, customProps) => {
    * @param {string} text - Text to set.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setText = (text) => {
+  el.setText = (text: string) => {
     el.innerText = text;
     return el;
   };
@@ -284,8 +283,10 @@ const fabricate = (name, customProps) => {
    * @param {Function} cb - Function to call when click happens, with element and state.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onClick = (cb) => {
-    el.addEventListener('click', () => cb(el, _fabricate.getStateCopy()));
+  el.onClick = (
+    cb: (el: FabricateComponent, state: StateShape) => void,
+  ) => {
+    el.addEventListener('click', () => cb(el, getStateCopy()));
     return el;
   };
 
@@ -295,30 +296,37 @@ const fabricate = (name, customProps) => {
    * @param {Function} cb - Function to call when text input happens.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onChange = (cb) => {
-    el.addEventListener('input', ({ target }) => cb(el, _fabricate.getStateCopy(), target.value));
+  el.onChange = (
+    cb: (el: FabricateComponent, state: StateShape, value: string) => void,
+  ) => {
+    el.addEventListener(
+      'input',
+      ({ target }: { target: { value: string }}) => cb(el, getStateCopy(), target.value),
+    );
     return el;
   };
 
   /**
    * Convenience method for start and end of hover.
    *
-   * @param {object} opts - start and end of hover handlers, or a callback.
+   * @param {function|object} param1 - start and end of hover handlers, or a callback.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onHover = (opts) => {
+  el.onHover = (
+    param1: OnHoverCallback,
+  ) => {
     // Callback style
-    if (typeof opts === 'function') {
-      el.addEventListener('mouseenter', () => opts(el, _fabricate.getStateCopy(), true));
-      el.addEventListener('mouseleave', () => opts(el, _fabricate.getStateCopy(), false));
+    if (typeof param1 === 'function') {
+      el.addEventListener('mouseenter', () => param1(el, getStateCopy(), true));
+      el.addEventListener('mouseleave', () => param1(el, getStateCopy(), false));
       return el;
     }
 
     // Object of handlers style
-    const { start, end } = opts;
-    el.addEventListener('mouseenter', () => start(el, _fabricate.getStateCopy()));
-    el.addEventListener('mouseleave', () => end(el, _fabricate.getStateCopy()));
-    return el;
+    // const { start, end } = param1;
+    // el.addEventListener('mouseenter', () => start(el, getStateCopy()));
+    // el.addEventListener('mouseleave', () => end(el, getStateCopy()));
+    // return el;
   };
 
   /**
@@ -328,20 +336,27 @@ const fabricate = (name, customProps) => {
    * @param {Array<string>} [watchKeys] - List of keys to listen to.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onUpdate = (cb, watchKeys = []) => {
-    if (_fabricate.isStrictMode() && (!watchKeys || !watchKeys.length)) {
+  el.onUpdate = (
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      keysChanged: string[],
+    ) => void,
+    watchKeys?: (keyof StateShape)[],
+  ) => {
+    if (isStrictMode() && (!watchKeys || !watchKeys.length)) {
       throw new Error('strict mode: watchKeys option must be provided');
     }
 
     // Register for updates
-    _fabricate.stateWatchers.push({ el, cb, watchKeys });
+    stateWatchers.push({ el, cb, watchKeys });
 
     // Remove watcher on destruction
     el.onDestroy(_unregisterStateWatcher);
 
     if (watchKeys.includes('fabricate:created')) {
       // Emulate onCreate if this method is used
-      cb(el, _fabricate.getStateCopy(), ['fabricate:created']);
+      cb(el, getStateCopy(), ['fabricate:created']);
     }
 
     return el;
@@ -354,13 +369,18 @@ const fabricate = (name, customProps) => {
    * @param {Function} cb - Function to run when removed, with this element and current state.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onDestroy = (cb) => {
+  el.onDestroy = (
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+    ) => void,
+  ) => {
     /**
      * Callback when the element is destroyed.
      *
      * @returns {void}
      */
-    el.onDestroyHandler = () => cb(el, _fabricate.getStateCopy());
+    el.onDestroyHandler = () => cb(el, getStateCopy());
     return el;
   };
 
@@ -371,8 +391,15 @@ const fabricate = (name, customProps) => {
    * @param {Function} cb - Callback when event listener fires.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.onEvent = (type, cb) => {
-    el.addEventListener(type, (e) => cb(el, _fabricate.getStateCopy(), e));
+  el.onEvent = (
+    type: string,
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      event: Event,
+    ) => void,
+  ) => {
+    el.addEventListener(type, (e) => cb(el, getStateCopy(), e));
     return el;
   };
 
@@ -383,9 +410,16 @@ const fabricate = (name, customProps) => {
    * @param {Function} [changeCb] - Callback when the display state changes.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.displayWhen = (testCb, changeCb) => {
+  el.displayWhen = (
+    testCb: (state: StateShape) => boolean,
+    changeCb?: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      isDisplayed: boolean,
+    ) => void,
+  ) => {
     const originalDisplay = el.style.display;
-    let lastResult;
+    let lastResult: undefined | boolean;
 
     /**
      * When state updates
@@ -396,9 +430,9 @@ const fabricate = (name, customProps) => {
     };
 
     // Only known exception - displayWhen does not know what testCb does
-    _fabricate.__internal__ignore_strict = true;
+    ignore_strict = true;
     el.onUpdate(onStateUpdate);
-    _fabricate.__internal__ignore_strict = false;
+    ignore_strict = false;
 
     // Test right away
     onStateUpdate();
@@ -418,9 +452,10 @@ const fabricate = (name, customProps) => {
  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
  * @returns {Promise} Promise once update has applied.
  */
-fabricate.update = (param1, param2) => {
-  const { state, options } = _fabricate;
-
+fabricate.update = (
+  param1: string | Partial<StateShape>,
+  param2?: ((oldState: StateShape) => any) | object | string | number | boolean | undefined | null,
+) => {
   const keys = typeof param1 === 'object' ? Object.keys(param1) : [param1];
 
   // Only allow known state key updates
@@ -437,7 +472,7 @@ fabricate.update = (param1, param2) => {
   // State slice?
   if (typeof param1 === 'object') {
     return Promise.resolve().then(() => {
-      _fabricate.state = { ...state, ...param1 };
+      state = { ...state, ...param1 };
       _notifyStateChange(keys);
     });
   }
@@ -445,7 +480,7 @@ fabricate.update = (param1, param2) => {
   // Keyed update?
   if (typeof param1 === 'string') {
     return Promise.resolve().then(() => {
-      _fabricate.state[param1] = typeof param2 === 'function' ? param2(state) : param2;
+      state[param1] = typeof param2 === 'function' ? param2(state) : param2;
       _notifyStateChange(keys);
     });
   }
@@ -457,15 +492,15 @@ fabricate.update = (param1, param2) => {
  * Build a key using dynamic data.
  *
  * @param {string} name - State name.
- * @param  {...any} rest - Remaining qualifiers of the key.
+ * @param  {...string} rest - Remaining qualifiers of the key.
  * @returns {string} Constructed state key.
  */
-fabricate.buildKey = (name, ...rest) => {
+fabricate.buildKey = (name: string, ...rest: string[]) => {
   const key = `${name}:${rest.join(':')}`;
 
   // Allow this key by adding it, but trigger no updates
-  if (_fabricate.isStrictMode() && typeof _fabricate.state[key] === 'undefined') {
-    _fabricate.state[key] = null;
+  if (isStrictMode() && typeof state[key] === 'undefined') {
+    state[key] = null;
   }
 
   return key;
@@ -475,8 +510,8 @@ fabricate.buildKey = (name, ...rest) => {
  * Clear all state and state watchers.
  */
 fabricate.clearState = () => {
-  _fabricate.state = {};
-  _fabricate.stateWatchers = [];
+  state = {};
+  stateWatchers = [];
 };
 
 /// /////////////////////////////////////////// Helpers ////////////////////////////////////////////
@@ -484,9 +519,9 @@ fabricate.clearState = () => {
 /**
  * Recursively check all children since only parent is reported.
  *
- * @param {HTMLElement} parent - Parent node.
+ * @param {FabricateComponent} parent - Parent node.
  */
-const _notifyRemovedRecursive = (parent) => {
+const _notifyRemovedRecursive = (parent: FabricateComponent) => {
   if (parent.onDestroyHandler) parent.onDestroyHandler();
 
   parent.childNodes.forEach(_notifyRemovedRecursive);
@@ -497,14 +532,14 @@ const _notifyRemovedRecursive = (parent) => {
  *
  * @returns {object} Default options.
  */
-const _getDefaultOptions = () => ({ ..._fabricate.DEFAULT_OPTIONS });
+const _getDefaultOptions = () => ({ ...DEFAULT_OPTIONS });
 
 /**
  * Determine if a mobile device is being used which has a narrow screen.
  *
  * @returns {boolean} true if running on a 'narrow' screen device.
  */
-fabricate.isNarrow = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
+fabricate.isNarrow = () => window.innerWidth < MOBILE_MAX_WIDTH;
 
 /**
  * Begin a component hierarchy from the body.
@@ -513,15 +548,19 @@ fabricate.isNarrow = () => window.innerWidth < _fabricate.MOBILE_MAX_WIDTH;
  * @param {object} [initialState] - Optional, initial state.
  * @param {object} [opts] - Extra options.
  */
-fabricate.app = (rootCb, initialState = {}, opts = {}) => {
+fabricate.app = (
+  rootCb: () => FabricateComponent<StateShape>,
+  initialState: StateShape = {},
+  opts: FabricateOptions = DEFAULT_OPTIONS,
+) => {
   if (typeof rootCb !== 'function') throw new Error('App root must be a builder function');
 
   // Reset state
-  _fabricate.state = initialState;
-  _fabricate.options = _getDefaultOptions();
+  state = initialState;
+  options = _getDefaultOptions();
 
   // Apply options
-  Object.assign(_fabricate.options, opts);
+  Object.assign(options, opts);
   if (opts.persistState) _loadPersistState();
 
   // Build app
@@ -529,11 +568,11 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
   document.body.appendChild(root);
 
   // Power onDestroy handlers
-  if (!_fabricate.onDestroyObserver) {
-    _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
+  if (!onDestroyObserver) {
+    onDestroyObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => mutation.removedNodes.forEach(_notifyRemovedRecursive));
     });
-    _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
+    onDestroyObserver.observe(root, { subtree: true, childList: true });
   }
 
   // Trigger initial state update
@@ -547,11 +586,14 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
  * @param {*} builderCb - Builder function to instantiate it.
  * @throws {Error} if the name is invalid or it's already declared.
  */
-fabricate.declare = (name, builderCb) => {
+fabricate.declare = (
+  name: string,
+  builderCb: (props?: any) => FabricateComponent<StateShape>,
+) => {
   if (!/^[a-zA-Z]{1,}$/.test(name)) throw new Error('Declared component names must be a single word of letters');
-  if (fabricate[name] || _fabricate.customComponents[name]) throw new Error('Component already declared');
+  if (fabricate[name] || customComponents[name]) throw new Error('Component already declared');
 
-  _fabricate.customComponents[name] = builderCb;
+  customComponents[name] = builderCb;
 };
 
 /**
@@ -559,9 +601,11 @@ fabricate.declare = (name, builderCb) => {
  *
  * @param {Function} cb - Callback when key pressed.
  */
-fabricate.onKeyDown = (cb) => {
+fabricate.onKeyDown = (
+  cb: (state: StateShape, key: string) => void,
+) => {
   document.addEventListener('keydown', ({ key }) => {
-    cb(_fabricate.getStateCopy(), key);
+    cb(getStateCopy(), key);
   });
 };
 
@@ -573,9 +617,12 @@ fabricate.onKeyDown = (cb) => {
  * @param {Function} builderCb - Component build callback.
  * @returns {FabricateComponent} Wrapper component.
  */
-fabricate.conditional = (testCb, builderCb) => {
+fabricate.conditional = (
+  testCb: (state: StateShape) => boolean,
+  builderCb: () => FabricateComponent<StateShape>,
+) => {
   const wrapper = fabricate('div');
-  let lastResult;
+  let lastResult: undefined | boolean;
 
   /**
    * When state updates.
@@ -600,11 +647,8 @@ fabricate.conditional = (testCb, builderCb) => {
     }
   };
 
-  _fabricate.stateWatchers.push({
+  stateWatchers.push({
     el: wrapper,
-    /**
-     * When state updates, build the child.
-     */
     cb: onStateUpdate,
   });
 
@@ -956,9 +1000,6 @@ fabricate.declare(
 
 /// ////////////////////////////////////// Convenience alias ///////////////////////////////////////
 
-// Convenient alternative
-window.fab = fabricate;
-
 /// /////////////////////////////////////////// Styles /////////////////////////////////////////////
 
 document.head.appendChild(fabricate('style')
@@ -967,11 +1008,3 @@ document.head.appendChild(fabricate('style')
       transform:rotate(360deg);
     }
   }`));
-
-// Allow 'require' in unit tests
-if (typeof module !== 'undefined') {
-  module.exports = {
-    fabricate,
-    _fabricate,
-  };
-}

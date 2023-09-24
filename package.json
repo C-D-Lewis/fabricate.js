@@ -5,6 +5,9 @@
   "main": "fabricate.js",
   "types": "types/fabricate.d.ts",
   "scripts": {
+    "clean": "rm -rf ./dist",
+    "build": "npm run clean && webpack --mode production",
+    "build:dev": "npm run clean && webpack --mode development",
     "test": "nyc mocha test/unit/** --timeout 10000",
     "start": "http-server",
     "prepublishOnly": "npm run test"
@@ -20,23 +23,37 @@
   },
   "homepage": "https://github.com/c-d-lewis/fabricate#readme",
   "devDependencies": {
-    "@chris-lewis/eslint-config": "^1.0.2",
+    "@chris-lewis/eslint-config": "^1.0.3",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
     "browser-env": "^3.3.0",
     "chai": "^4.3.6",
+    "eslint-import-resolver-typescript": "^3.6.1",
     "mocha": "^10.0.0",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.2.2",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "eslintConfig": {
-    "extends": "@chris-lewis/eslint-config",
-    "env": {
-      "mocha": true
+    "extends": [
+      "@chris-lewis/eslint-config",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "settings": {
+      "import/resolver": {
+        "typescript": {}
+      }
     },
     "rules": {
-      "no-underscore-dangle": 0
-    },
-    "globals": {
-      "fabricate": "readonly",
-      "fab": "readonly"
+      "import/extensions": 0,
+      "no-param-reassign": 0
     }
   },
   "nyc": {
