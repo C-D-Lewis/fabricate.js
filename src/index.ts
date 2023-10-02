@@ -2,13 +2,20 @@ import { DEFAULT_OPTIONS } from './constants';
 import {
   ComponentBuilder,
   FabricateComponent,
+  FabricateEvent,
   FabricateOptions,
+  OnHoverCallback,
+  OnUpdateCallback,
+  StateWatcher,
   ThemeCallback,
 } from './types';
 import { isNarrow } from './utils';
 
 const customComponents: Record<string, ComponentBuilder> = {};
 const options: FabricateOptions = DEFAULT_OPTIONS;
+let state: any = {};
+let stateWatchers: StateWatcher<any>[] = [];
+let ignore_strict = false;
 
 /**
  * Get a copy of the state for reading.
@@ -16,6 +23,30 @@ const options: FabricateOptions = DEFAULT_OPTIONS;
  * @returns {object} The copy.
  */
 const getStateCopy = () => Object.freeze({ ...state });
+
+/**
+ * Check if strict mode is in effect.
+ *
+ * @returns {boolean} true if strict mode applies.
+ */
+const isStrictMode = () => !!(options.strict && !ignore_strict);
+
+/**
+ * Unregister state watcher for this element to prevent leaking them.
+ *
+ * @param {FabricateComponent} el - Element to remove.
+ * @returns {void}
+ */
+const _unregisterStateWatcher = <StateShape>(el: FabricateComponent<StateShape>) => {
+  const index = stateWatchers.findIndex((p) => p.el === el);
+  if (index < 0) {
+    console.warn('Failed to remove state watcher!');
+    console.warn(el);
+    return;
+  }
+
+  stateWatchers.splice(index, 1);
+};
 
 /**
  * Fabricate a component by name, providing optional props.
@@ -30,7 +61,7 @@ const fabricate = <StateShape>(
 ): FabricateComponent<StateShape> => {
   // Could be custom component or a HTML type
   const el = customComponents[name]
-    ? customComponents[name](props)
+    ? customComponents[name](props) as FabricateComponent<StateShape>
     : document.createElement(name) as FabricateComponent<StateShape>;
 
   el.componentName = name;
@@ -171,99 +202,95 @@ const fabricate = <StateShape>(
     return el;
   };
 
-  // /**
-  //  * Convenience method for adding an input handler.
-  //  *
-  //  * @param {Function} cb - Function to call when text input happens.
-  //  * @returns {FabricateComponent} Fabricate component.
-  //  */
-  // el.onChange = (
-  //   cb: (el: FabricateComponent, state: StateShape, value: string) => void,
-  // ) => {
-  //   el.addEventListener(
-  //     'input',
-  //     ({ target }: { target: { value: string }}) => cb(el, getStateCopy(), target.value),
-  //   );
-  //   return el;
-  // };
+  /**
+   * Convenience method for adding an input handler.
+   *
+   * @param {Function} cb - Function to call when text input happens.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  el.onChange = (
+    cb: (el: FabricateComponent<StateShape>, state: StateShape, value: string) => void,
+  ) => {
+    el.addEventListener(
+      'input',
+      (event: Event) => {
+        const { value } = event.target as HTMLInputElement;
+        cb(el, getStateCopy(), value);
+      },
+    );
+    return el;
+  };
 
-  // /**
-  //  * Convenience method for start and end of hover.
-  //  *
-  //  * @param {function|object} param1 - start and end of hover handlers, or a callback.
-  //  * @returns {FabricateComponent} Fabricate component.
-  //  */
-  // el.onHover = (
-  //   param1: OnHoverCallback,
-  // ) => {
-  //   // Callback style
-  //   if (typeof param1 === 'function') {
-  //     el.addEventListener('mouseenter', () => param1(el, getStateCopy(), true));
-  //     el.addEventListener('mouseleave', () => param1(el, getStateCopy(), false));
-  //     return el;
-  //   }
+  /**
+   * Convenience method for start and end of hover.
+   *
+   * @param {function|object} param1 - start and end of hover handlers, or a callback.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  el.onHover = (
+    param1: OnHoverCallback<StateShape>,
+  ) => {
+    // Callback style
+    if (typeof param1 === 'function') {
+      el.addEventListener('mouseenter', () => param1(el, getStateCopy(), true));
+      el.addEventListener('mouseleave', () => param1(el, getStateCopy(), false));
+      return el;
+    }
 
-  //   // Object of handlers style
-  //   // const { start, end } = param1;
-  //   // el.addEventListener('mouseenter', () => start(el, getStateCopy()));
-  //   // el.addEventListener('mouseleave', () => end(el, getStateCopy()));
-  //   // return el;
-  // };
+    // Object of handlers style
+    // const { start, end } = param1;
+    // el.addEventListener('mouseenter', () => start(el, getStateCopy()));
+    // el.addEventListener('mouseleave', () => end(el, getStateCopy()));
+    console.warn('onHover object mode not yet supported');
+    return el;
+  };
 
-  // /**
-  //  * Watch the state for changes.
-  //  *
-  //  * @param {Function} cb - Callback to be notified.
-  //  * @param {Array<string>} [watchKeys] - List of keys to listen to.
-  //  * @returns {FabricateComponent} Fabricate component.
-  //  */
-  // el.onUpdate = (
-  //   cb: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //     keysChanged: string[],
-  //   ) => void,
-  //   watchKeys?: (keyof StateShape)[],
-  // ) => {
-  //   if (isStrictMode() && (!watchKeys || !watchKeys.length)) {
-  //     throw new Error('strict mode: watchKeys option must be provided');
-  //   }
+  /**
+   * Watch the state for changes.
+   *
+   * @param {Function} cb - Callback to be notified.
+   * @param {Array<string>} [watchKeys] - List of keys to listen to.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  el.onUpdate = (
+    cb: OnUpdateCallback<StateShape>,
+    watchKeys: (keyof StateShape | FabricateEvent)[],
+  ) => {
+    // Register for updates
+    stateWatchers.push({ el, cb, watchKeys });
 
-  //   // Register for updates
-  //   stateWatchers.push({ el, cb, watchKeys });
+    // Remove watcher on destruction
+    el.onDestroy(_unregisterStateWatcher);
 
-  //   // Remove watcher on destruction
-  //   el.onDestroy(_unregisterStateWatcher);
+    if (watchKeys && watchKeys.includes('fabricate:created')) {
+      // Emulate onCreate if this method is used
+      cb(el, getStateCopy(), ['fabricate:created']);
+    }
 
-  //   if (watchKeys.includes('fabricate:created')) {
-  //     // Emulate onCreate if this method is used
-  //     cb(el, getStateCopy(), ['fabricate:created']);
-  //   }
+    return el;
+  };
 
-  //   return el;
-  // };
-
-  // /**
-  //  * Convenience method to run some statements when a component is removed from
-  //  * the DOM/it's parent.
-  //  *
-  //  * @param {Function} cb - Function to run when removed, with this element and current state.
-  //  * @returns {FabricateComponent} Fabricate component.
-  //  */
-  // el.onDestroy = (
-  //   cb: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //   ) => void,
-  // ) => {
-  //   /**
-  //    * Callback when the element is destroyed.
-  //    *
-  //    * @returns {void}
-  //    */
-  //   el.onDestroyHandler = () => cb(el, getStateCopy());
-  //   return el;
-  // };
+  /**
+   * Convenience method to run some statements when a component is removed from
+   * the DOM/it's parent.
+   *
+   * @param {Function} cb - Function to run when removed, with this element and current state.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  el.onDestroy = (
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+    ) => void,
+  ) => {
+    /**
+     * Callback when the element is destroyed.
+     *
+     * @returns {void}
+     */
+    el.onDestroyHandler = () => cb(el, getStateCopy());
+    return el;
+  };
 
   // /**
   //  * Listen for any other Event type, such as 'load'.

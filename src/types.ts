@@ -1,3 +1,6 @@
+/** Built-in events */
+export type FabricateEvent = 'fabricate:init' | 'fabricate:created';
+
 /** Theme structure */
 type FabricateTheme = {
   palette: object;
@@ -16,8 +19,34 @@ export type FabricateOptions = {
   theme?: FabricateTheme;
 };
 
+/** State watcher type */
+export type StateWatcher<StateShape> = {
+  el: FabricateComponent<StateShape>,
+  cb: (
+    el: FabricateComponent<StateShape>,
+    state: StateShape,
+    watchKeys?: string[] | FabricateEvent | undefined,
+  ) => void,
+  // Required by users, but not always internally
+  watchKeys?: string[],
+};
+
 /** setStyles optional callback form */
 export type ThemeCallback = (theme?: FabricateTheme) => Partial<CSSStyleDeclaration>;
+
+/** onHover callback form */
+export type OnHoverCallback<StateShape> = (
+  el: FabricateComponent<StateShape>,
+  state: StateShape,
+  isHovered: boolean,
+) => undefined;
+
+/** onUpdate callback form */
+export type OnUpdateCallback<StateShape> = (
+  el: FabricateComponent<StateShape>,
+  state: StateShape,
+  keysChanged: string[],
+) => undefined;
 
 /**
  * Fabricate component extends HTMLElement - and uses shape of app's state.
@@ -27,6 +56,8 @@ export type ThemeCallback = (theme?: FabricateTheme) => Partial<CSSStyleDeclarat
 export interface FabricateComponent<StateShape> extends HTMLElement {
   /** Name of the component */
   componentName: string;
+  /** Handler for onDestroy */
+  onDestroyHandler: () => void,
   /**
    * Set some element styles.
    *
@@ -105,62 +136,54 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
       state: StateShape,
     ) => void,
   ) => FabricateComponent<StateShape>;
-  // /**
-  //  * When the element value changes.
-  //  *
-  //  * @param {Function} cb - Callback when value changes.
-  //  * @returns {FabricateComponent} This component.
-  //  */
-  // onChange: (
-  //   cb: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //     newValue: string,
-  //   ) => void,
-  // ) => FabricateComponent<StateShape>;
-  // /**
-  //  * When the element is hovered.
-  //  *
-  //  * TODO: Handle hover handlers type here.
-  //  *
-  //  * @param {Function} cb - Callback when hovered.
-  //  * @returns {FabricateComponent} This component.
-  //  */
-  // onHover: (
-  //   cb: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //     isHovered: boolean,
-  //   ) => void,
-  // ) => FabricateComponent<StateShape>;
-  // /**
-  //  * When a fabricate.js state update occurs.
-  //  *
-  //  * @param {Function} cb - Callback when update occurs.
-  //  * @param {string[]} watchKeys - Keys in state to watch.
-  //  * @returns {FabricateComponent} This component.
-  //  */
-  // onUpdate: (
-  //   cb: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //     keysChanged: string[],
-  //   ) => void,
-  //   watchKeys?: (keyof StateShape)[],
-  // ) => FabricateComponent<StateShape>;
-  // /**
-  //  * Convenience method to run some statements when a component is removed from
-  //  * the DOM/it's parent.
-  //  *
-  //  * @param {Function} cb - Callback when component destroyed.
-  //  * @returns {FabricateComponent} This component.
-  //  */
-  // onDestroy: (
-  //   cb: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //   ) => void,
-  // ) => FabricateComponent<StateShape>;
+  /**
+   * When the element value changes.
+   *
+   * @param {Function} cb - Callback when value changes.
+   * @returns {FabricateComponent} This component.
+   */
+  onChange: (
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      newValue: string,
+    ) => void,
+  ) => FabricateComponent<StateShape>;
+  /**
+   * When the element is hovered.
+   *
+   * TODO: Handle hover handlers type here.
+   *
+   * @param {Function} cb - Callback when hovered.
+   * @returns {FabricateComponent} This component.
+   */
+  onHover: (
+    cb: OnHoverCallback<StateShape>,
+  ) => FabricateComponent<StateShape>;
+  /**
+   * When a fabricate.js state update occurs.
+   *
+   * @param {Function} cb - Callback when update occurs.
+   * @param {string[]} watchKeys - Keys in state to watch.
+   * @returns {FabricateComponent} This component.
+   */
+  onUpdate: (
+    cb: OnUpdateCallback<StateShape>,
+    watchKeys: (keyof StateShape | FabricateEvent)[],
+  ) => FabricateComponent<StateShape>;
+  /**
+   * Convenience method to run some statements when a component is removed from
+   * the DOM/it's parent.
+   *
+   * @param {Function} cb - Callback when component destroyed.
+   * @returns {FabricateComponent} This component.
+   */
+  onDestroy: (
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+    ) => void,
+  ) => FabricateComponent<StateShape>;
   // /**
   //  * Listen for any other Event type, such as 'load'.
   //  *
@@ -195,24 +218,6 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
 
 /** Component builder type */
 export type ComponentBuilder = <StateShape>(props?: object) => FabricateComponent<StateShape>;
-
-/** State watcher type */
-export type StateWatcher<StateShape> = {
-  el: FabricateComponent<StateShape>,
-  cb: (
-    el: FabricateComponent<StateShape>,
-    state: StateShape,
-    watchKeys?: string[] | undefined,
-  ) => void,
-  watchKeys: string[],
-}
-
-/** onHover callback form */
-export type OnHoverCallback<StateShape> = (
-  el: FabricateComponent<StateShape>,
-  state: StateShape,
-  isHovered: boolean,
-) => undefined;
 
 // /** Fabricate.js library */
 // export type Fabricate<StateShape> = {
