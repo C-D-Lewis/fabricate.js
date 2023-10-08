@@ -1,5 +1,3 @@
-import { Fabricate, FabricateComponent, FabricateOptions } from "../../../types/fabricate";
-
 declare const fabricate: Fabricate<AppState>;
 
 ///////////////////////////////////////// Example app build ////////////////////////////////////////

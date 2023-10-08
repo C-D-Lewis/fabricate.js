@@ -1,6 +1,8 @@
 /** Built-in events */
 export type FabricateEvent = 'fabricate:init' | 'fabricate:created';
 
+export type WatchKeys<StateShape> = (keyof StateShape | FabricateEvent)[];
+
 /** Theme structure */
 type FabricateTheme = {
   palette: object;
@@ -19,18 +21,6 @@ export type FabricateOptions = {
   theme?: FabricateTheme;
 };
 
-/** State watcher type */
-export type StateWatcher<StateShape> = {
-  el: FabricateComponent<StateShape>,
-  cb: (
-    el: FabricateComponent<StateShape>,
-    state: StateShape,
-    watchKeys?: string[] | FabricateEvent | undefined,
-  ) => void,
-  // Required by users, but not always internally
-  watchKeys?: string[],
-};
-
 /** setStyles optional callback form */
 export type ThemeCallback = (theme?: FabricateTheme) => Partial<CSSStyleDeclaration>;
 
@@ -45,7 +35,7 @@ export type OnHoverCallback<StateShape> = (
 export type OnUpdateCallback<StateShape> = (
   el: FabricateComponent<StateShape>,
   state: StateShape,
-  keysChanged: string[],
+  keysChanged: (keyof StateShape | FabricateEvent)[],
 ) => undefined;
 
 /**
@@ -57,7 +47,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
   /** Name of the component */
   componentName: string;
   /** Handler for onDestroy */
-  onDestroyHandler: () => void,
+  onDestroyHandler: () => undefined,
   /**
    * Set some element styles.
    *
@@ -134,7 +124,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
     cb: (
       el: FabricateComponent<StateShape>,
       state: StateShape,
-    ) => void,
+    ) => undefined,
   ) => FabricateComponent<StateShape>;
   /**
    * When the element value changes.
@@ -147,7 +137,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
       el: FabricateComponent<StateShape>,
       state: StateShape,
       newValue: string,
-    ) => void,
+    ) => undefined,
   ) => FabricateComponent<StateShape>;
   /**
    * When the element is hovered.
@@ -169,7 +159,7 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
    */
   onUpdate: (
     cb: OnUpdateCallback<StateShape>,
-    watchKeys: (keyof StateShape | FabricateEvent)[],
+    watchKeys: WatchKeys<StateShape>,
   ) => FabricateComponent<StateShape>;
   /**
    * Convenience method to run some statements when a component is removed from
@@ -182,73 +172,73 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
     cb: (
       el: FabricateComponent<StateShape>,
       state: StateShape,
-    ) => void,
+    ) => undefined,
   ) => FabricateComponent<StateShape>;
-  // /**
-  //  * Listen for any other Event type, such as 'load'.
-  //  *
-  //  * @param {string} type - Event type.
-  //  * @param {Function} cb - Callback when event listener fires.
-  //  * @returns {FabricateComponent} This component.
-  //  */
-  // onEvent: (
-  //   type: string,
-  //   cb: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //     event: Event,
-  //   ) => void,
-  // ) => FabricateComponent<StateShape>;
-  // /**
-  //  * Display this component only when a state test is met.
-  //  *
-  //  * @param {Function} testCb - Callback to test the state.
-  //  * @param {Function} changeCb - Callback when display state changes.
-  //  * @returns {FabricateComponent} This component.
-  //  */
-  // displayWhen: (
-  //   testCb: (state: StateShape) => boolean,
-  //   changeCb?: (
-  //     el: FabricateComponent<StateShape>,
-  //     state: StateShape,
-  //     isDisplayed: boolean,
-  //   ) => void,
-  // ) => FabricateComponent<StateShape>;
+  /**
+   * Listen for any other Event type, such as 'load'.
+   *
+   * @param {string} type - Event type.
+   * @param {Function} cb - Callback when event listener fires.
+   * @returns {FabricateComponent} This component.
+   */
+  onEvent: (
+    type: string,
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      event: Event,
+    ) => undefined,
+  ) => FabricateComponent<StateShape>;
+  /**
+   * Display this component only when a state test is met.
+   *
+   * @param {Function} testCb - Callback to test the state.
+   * @param {Function} changeCb - Callback when display state changes.
+   * @returns {FabricateComponent} This component.
+   */
+  displayWhen: (
+    testCb: (state: StateShape) => boolean,
+    watchKeys: WatchKeys<StateShape>,
+    changeCb?: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+      isDisplayed: boolean,
+    ) => undefined,
+  ) => FabricateComponent<StateShape>;
 }
+
+/** State watcher type */
+export type StateWatcher<StateShape> = {
+  el: FabricateComponent<StateShape>,
+  cb: OnUpdateCallback<StateShape>,
+  // Required by users, but not always internally
+  watchKeys?: WatchKeys<StateShape>,
+};
 
 /** Component builder type */
 export type ComponentBuilder = <StateShape>(props?: object) => FabricateComponent<StateShape>;
 
 // /** Fabricate.js library */
 // export type Fabricate<StateShape> = {
-//   /**
-//    * Main component builder, using component name or HTML tag name.
-//    *
-//    * @param {string} componentName - Component or HTML tag name.
-//    * @param {object} props - Component props.
-//    * @returns {FabricateComponent<StateShape>} New component.
-//    */
-//   (componentName: string, props?: object): FabricateComponent<StateShape>;
-
-//   /**
-//    * Update fabricate.js app state.
-//    *
-//    * Note: param1 can be string to allow buildKey and dynamic state keys.
-//    *
-//    * @param {string|Partial<StateShape>} param1 - Either key or object state slice.
-//    * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
-//    * @returns {void}
-//    */
-//   update: (
-//     param1: string | Partial<StateShape>,
-//     param2?: ((oldState: StateShape) => any) | object | string | number | boolean | undefined | null,
-//   ) => void;
+  // /**
+  //  * Update fabricate.js app state.
+  //  *
+  //  * Note: param1 can be string to allow buildKey and dynamic state keys.
+  //  *
+  //  * @param {string|Partial<StateShape>} param1 - Either key or object state slice.
+  //  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
+  //  * @returns {void}
+  //  */
+  // update: (
+  //   param1: string | Partial<StateShape>,
+  //   param2?: ((oldState: StateShape) => any) | object | string | number | boolean | undefined | null,
+  // ) => undefined;
 //   /**
 //    * Clear entire fabricate.js app state.
 //    * 
 //    * @returns {void}
 //    */
-//   clearState: () => void,
+//   clearState: () => undefined,
 //   /**
 //    * Test if on a 'narrow' device.
 //    *
@@ -277,7 +267,7 @@ export type ComponentBuilder = <StateShape>(props?: object) => FabricateComponen
 //   declare: (
 //     name: string,
 //     builderCb: (props?: any) => FabricateComponent<StateShape>,
-//   ) => void;
+//   ) => undefined;
 //   /**
 //    * Listen globally for any keydown event. Good for keyboard shortcuts.
 //    *
@@ -287,8 +277,8 @@ export type ComponentBuilder = <StateShape>(props?: object) => FabricateComponen
 //     cb: (
 //       state: StateShape,
 //       key: string,
-//     ) => void,
-//   ) => void,
+//     ) => undefined,
+//   ) => undefined,
 //   /**
 //    * Build a key using dynamic data.
 //    *
