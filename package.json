@@ -2,8 +2,8 @@
   "name": "fabricate.js",
   "version": "2.11.2",
   "description": "Tiny vanilla JS webapp framework with a fluent API and zero dependencies.",
-  "main": "fabricate.js",
-  "types": "types/fabricate.d.ts",
+  "main": "dist/fabricate.js",
+  "types": "src/types.ts",
   "scripts": {
     "clean": "rm -rf ./dist",
     "build": "npm run clean && webpack --mode production",

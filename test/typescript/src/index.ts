@@ -1,4 +1,4 @@
-declare const fabricate: Fabricate<AppState>;
+import fabricate from 'fabricate.js';
 
 ///////////////////////////////////////// Example app build ////////////////////////////////////////
 

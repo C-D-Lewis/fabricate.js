@@ -1,6 +1,7 @@
 /** Built-in events */
 export type FabricateEvent = 'fabricate:init' | 'fabricate:created';
 
+/** Watchkeys type */
 export type WatchKeys<StateShape> = (keyof StateShape | FabricateEvent)[];
 
 /** Theme structure */
@@ -26,6 +27,7 @@ export type ThemeCallback = (theme?: FabricateTheme) => Partial<CSSStyleDeclarat
 
 /** onHover callback form */
 export type OnHoverCallback<StateShape> = (
+  // eslint-disable-next-line no-use-before-define
   el: FabricateComponent<StateShape>,
   state: StateShape,
   isHovered: boolean,
@@ -33,6 +35,7 @@ export type OnHoverCallback<StateShape> = (
 
 /** onUpdate callback form */
 export type OnUpdateCallback<StateShape> = (
+  // eslint-disable-next-line no-use-before-define
   el: FabricateComponent<StateShape>,
   state: StateShape,
   keysChanged: (keyof StateShape | FabricateEvent)[],
@@ -217,85 +220,3 @@ export type StateWatcher<StateShape> = {
 
 /** Component builder type */
 export type ComponentBuilder = <StateShape>(props?: object) => FabricateComponent<StateShape>;
-
-// /** Fabricate.js library */
-// export type Fabricate<StateShape> = {
-  // /**
-  //  * Update fabricate.js app state.
-  //  *
-  //  * Note: param1 can be string to allow buildKey and dynamic state keys.
-  //  *
-  //  * @param {string|Partial<StateShape>} param1 - Either key or object state slice.
-  //  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
-  //  * @returns {void}
-  //  */
-  // update: (
-  //   param1: string | Partial<StateShape>,
-  //   param2?: ((oldState: StateShape) => any) | object | string | number | boolean | undefined | null,
-  // ) => undefined;
-//   /**
-//    * Clear entire fabricate.js app state.
-//    * 
-//    * @returns {void}
-//    */
-//   clearState: () => undefined,
-//   /**
-//    * Test if on a 'narrow' device.
-//    *
-//    * @returns {boolean} true if the device is 'narrow' or phone-like.
-//    */
-//   isNarrow: () => boolean;
-//   /**
-//    * Begin a component hierarchy from the body.
-//    *
-//    * @param {function} rootCb - Builder function returning first element in the app tree.
-//    * @param {StateShape} [initialState] - Optional, initial state.
-//    * @param {FabricateOptions} [opts] - Extra options.
-//    */
-//   app: (
-//     rootCb: () => FabricateComponent<StateShape>,
-//     initialState: StateShape,
-//     options?: FabricateOptions,
-//   ) => FabricateComponent<StateShape>;
-//   /**
-//    * Declare a new component so it can be instantiated using fabricate().
-//    * 
-//    * @param {string} name - Component name. Some are reserved.
-//    * @param {function(props)} builderCb - Builder callback, receiving passed props.
-//    * @returns {void}
-//    */
-//   declare: (
-//     name: string,
-//     builderCb: (props?: any) => FabricateComponent<StateShape>,
-//   ) => undefined;
-//   /**
-//    * Listen globally for any keydown event. Good for keyboard shortcuts.
-//    *
-//    * @param {function(state, key)} cb - Callback when key pressed.
-//    */
-//   onKeyDown: (
-//     cb: (
-//       state: StateShape,
-//       key: string,
-//     ) => undefined,
-//   ) => undefined,
-//   /**
-//    * Build a key using dynamic data.
-//    *
-//    * @param {string} name - State name.
-//    * @param  {...string} rest - Remaining qualifiers of the key.
-//    * @returns {string} Constructed state key.
-//    */
-//   buildKey: (name: string, ...rest: [string]) => string,
-//   /**
-//    * Create a component when a state test is passed.
-//    *
-//    * @param {function(state)} testCb - Callback to test the state.
-//    * @param {function} builderCb - Callback to build the inner component.
-//    * @returns {FabricateComponent} Wrapper component.
-//    */
-//   conditional: (
-//     testCb: (state: StateShape) => boolean,
-//     builderCb: () => FabricateComponent<StateShape>,
-//   ) => FabricateComponent<StateShape>;
-// };

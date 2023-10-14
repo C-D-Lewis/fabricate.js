@@ -1,4 +1,4 @@
-import { DEFAULT_OPTIONS, MOBILE_MAX_WIDTH, STORAGE_KEY_STATE } from './constants';
+import { DEFAULT_OPTIONS, STORAGE_KEY_STATE } from './constants';
 import {
   ComponentBuilder,
   FabricateComponent,
@@ -122,16 +122,12 @@ const loadPersistState = () => {
  * @param {Array<string>} keys - Key that was updated.
  */
 const notifyStateChange = (keys: string[]) => {
-  // Log to console for debugging
   if (options.logStateUpdates) { console.log(`fabricate notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
-  // Persist to LocalStorage if required
   if (options.persistState) savePersistState();
 
   stateWatchers.forEach(({ el, cb, watchKeys }) => {
-    // If watchKeys is used, filter state updates
     if (watchKeys && watchKeys.length > 0 && !keys.some((p) => watchKeys.includes(p))) return;
 
-    // Notify the watching component
     cb(el, getStateCopy(), keys);
   });
 };
@@ -344,10 +340,7 @@ const fabricate = <StateShape>(
     cb: OnUpdateCallback<StateShape>,
     watchKeys: WatchKeys<StateShape>,
   ) => {
-    // Register for updates
     stateWatchers.push({ el, cb, watchKeys });
-
-    // Remove watcher on destruction
     el.onDestroy(unregisterStateWatcher);
 
     if (watchKeys && watchKeys.includes('fabricate:created')) {
@@ -559,7 +552,7 @@ export const declare = <StateShape>(
   builderCb: ComponentBuilder,
 ) => {
   if (!/^[a-zA-Z]{1,}$/.test(name)) throw new Error('Declared component names must be a single word of letters');
-  if (fabricate[name] || customComponents[name]) throw new Error('Component already declared');
+  if (customComponents[name]) throw new Error('Component already declared');
 
   customComponents[name] = builderCb;
 };
@@ -594,23 +587,15 @@ export const conditional = <StateShape>(
 
   /**
    * When state updates.
-   *
-   * @returns {void}
    */
   const onStateUpdate = (): undefined => {
     const newResult = handleConditionalDisplay(wrapper, lastResult, testCb);
-    // console.log(`conditional [${label}]: lastResult=${lastResult} newResult=${newResult}`);
-    if (newResult === lastResult) {
-      // console.log(`conditional [${label}]: doing nothing`);
-      return;
-    }
+    if (newResult === lastResult) return;
 
     lastResult = newResult;
     if (newResult) {
-      // console.log(`conditional [${label}]: calling builderCb`);
       wrapper.setChildren([builderCb()]);
     } else {
-      // console.log(`conditional [${label}]: emptying`);
       wrapper.empty();
     }
   };

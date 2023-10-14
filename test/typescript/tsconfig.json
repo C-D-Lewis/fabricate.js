@@ -2,12 +2,13 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "target": "ES2016",
-    "module": "ES2015",
+    "module": "NodeNext",
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "moduleResolution": "NodeNext"
   }
 }

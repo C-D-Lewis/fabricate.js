@@ -1,13 +1,14 @@
-import builder from './builder';
+import builder from './fabricate';
 
 export {
-  update,
   app,
+  update,
   buildKey,
-  clearState,
   declare,
   onKeyDown,
-} from './builder';
+  conditional,
+  clearState,
+} from './fabricate';
 export {
   isNarrow,
 } from './utils';
