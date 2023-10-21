@@ -1,6 +1,6 @@
 import fabricate from 'fabricate.js';
 
-///////////////////////////////////////// Example app build ////////////////////////////////////////
+/// ////////////////////////////////////// Example app build ////////////////////////////////////////
 
 /** Example app state type */
 type AppState = {
@@ -41,7 +41,7 @@ fabricate.app(App, initialState, options);
 
 setInterval(() => fabricate.update('counter', ({ counter }) => counter + 1), 1000);
 
-//////////////////////////////////// Other, testing types file /////////////////////////////////////
+/// ///////////////////////////////// Other, testing types file /////////////////////////////////////
 
 fabricate('div')
   .asFlex('column')
@@ -56,30 +56,29 @@ fabricate('div')
   .addChildren([fabricate('div')])
   .setChildren([
     fabricate('div'),
-    fabricate.conditional((state) => state.counter > 0, () => fabricate('Text'))
+    fabricate.conditional((state) => state.counter > 0, () => fabricate('Text')),
   ])
   .setHtml('<div/>')
   .setText('foo')
   .onClick((el, state) => console.log(state))
   .onChange((el, state, newValue) => console.log(newValue))
   .onHover((el, state, isHovered) => console.log(isHovered))
-  .onUpdate((el, state, updatedKeys) => console.log(updatedKeys), ["counter"])
+  .onUpdate((el, state, updatedKeys) => console.log(updatedKeys), ['counter'])
   .onDestroy((el, state) => console.log('destroyed'))
   .onEvent('load', (el, state, event) => console.log(event))
   // Two forms
-  .displayWhen((state => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
-  .displayWhen((state => !!state));
+  .displayWhen(((state) => !!state), (el, state, isDisplayed) => console.log(isDisplayed))
+  .displayWhen(((state) => !!state));
 
 // Three forms
-fabricate.update({ counter: 1 })
+fabricate.update({ counter: 1 });
 fabricate.update('foo', 'bar');
-fabricate.update('foo', state => state.counter);
+fabricate.update('foo', (state) => state.counter);
 fabricate.update('updated', true);
 
 fabricate.declare(
   'FooComponent',
-  (props): FabricateComponent<AppState> =>
-    fabricate('div').setText(props.label),
+  (props): FabricateComponent<AppState> => fabricate('div').setText(props.label),
 );
 
 fabricate.onKeyDown((state, key) => console.log(key));

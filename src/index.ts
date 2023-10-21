@@ -9,6 +9,7 @@ export {
   conditional,
   clearState,
 } from './fabricate';
+
 export {
   isNarrow,
 } from './utils';
