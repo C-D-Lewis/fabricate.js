@@ -174,6 +174,38 @@ const BannerImage = ({ src }) => fabricate('img')
   .setAttributes({ src });
 ```
 
+`setNarrowStyles()` is also available to easy specify styles to be added if the
+app is on a narrow screen, since it is a common case:
+
+```js
+fabricate('Text')
+  .setStyles({ fontSize: '1.8rem' })
+  .setNarrowStyles({ fontSize: '1rem' })
+```
+
+If the `theme` option was used, `palette` and `styles` can be used during this
+function:
+```js
+fabricate('Text')
+  .setStyles(({ palette, styles }) => ({
+    color: palette.customColor,
+    boxShadow: styles.dropShadow,
+  }));
+
+const options = {
+  theme: {
+    palette: {
+      customColor: '#444',
+    },
+    styles: {
+      dropShadow: '2px 0px 4px black',
+    },
+  },
+};
+
+fabricate.app(App, initialState, options);
+```
+
 #### `.setChildren()` / `.addChildren()`
 
 Set other components as children to a parent, replacing any existing ones:
@@ -348,6 +380,8 @@ fabricate('Text')
   .setStyles({ fontSize: fabricate.isNarrow() ? '1rem' : '1.8rem' })
 ```
 
+> For convenience, `setNarrowStyles()` is available.
+
 #### `.app()`
 
 Use `app()` to start an app from the `document.body`. You can also specify an
@@ -388,6 +422,7 @@ The options available are:
 | `logStateUpdates` | `boolean` | Log all state updates in the console. |
 | `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
 | `strict` | `boolean` | Strict mode |
+| `theme` | `{ palette, styles }` | Provide a palette and common styles for use in `setStyles` |
 
 In strict mode, the following extra restrictions apply:
 
@@ -686,8 +721,6 @@ fabricate('Pill', {
 
 ## Run tests
 
-> For DOM mocking, node 14 is required to run unit tests.
-
 Run unit tests:
 
 ```
@@ -699,10 +732,9 @@ npm test
 
 Fabricate 3.0:
 
-- [x] All async updates.
-- [x] Theming palette for built-in components.
-- [x] Narrow styles.
-- [ ] TypeScript conversion with vanilla build.
+- [x] `app()` accepts builder function instead of already built component
+- [x] async updates by default
+- [x] Theming palette for built-in components
+- [x] Narrow styles
 - [ ] Cleaner component composition?
 - [ ] Util components for simpler grid layouts (centering, standard paddings?)
-- [ ] Update unit tests to not require browser-env / node 14.

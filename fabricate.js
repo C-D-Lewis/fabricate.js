@@ -186,7 +186,6 @@ const fabricate = (name, customProps) => {
    */
   el.setNarrowStyles = (param1) => {
     if (fabricate.isNarrow()) el.setStyles(param1);
-
     return el;
   };
 
@@ -226,7 +225,7 @@ const fabricate = (name, customProps) => {
         return;
       }
 
-      // It's text
+      // It's text?
       throw new Error('Child elements must be element type');
     });
 
@@ -333,14 +332,11 @@ const fabricate = (name, customProps) => {
       throw new Error('strict mode: watchKeys option must be provided');
     }
 
-    // Register for updates
     _fabricate.stateWatchers.push({ el, cb, watchKeys });
-
-    // Remove watcher on destruction
     el.onDestroy(_unregisterStateWatcher);
 
     if (watchKeys.includes('fabricate:created')) {
-      // Emulate onCreate if this method is used
+      // Emulate onCreate immediately if this method is used
       cb(el, _fabricate.getStateCopy(), ['fabricate:created']);
     }
 
@@ -488,7 +484,6 @@ fabricate.clearState = () => {
  */
 const _notifyRemovedRecursive = (parent) => {
   if (parent.onDestroyHandler) parent.onDestroyHandler();
-
   parent.childNodes.forEach(_notifyRemovedRecursive);
 };
 
@@ -536,7 +531,6 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
     _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
   }
 
-  // Trigger initial state update
   _notifyStateChange(['fabricate:init']);
 };
 
@@ -584,27 +578,18 @@ fabricate.conditional = (testCb, builderCb) => {
    */
   const onStateUpdate = () => {
     const newResult = _handleConditionalDisplay(wrapper, lastResult, testCb);
-    // console.log(`conditional [${label}]: lastResult=${lastResult} newResult=${newResult}`);
-    if (newResult === lastResult) {
-      // console.log(`conditional [${label}]: doing nothing`);
-      return;
-    }
+    if (newResult === lastResult) return;
 
     lastResult = newResult;
     if (newResult) {
-      // console.log(`conditional [${label}]: calling builderCb`);
       wrapper.setChildren([builderCb()]);
     } else {
-      // console.log(`conditional [${label}]: emptying`);
       wrapper.empty();
     }
   };
 
   _fabricate.stateWatchers.push({
     el: wrapper,
-    /**
-     * When state updates, build the child.
-     */
     cb: onStateUpdate,
   });
 
@@ -619,340 +604,194 @@ fabricate.conditional = (testCb, builderCb) => {
 
 /// //////////////////////////////////// Built-in Components ///////////////////////////////////////
 
-fabricate.declare(
-  'Row',
-  /**
-   * Basic Row component.
-   *
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  () => fabricate('div').asFlex('row'),
-);
+fabricate.declare('Row', () => fabricate('div').asFlex('row'));
 
-fabricate.declare(
-  'Column',
-  /**
-   * Basic Column component.
-   *
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  () => fabricate('div').asFlex('column'),
-);
+fabricate.declare('Column', () => fabricate('div').asFlex('column'));
 
-fabricate.declare(
-  'Text',
-  /**
-   * Basic Text component.
-   *
-   * @param {object} props - Component props.
-   * @param {string} [props.text] Text content (deprecated)
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  ({ text } = {}) => {
-    if (text) throw new Error('Text component text param was removed - use setText instead');
+fabricate.declare('Text', ({ text } = {}) => {
+  if (text) throw new Error('Text component text param was removed - use setText instead');
 
-    return fabricate('p').setStyles({ fontSize: '1.1rem', margin: '5px' });
-  },
-);
+  return fabricate('p').setStyles({ fontSize: '1.1rem', margin: '5px' });
+});
 
-fabricate.declare(
-  'Image',
-  /**
-   * Basic Image component. Default size can be overridden with setStyles().
-   *
-   * @param {object} props - Component props.
-   * @param {string} props.src - Image URL to show.
-   * @param {number} props.width - Image width (deprecated)
-   * @param {number} props.height - Image height (deprecated)
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  ({ src = '', width, height } = {}) => {
-    if (width || height) throw new Error('Image component width/height params removed - use setStyles instead');
+fabricate.declare('Image', ({ src = '', width, height } = {}) => {
+  if (width || height) throw new Error('Image component width/height params removed - use setStyles instead');
 
-    return fabricate('img')
-      .setStyles({ width: '128px', height: '128px' })
-      .setAttributes({ src });
-  },
-);
+  return fabricate('img')
+    .setStyles({ width: '128px', height: '128px' })
+    .setAttributes({ src });
+});
 
-fabricate.declare(
-  'Button',
-  /**
-   * Basic Button component with rounded corners and highlight on hover.
-   *
-   * @param {object} props - Component props.
-   * @param {string} [props.text] - Button text.
-   * @param {string} [props.color] - Button text and border color.
-   * @param {string} [props.backgroundColor] - Button background color.
-   * @param {boolean} [props.highlight] - True to enable highlight colors on hover.
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  ({
-    text = 'Button',
-    color = 'white',
-    backgroundColor = '#444',
-    highlight = true,
-  } = {}) => fabricate('Column')
+fabricate.declare('Button', ({
+  text = 'Button',
+  color = 'white',
+  backgroundColor = '#444',
+  highlight = true,
+} = {}) => fabricate('Column')
+  .setStyles({
+    minWidth: '80px',
+    width: 'max-content',
+    height: '20px',
+    color,
+    backgroundColor,
+    borderRadius: '5px',
+    padding: '8px 10px',
+    margin: '5px',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    cursor: 'pointer',
+    userSelect: 'none',
+    filter: 'brightness(1)',
+  })
+  .onHover((el, state, isHovered) => {
+    if (!highlight) return;
+
+    el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
+  })
+  .setText(text));
+
+fabricate.declare('NavBar', ({
+  title = 'NavBar Title',
+  color = 'white',
+  backgroundColor = 'forestgreen',
+} = {}) => {
+  const titleH1 = fabricate('h1')
     .setStyles({
-      minWidth: '80px',
-      width: 'max-content',
-      height: '20px',
       color,
-      backgroundColor,
-      borderRadius: '5px',
-      padding: '8px 10px',
-      margin: '5px',
-      justifyContent: 'center',
       fontWeight: 'bold',
-      textAlign: 'center',
-      cursor: 'pointer',
-      userSelect: 'none',
-      filter: 'brightness(1)',
+      fontSize: '1.2rem',
+      cursor: 'default',
+      marginRight: '20px',
+      paddingTop: '2px',
     })
-    .onHover((el, state, isHovered) => {
-      if (!highlight) return;
+    .setText(title);
 
-      el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
-    })
-    .setText(text),
-);
-
-fabricate.declare(
-  'NavBar',
-  /**
-   * Basic NavBar component with colors and title.
-   *
-   * Note: addChildren should be used to add more components.
-   *
-   * TODO: Optional left-hand app icon
-   *
-   * @param {object} props - Component props.
-   * @param {string} [props.title] - NavBar title text.
-   * @param {string} [props.color] - NavBar text color.
-   * @param {string} [props.backgroundColor] - NavBar background color.
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  ({
-    title = 'NavBar Title',
-    color = 'white',
-    backgroundColor = 'forestgreen',
-  } = {}) => {
-    const titleH1 = fabricate('h1')
-      .setStyles({
-        color,
-        fontWeight: 'bold',
-        fontSize: '1.2rem',
-        cursor: 'default',
-        marginRight: '20px',
-        paddingTop: '2px',
-      })
-      .setText(title);
-
-    const navbar = fabricate('Row')
-      .setStyles({
-        padding: '10px 20px',
-        height: '40px',
-        backgroundColor,
-        alignItems: 'center',
-      })
-      .setChildren([titleH1]);
-
-    /**
-     * Set the navbar title.
-     *
-     * @param {string} t - New title.
-     * @returns {FabricateComponent} Fabricate component.
-     */
-    navbar.setTitle = (t) => titleH1.setText(t);
-
-    return navbar;
-  },
-);
-
-fabricate.declare(
-  'TextInput',
-  /**
-   * Basic TextInput component with placeholder
-   *
-   * @param {object} props - Component props.
-   * @param {string} [props.placeholder] - TextInput placeholder text.
-   * @param {string} [props.color] - TextInput text color.
-   * @param {string} [props.backgroundColor] - TextInput background color.
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  ({
-    placeholder = 'Enter value',
-    color = 'black',
-    backgroundColor = '#f5f5f5',
-  } = {}) => fabricate('input')
-    .asFlex('row')
+  const navbar = fabricate('Row')
     .setStyles({
-      width: 'max-content',
-      border: '1px solid white',
-      color,
+      padding: '10px 20px',
+      height: '40px',
       backgroundColor,
-      borderRadius: '5px',
-      padding: '7px 9px',
-      fontSize: '1.1rem',
-      margin: '5px 0px',
+      alignItems: 'center',
     })
-    .setAttributes({
-      type: 'text',
-      placeholder,
-    }),
-);
+    .setChildren([titleH1]);
 
-fabricate.declare(
-  'Loader',
   /**
-   * Basic Loader component.
+   * Set the navbar title.
    *
-   * @param {object} props - Component props.
-   * @param {number} [props.size] - Loader size.
-   * @param {number} [props.lineWidth] - Stroke width.
-   * @param {string} [props.color] - Color.
-   * @param {string} [props.backgroundColor] - Background color.
+   * @param {string} t - New title.
    * @returns {FabricateComponent} Fabricate component.
    */
-  ({
-    size = 48,
-    lineWidth = 5,
-    color = 'red',
-    backgroundColor = '#ddd',
-  } = {}) => {
-    const container = fabricate('Column').setStyles({ width: `${size}px`, height: `${size}px` });
+  navbar.setTitle = (t) => titleH1.setText(t);
 
-    const canvas = fabricate('canvas')
-      .setStyles({
-        width: `${size}px`,
-        height: `${size}px`,
-        animation: 'spin 0.7s linear infinite',
-      })
-      .setAttributes({ width: size, height: size });
+  return navbar;
+});
 
-    // Get context and draw arcs
-    const ctx = canvas.getContext('2d');
-    const center = size / 2;
-    const radius = 0.8 * (size / 2);
-    ctx.lineWidth = lineWidth;
-    ctx.beginPath();
-    ctx.arc(center, center, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = backgroundColor;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(center, center, radius, 0, 1);
-    ctx.strokeStyle = color;
-    ctx.stroke();
+fabricate.declare('TextInput', ({
+  placeholder = 'Enter value',
+  color = 'black',
+  backgroundColor = '#f5f5f5',
+} = {}) => fabricate('input')
+  .asFlex('row')
+  .setStyles({
+    width: 'max-content',
+    border: '1px solid white',
+    color,
+    backgroundColor,
+    borderRadius: '5px',
+    padding: '7px 9px',
+    fontSize: '1.1rem',
+    margin: '5px 0px',
+  })
+  .setAttributes({ type: 'text', placeholder }));
 
-    container.setChildren([canvas]);
-    return container;
-  },
-);
+fabricate.declare('Loader', ({
+  size = 48,
+  lineWidth = 5,
+  color = 'red',
+  backgroundColor = '#ddd',
+} = {}) => {
+  const container = fabricate('Column').setStyles({ width: `${size}px`, height: `${size}px` });
 
-fabricate.declare(
-  'Card',
-  /**
-   * Basic Card component.
-   *
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  () => fabricate('Column').setStyles({
+  const canvas = fabricate('canvas')
+    .setStyles({
+      width: `${size}px`,
+      height: `${size}px`,
+      animation: 'spin 0.7s linear infinite',
+    })
+    .setAttributes({ width: size, height: size });
+
+  // Get context and draw arcs
+  const ctx = canvas.getContext('2d');
+  const center = size / 2;
+  const radius = 0.8 * (size / 2);
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.arc(center, center, radius, 0, 2 * Math.PI);
+  ctx.strokeStyle = backgroundColor;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(center, center, radius, 0, 1);
+  ctx.strokeStyle = color;
+  ctx.stroke();
+
+  container.setChildren([canvas]);
+  return container;
+});
+
+fabricate.declare('Card', () => fabricate('Column')
+  .setStyles({
     width: 'max-content',
     borderRadius: '5px',
     boxShadow: '2px 2px 3px 1px #5555',
     backgroundColor: 'white',
     overflow: 'hidden',
-  }),
-);
+  }));
 
-fabricate.declare(
-  'Fader',
-  /**
-   * Basic Fader component.
-   *
-   * @param {object} props - Component props.
-   * @param {number} [props.durationS] - Duration in seconds of the fade-in.
-   * @param {number} [props.delayMs] - Delay in milliseconds before fade begins.
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  ({
-    durationS = '0.6',
-    delayMs = 300,
-  } = {}) => fabricate('div')
-    .setStyles({ opacity: 0, transition: `opacity ${durationS}s` })
-    .onUpdate((el) => {
-      setTimeout(() => el.setStyles({ opacity: 1 }), delayMs);
-    }, ['fabricate:created']),
-);
+fabricate.declare('Fader', ({
+  durationS = '0.6',
+  delayMs = 300,
+} = {}) => fabricate('div')
+  .setStyles({ opacity: 0, transition: `opacity ${durationS}s` })
+  .onUpdate((el) => {
+    setTimeout(() => el.setStyles({ opacity: 1 }), delayMs);
+  }, ['fabricate:created']));
 
-fabricate.declare(
-  'Pill',
-  /**
-   * Basic Pill component.
-   *
-   * @param {object} props - Component props.
-   * @param {string} [props.text] - Pill text.
-   * @param {string} [props.color] - Pill color.
-   * @param {string} [props.backgroundColor] - Pill backgroundColor.
-   * @param {boolean} [props.highlight] - True to enable highlight colors on hover.
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  ({
-    text = 'Pill',
-    color = 'white',
-    backgroundColor = '#666',
-    highlight = true,
-  } = {}) => fabricate('Column')
-    .setStyles({
-      color,
-      backgroundColor,
-      justifyContent: 'center',
-      borderRadius: '20px',
-      padding: '7px 8px 5px 8px',
-      margin: '5px',
-      cursor: 'pointer',
-      filter: 'brightness(1)',
-      width: 'fit-content',
-    })
-    .onHover((el, state, isHovered) => {
-      if (!highlight) return;
+fabricate.declare('Pill', ({
+  text = 'Pill',
+  color = 'white',
+  backgroundColor = '#666',
+  highlight = true,
+} = {}) => fabricate('Column')
+  .setStyles({
+    color,
+    backgroundColor,
+    justifyContent: 'center',
+    borderRadius: '20px',
+    padding: '7px 8px 5px 8px',
+    margin: '5px',
+    cursor: 'pointer',
+    filter: 'brightness(1)',
+    width: 'fit-content',
+  })
+  .onHover((el, state, isHovered) => {
+    if (!highlight) return;
 
-      el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
-    })
-    .setText(text),
-);
+    el.setStyles({ filter: `brightness(${isHovered ? '1.2' : '1'})` });
+  })
+  .setText(text));
 
-fabricate.declare(
-  'FabricateAttribution',
-  /**
-   * Footer logo that can be used to link to fabricate.js.
-   *
-   * @returns {FabricateComponent} Fabricate component.
-   */
-  () => fabricate('img')
-    .setAttributes({ src: 'https://raw.githubusercontent.com/C-D-Lewis/fabricate.js/main/assets/logo_small.png' })
-    .setStyles({
-      width: '64px',
-      height: 'auto',
-      objectFit: 'cover',
-      cursor: 'pointer',
-    })
-    .onClick(() => window.open('https://github.com/C-D-Lewis/fabricate.js', '_blank')),
-);
-
-// TODO: Unfinished Select component
-// fabricate.Select = ({
-//   options = ['foo', 'bar', 'baz'],
-// }) => fabricate('select')
-//   .onCreate((el) => {
-//     options.forEach((option) => {
-//       el.add(new Option(option, option));
-//     });
-//   });
-
-// TODO: Checkbox
-
-// TODO: Radio group
+fabricate.declare('FabricateAttribution', () => fabricate('img')
+  .setAttributes({
+    src: 'https://raw.githubusercontent.com/C-D-Lewis/fabricate.js/main/assets/logo_small.png',
+  })
+  .setStyles({
+    width: '64px',
+    height: 'auto',
+    objectFit: 'cover',
+    cursor: 'pointer',
+  })
+  .onClick(() => window.open('https://github.com/C-D-Lewis/fabricate.js', '_blank')));
 
 /// ////////////////////////////////////// Convenience alias ///////////////////////////////////////
 

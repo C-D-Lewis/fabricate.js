@@ -328,7 +328,7 @@ describe('fabricate.js', () => {
         .setAttributes({ type: 'text' })
         .onChange(() => (changed = true));
 
-      el.dispatchEvent(new Event('input'));
+      el.dispatchEvent(new CustomEvent('input'));
 
       expect(changed).to.equal(true);
     });
@@ -338,8 +338,8 @@ describe('fabricate.js', () => {
       const el = fabricate('div')
         .onHover(() => (hovered = true));
 
-      el.dispatchEvent(new Event('mouseenter'));
-      el.dispatchEvent(new Event('mouseleave'));
+      el.dispatchEvent(new CustomEvent('mouseenter'));
+      el.dispatchEvent(new CustomEvent('mouseleave'));
 
       expect(hovered).to.equal(true);
     });
@@ -362,8 +362,8 @@ describe('fabricate.js', () => {
           end: () => (counter += 1),
         });
 
-      el.dispatchEvent(new Event('mouseenter'));
-      el.dispatchEvent(new Event('mouseleave'));
+      el.dispatchEvent(new CustomEvent('mouseenter'));
+      el.dispatchEvent(new CustomEvent('mouseleave'));
 
       expect(counter).to.equal(2);
     });
@@ -558,7 +558,7 @@ describe('fabricate.js', () => {
 
       fabricate.onKeyDown(() => pressed = true);
 
-      document.dispatchEvent(new Event('keydown'));
+      document.dispatchEvent(new CustomEvent('keydown'));
 
       expect(pressed).to.equal(true);
     });
@@ -715,11 +715,11 @@ describe('fabricate.js', () => {
       };
 
       // Hover
-      el.dispatchEvent(new Event('mouseenter'));
+      el.dispatchEvent(new CustomEvent('mouseenter'));
       expect(hasStyles(el, styles)).to.equal(true);
 
       // End hover
-      el.dispatchEvent(new Event('mouseleave'));
+      el.dispatchEvent(new CustomEvent('mouseleave'));
       styles.filter = 'brightness(1)';
       expect(hasStyles(el, styles)).to.equal(true);
     });
@@ -742,7 +742,7 @@ describe('fabricate.js', () => {
         filter: 'brightness(1)',
       };
 
-      el.dispatchEvent(new Event('mouseenter'));
+      el.dispatchEvent(new CustomEvent('mouseenter'));
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
@@ -1001,11 +1001,11 @@ describe('fabricate.js', () => {
       };
 
       // Hover
-      el.dispatchEvent(new Event('mouseenter'));
+      el.dispatchEvent(new CustomEvent('mouseenter'));
       expect(hasStyles(el, styles)).to.equal(true);
 
       // End hover
-      el.dispatchEvent(new Event('mouseleave'));
+      el.dispatchEvent(new CustomEvent('mouseleave'));
       styles.filter = 'brightness(1)';
       expect(hasStyles(el, styles)).to.equal(true);
     });
@@ -1025,7 +1025,7 @@ describe('fabricate.js', () => {
         filter: 'brightness(1)',
       };
 
-      el.dispatchEvent(new Event('mouseenter'));
+      el.dispatchEvent(new CustomEvent('mouseenter'));
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
