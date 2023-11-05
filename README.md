@@ -495,12 +495,6 @@ fabricate.update('counter', 0);
 fabricate.update({ counter: 0 });
 ```
 
-If needed, you can `await` the state update.
-
-```js
-await fabricate.update({ counter: 1 });
-```
-
 There are some special events that can be used:
 
 * `fabricate:init` - Called when the application is first run.
@@ -733,7 +727,7 @@ npm test
 Fabricate 3.0:
 
 - [x] `app()` accepts builder function instead of already built component
-- [x] async updates by default
+- [x] ~async updates~
 - [x] Theming palette for built-in components
 - [x] Narrow styles
 - [ ] Cleaner component composition?

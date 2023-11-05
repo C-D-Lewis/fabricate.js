@@ -274,9 +274,9 @@ describe('fabricate.js', () => {
         ]);
 
       // Create twice
-      await fabricate.update({ visible: true });
-      await fabricate.update({ visible: false });
-      await fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
+      fabricate.update({ visible: false });
+      fabricate.update({ visible: true });
 
       expect(createdCount).to.equal(2);
     });
@@ -300,8 +300,8 @@ describe('fabricate.js', () => {
         ]);
 
       // Create twice
-      await fabricate.update({ visible: true });
-      await fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
 
       expect(createdCount).to.equal(1);
     });
@@ -378,13 +378,13 @@ describe('fabricate.js', () => {
       // Initially hidden
       expect(el.style.display).to.equal('none');
 
-      await fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
 
       // Original display should be respected
       expect(el.style.display).to.equal('flex');
 
       // Should not re-render for same value
-      await fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
 
       expect(renderCount).to.equal(1);
     });
@@ -398,7 +398,7 @@ describe('fabricate.js', () => {
           updated = true;
         });
 
-      await fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
 
       expect(updated).to.equal(true);
     });
@@ -433,10 +433,10 @@ describe('fabricate.js', () => {
           },
         );
 
-      await fabricate.update({ visible: true });
+      fabricate.update({ visible: true });
       expect(updated).to.equal(true);
 
-      await fabricate.update({ visible: false });
+      fabricate.update({ visible: false });
       expect(updated).to.equal(false);
     });
   });
@@ -448,7 +448,7 @@ describe('fabricate.js', () => {
         updatedKeys = keys;
       });
 
-      await fabricate.update('counter', () => 1);
+      fabricate.update('counter', () => 1);
 
       expect(updatedKeys).to.deep.equal(['counter']);
     });
@@ -462,8 +462,8 @@ describe('fabricate.js', () => {
         ['counter'],
       );
 
-      await fabricate.update('counter', () => 1);
-      await fabricate.update('ignored', () => 1);
+      fabricate.update('counter', () => 1);
+      fabricate.update('ignored', () => 1);
 
       expect(updatedKeys).to.deep.equal(['counter']);
     });
@@ -473,20 +473,20 @@ describe('fabricate.js', () => {
     });
 
     it('should allow data value state update', async () => {
-      await fabricate.update('counter', 23);
+      fabricate.update('counter', 23);
 
       expect(_fabricate.state.counter).to.equal(23);
     });
 
     it('should allow function value state update', async () => {
-      await fabricate.update('counter', () => 42);
-      await fabricate.update('counter', ({ counter }) => counter + 1);
+      fabricate.update('counter', () => 42);
+      fabricate.update('counter', ({ counter }) => counter + 1);
 
       expect(_fabricate.state.counter).to.equal(43);
     });
 
     it('should allow data state update', async () => {
-      await fabricate.update({ counter: 23 });
+      fabricate.update({ counter: 23 });
 
       expect(_fabricate.state.counter).to.equal(23);
     });
@@ -583,7 +583,7 @@ describe('fabricate.js', () => {
       const key = fabricate.buildKey('isVisible', 'AppCard', '1');
       expect(_fabricate.state[key]).to.equal(null);
 
-      await fabricate.update(key, true);
+      fabricate.update(key, true);
 
       expect(_fabricate.state[key]).to.equal(true);
 
@@ -1057,7 +1057,7 @@ describe('fabricate.js', () => {
     it('should persist certain state', async () => {
       fabricate.app(() => fabricate('div'), { counter: 12, name: 'foo' }, { persistState: ['counter'] });
 
-      await fabricate.update('counter', 64);
+      fabricate.update('counter', 64);
 
       const stored = localStorage.getItem(_fabricate.STORAGE_KEY_STATE);
       expect(stored).to.equal(JSON.stringify({ counter: 64 }));

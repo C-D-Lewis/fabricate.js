@@ -14,6 +14,8 @@ const _fabricate = {
       styles: {},
     },
   },
+  /** Minium children before groups are added with timeout */
+  ADD_CHILDREN_GROUP_SIZE: 50,
 
   // Library state
   state: {},
@@ -124,9 +126,7 @@ const _notifyStateChange = (keys) => {
     stateWatchers, state, options,
   } = _fabricate;
 
-  // Log to console for debugging
   if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
-  // Persist to LocalStorage if required
   if (options.persistState) _savePersistState();
 
   stateWatchers.forEach(({ el, cb, watchKeys }) => {
@@ -218,17 +218,43 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.addChildren = (children) => {
-    children.forEach((child) => {
-      // It's another element
-      if (typeof child === 'object' && child.tagName) {
-        el.appendChild(child);
-        return;
-      }
+    // Original approach
+    // children.forEach((child) => {
+    //   // It's another element
+    //   if (typeof child === 'object' && child.tagName) {
+    //     el.appendChild(child);
+    //     return;
+    //   }
 
-      // It's text?
-      throw new Error('Child elements must be element type');
-    });
+    //   // It's text?
+    //   throw new Error('Child elements must be element type');
+    // });
 
+    // Using DocumentFragment - not much better
+    // const fragment = document.createDocumentFragment();
+    // children.forEach((c) => fragment.appendChild(c));
+    // el.appendChild(fragment);
+
+    if (children.length < _fabricate.ADD_CHILDREN_GROUP_SIZE) {
+      children.forEach((child) => el.appendChild(child));
+      return el;
+    }
+
+    /**
+     * Process a group of children, then yield.
+     *
+     * @returns {void}
+     */
+    const nextGroup = () => {
+      if (!children.length) return;
+
+      setTimeout(() => {
+        children.splice(0, 50).forEach((child) => el.appendChild(child));
+        nextGroup();
+      }, 10);
+    };
+
+    nextGroup();
     return el;
   };
 
@@ -241,7 +267,6 @@ const fabricate = (name, customProps) => {
   el.setChildren = (children) => {
     el.empty();
     el.addChildren(children);
-
     return el;
   };
 
@@ -273,7 +298,25 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.empty = () => {
+    // TODO: Need a faster way to remove many in one go
+    // const arr = Array.from(el.children);
+    // /**
+    //  * Process a group of children, then yield.
+    //  *
+    //  * @returns {void}
+    //  */
+    // const nextGroup = () => {
+    //   if (!arr.length) return;
+    //   setTimeout(() => {
+    //     arr.splice(0, 10).forEach((c) => c.remove());
+    //     nextGroup();
+    //   }, 20);
+    // };
+    // nextGroup();
+
     while (el.firstElementChild) el.firstElementChild.remove();
+
+    // el.innerHTML = '';
     return el;
   };
 
@@ -412,7 +455,6 @@ const fabricate = (name, customProps) => {
  *
  * @param {string|object} param1 - Either key or object state slice.
  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
- * @returns {Promise} Promise once update has applied.
  */
 fabricate.update = (param1, param2) => {
   const { state, options } = _fabricate;
@@ -432,18 +474,16 @@ fabricate.update = (param1, param2) => {
 
   // State slice?
   if (typeof param1 === 'object') {
-    return Promise.resolve().then(() => {
-      _fabricate.state = { ...state, ...param1 };
-      _notifyStateChange(keys);
-    });
+    _fabricate.state = { ...state, ...param1 };
+    _notifyStateChange(keys);
+    return;
   }
 
   // Keyed update?
   if (typeof param1 === 'string') {
-    return Promise.resolve().then(() => {
-      _fabricate.state[param1] = typeof param2 === 'function' ? param2(state) : param2;
-      _notifyStateChange(keys);
-    });
+    _fabricate.state[param1] = typeof param2 === 'function' ? param2(state) : param2;
+    _notifyStateChange(keys);
+    return;
   }
 
   throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);

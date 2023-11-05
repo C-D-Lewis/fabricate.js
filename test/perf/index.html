@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js perf tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../../fabricate.js"></script>
+
+    <script>
+      const NUM_POSTS = 10000;
+
+      const Title = () => fabricate('h2');
+
+      const PostView = ({ title, subtitle }) => fabricate('Card')
+        .setChildren([
+          Title().setText(title),
+          fabricate('Text').setText(subtitle),
+        ]);
+
+      const ManyElementsTest = () => fabricate('Row')
+        .setChildren([
+          fabricate('Text')
+            .onUpdate((el, { posts }) => {
+              el.setText(`${posts.length} posts`);
+            }, ['posts']),
+          fabricate('Button')
+            .setText('Remove')
+            .onClick(() => fabricate.update({ posts: [] })),
+          fabricate('Button')
+            .setText('Add')
+            .onClick(() => {
+              const posts = [];
+              while (posts.length < NUM_POSTS) {
+                posts.push({
+                  title: `Post ${posts.length}`,
+                  subtitle: 'This is example text for the post',
+                });
+              }
+              fabricate.update({ posts });
+            }),
+          fabricate('Column')
+            .onUpdate((el, { posts }) => {
+              console.log(posts)
+              const now = Date.now();
+              if (posts.length > 0) {
+                el.setChildren(posts.map(PostView));
+              } else {
+                el.setChildren([]);
+              }
+              console.log(`Updated in ${Date.now() - now}ms`);
+            }, ['posts']),
+        ]);
+
+      const App = () => fabricate('Column')
+        .setChildren([
+          Title().setText('Performance tests'),
+          Title().setText('Many posts'),
+          ManyElementsTest(),
+        ]);
+
+      fabricate.app(App, {
+        posts: [],
+      });
+    </script>
+  </body>
+</html>
