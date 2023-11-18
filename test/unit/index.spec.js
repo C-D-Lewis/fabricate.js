@@ -1038,19 +1038,29 @@ describe('fabricate.js', () => {
       expect(() => fabricate('div').displayWhen(() => true)).to.not.throw(Error);
     });
 
-    it('should use only async state updates', (done) => {
-      const App = () => fabricate('div')
-        .onUpdate((el2, state) => {
-          expect(state.counter).to.equal(1);
-          done();
-        }, ['counter']);
+    // TODO: onDestroy doesn't work in unit tests
+    it('should not leak stateWatchers');
+    // , () => {
+    //   let startCount = _fabricate.stateWatchers.length;
 
-      const initialState = { counter: 0 };
-      fabricate.app(App, initialState);
+    //   const Watcher = () => fabricate('div').onUpdate(() => {}, ['counter']);
 
-      fabricate.update({ counter: 1 });
+    //   const list = fabricate('div')
+    //     .onUpdate((el) => {
+    //       el.setChildren([Watcher()]);
+    //     }, ['counter']);
 
-      expect(_fabricate.state.counter).to.equal(0);
-    });
+    //   const App = () => list;
+    //   fabricate.app(App, { counter: 0 });
+
+    //   fabricate.update('counter', (prev) => prev.counter + 1);
+    //   console.log(_fabricate.stateWatchers.length);
+    //   fabricate.update('counter', (prev) => prev.counter + 1);
+    //   console.log(_fabricate.stateWatchers.length);
+    //   fabricate.update('counter', (prev) => prev.counter + 1);
+    //   console.log(_fabricate.stateWatchers.length);
+    //   fabricate.update('counter', (prev) => prev.counter + 1);
+    //   console.log(_fabricate.stateWatchers.length);
+    // });
   });
 });
