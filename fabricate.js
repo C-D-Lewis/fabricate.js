@@ -48,7 +48,7 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  * @param {HTMLElement} parent - Parent node.
  */
 const _notifyRemovedRecursive = (parent) => {
-  if (parent.onDestroyHandler) parent.onDestroyHandler();
+  if (parent.onDestroyHandlers) parent.onDestroyHandlers.forEach((p) => p());
   parent.childNodes.forEach(_notifyRemovedRecursive);
 };
 
@@ -166,7 +166,9 @@ const fabricate = (name, customProps) => {
     ? customComponents[name](customProps)
     : document.createElement(name);
 
+  // Set some additional data
   el.componentName = name;
+  el.onDestroyHandlers = [];
 
   /**
    * Augment existing styles with new ones.
@@ -418,7 +420,7 @@ const fabricate = (name, customProps) => {
      *
      * @returns {void}
      */
-    el.onDestroyHandler = () => cb(el, _fabricate.getStateCopy());
+    el.onDestroyHandlers.push(() => cb(el, _fabricate.getStateCopy()));
     return el;
   };
 
