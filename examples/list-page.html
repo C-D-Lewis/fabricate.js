@@ -13,6 +13,7 @@
     <script>
       /**
        * Testing calling onDestroy for all children for both onUpdate() and conditional()
+       * Number of reported listeners should not change upwards across toggles.
        */
 
       const items = ['apples', 'oranges', 'pears'];
@@ -21,7 +22,8 @@
 
       const Item = ({ fruit }) => fabricate('Text')
         .setText(fruit)
-        .onUpdate((el, state) => console.log(`onUpdate: ${fruit}`));
+        .onUpdate((el, state) => console.log(`onUpdate: ${fruit}`), ['page'])
+        .onDestroy(() => console.log(`Item ${fruit} destroyed`));
 
       const ListPage = () => fabricate('Column')
         .setChildren(items.map(p => Item({ fruit: p })));
@@ -29,6 +31,7 @@
       const App = () => fabricate('Column')
         .setStyles({ padding: '10px' })
         .setChildren([
+          fabricate('Text').setText('This page tests how many state watchers persist and if onDestroy works.'),
           fabricate.conditional(
             ({ page }) => page === 'home',
             HomePage,

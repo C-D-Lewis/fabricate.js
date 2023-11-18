@@ -8,14 +8,13 @@ const _fabricate = {
   DEFAULT_OPTIONS: {
     logStateUpdates: false,
     persistState: undefined,
-    strict: false,
     theme: {
       palette: {},
       styles: {},
     },
   },
   /** Minium children before groups are added with timeout */
-  ADD_CHILDREN_GROUP_SIZE: 50,
+  MANY_CHILDREN_GROUP_SIZE: 50,
 
   // Library state
   state: {},
@@ -32,12 +31,6 @@ const _fabricate = {
    * @returns {object} The copy.
    */
   getStateCopy: () => Object.freeze({ ..._fabricate.state }),
-  /**
-   * Check if strict mode is in effect.
-   *
-   * @returns {boolean} true if strict mode applies.
-   */
-  isStrictMode: () => !!(_fabricate.options.strict && !_fabricate.__internal__ignore_strict),
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
@@ -47,7 +40,24 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  * Enhanced HTMLElement with Fabricate.js methods.
  */
 
-/// //////////////////////////////////////// Main factory //////////////////////////////////////////
+/// ///////////////////////////////////// Internal Helpers /////////////////////////////////////////
+
+/**
+ * Recursively check all children since only parent is reported.
+ *
+ * @param {HTMLElement} parent - Parent node.
+ */
+const _notifyRemovedRecursive = (parent) => {
+  if (parent.onDestroyHandler) parent.onDestroyHandler();
+  parent.childNodes.forEach(_notifyRemovedRecursive);
+};
+
+/**
+ * Get a copy of default options to prevent modification.
+ *
+ * @returns {object} Default options.
+ */
+const _getDefaultOptions = () => ({ ..._fabricate.DEFAULT_OPTIONS });
 
 /**
  * Used for both kinds of conditional display/render, returning new state to remember
@@ -137,6 +147,8 @@ const _notifyStateChange = (keys) => {
     cb(el, _fabricate.getStateCopy(), keys);
   });
 };
+
+/// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
 /**
  * Create an element of a given tag type, with fluent methods for continuing
@@ -235,7 +247,7 @@ const fabricate = (name, customProps) => {
     // children.forEach((c) => fragment.appendChild(c));
     // el.appendChild(fragment);
 
-    if (children.length < _fabricate.ADD_CHILDREN_GROUP_SIZE) {
+    if (children.length < _fabricate.MANY_CHILDREN_GROUP_SIZE) {
       children.forEach((child) => el.appendChild(child));
       return el;
     }
@@ -254,6 +266,7 @@ const fabricate = (name, customProps) => {
       }, 10);
     };
 
+    console.warn(`Adding children in groups for performance (size=${children.length})`);
     nextGroup();
     return el;
   };
@@ -299,6 +312,8 @@ const fabricate = (name, customProps) => {
    */
   el.empty = () => {
     // TODO: Need a faster way to remove many in one go
+    //       Or, apps could just not build such large lists?
+
     // const arr = Array.from(el.children);
     // /**
     //  * Process a group of children, then yield.
@@ -313,6 +328,10 @@ const fabricate = (name, customProps) => {
     //   }, 20);
     // };
     // nextGroup();
+
+    if (el.childElementCount > _fabricate.MANY_CHILDREN_GROUP_SIZE) {
+      console.warn(`Removing a large number of children - could impact performance (size=${el.childElementCount})`);
+    }
 
     while (el.firstElementChild) el.firstElementChild.remove();
 
@@ -371,8 +390,8 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.onUpdate = (cb, watchKeys = []) => {
-    if (_fabricate.isStrictMode() && (!watchKeys || !watchKeys.length)) {
-      throw new Error('strict mode: watchKeys option must be provided');
+    if (!_fabricate.__internal__ignore_strict && (!watchKeys || !watchKeys.length)) {
+      throw new Error('A watchKeys option must be provided');
     }
 
     _fabricate.stateWatchers.push({ el, cb, watchKeys });
@@ -434,7 +453,7 @@ const fabricate = (name, customProps) => {
       el.setStyles({ display: lastResult ? originalDisplay : 'none' });
     };
 
-    // Only known exception - displayWhen does not know what testCb does
+    // Only known exception - displayWhen does not know what testCb watches for
     _fabricate.__internal__ignore_strict = true;
     el.onUpdate(onStateUpdate);
     _fabricate.__internal__ignore_strict = false;
@@ -457,20 +476,18 @@ const fabricate = (name, customProps) => {
  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
  */
 fabricate.update = (param1, param2) => {
-  const { state, options } = _fabricate;
+  const { state } = _fabricate;
 
   const keys = typeof param1 === 'object' ? Object.keys(param1) : [param1];
 
   // Only allow known state key updates
-  if (options.strict) {
-    keys
-      .filter((p) => !p.startsWith('fabricate:'))
-      .forEach((key) => {
-        if (typeof state[key] === 'undefined') {
-          throw new Error(`strict mode: Unknown state key ${key}`);
-        }
-      });
-  }
+  keys
+    .filter((p) => !p.startsWith('fabricate:'))
+    .forEach((key) => {
+      if (typeof state[key] === 'undefined') {
+        throw new Error(`Unknown state key ${key} - do you need to use buildKey()?`);
+      }
+    });
 
   // State slice?
   if (typeof param1 === 'object') {
@@ -500,7 +517,7 @@ fabricate.buildKey = (name, ...rest) => {
   const key = `${name}:${rest.join(':')}`;
 
   // Allow this key by adding it, but trigger no updates
-  if (_fabricate.isStrictMode() && typeof _fabricate.state[key] === 'undefined') {
+  if (!_fabricate.__internal__ignore_strict && typeof _fabricate.state[key] === 'undefined') {
     _fabricate.state[key] = null;
   }
 
@@ -516,23 +533,6 @@ fabricate.clearState = () => {
 };
 
 /// /////////////////////////////////////////// Helpers ////////////////////////////////////////////
-
-/**
- * Recursively check all children since only parent is reported.
- *
- * @param {HTMLElement} parent - Parent node.
- */
-const _notifyRemovedRecursive = (parent) => {
-  if (parent.onDestroyHandler) parent.onDestroyHandler();
-  parent.childNodes.forEach(_notifyRemovedRecursive);
-};
-
-/**
- * Get a copy of default options to prevent modification.
- *
- * @returns {object} Default options.
- */
-const _getDefaultOptions = () => ({ ..._fabricate.DEFAULT_OPTIONS });
 
 /**
  * Determine if a mobile device is being used which has a narrow screen.
@@ -651,7 +651,7 @@ fabricate.declare('Column', () => fabricate('div').asFlex('column'));
 fabricate.declare('Text', ({ text } = {}) => {
   if (text) throw new Error('Text component text param was removed - use setText instead');
 
-  return fabricate('p').setStyles({ fontSize: '1.1rem', margin: '5px' });
+  return fabricate('p').setStyles({ fontSize: '1rem', margin: '5px' });
 });
 
 fabricate.declare('Image', ({ src = '', width, height } = {}) => {

@@ -13,7 +13,7 @@
     <script>
       const CounterView = () => fab('Text').setText('counter now 0')
         .setStyles({ fontSize: '2rem' })
-        .onUpdate((el, state) => el.setText(`counter now ${state.counter}`));
+        .onUpdate((el, state) => el.setText(`counter now ${state.counter}`), ['counter']);
 
       const App = () => fab('Column')
         .setStyles({ padding: '10px' })

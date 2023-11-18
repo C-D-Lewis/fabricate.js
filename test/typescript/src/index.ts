@@ -28,7 +28,6 @@ const initialState = { counter: 0, updated: false };
 const options: FabricateOptions = {
   logStateUpdates: true,
   persistState: ['counter'],
-  strict: false,
   theme: {
     palette: {
       custom: '#444',

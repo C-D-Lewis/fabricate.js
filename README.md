@@ -421,13 +421,7 @@ The options available are:
 |------|------|-------------|
 | `logStateUpdates` | `boolean` | Log all state updates in the console. |
 | `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
-| `strict` | `boolean` | Strict mode |
 | `theme` | `{ palette, styles }` | Provide a palette and common styles for use in `setStyles` |
-
-In strict mode, the following extra restrictions apply:
-
-* Only pre-declared state keys can be updated.
-* When using `onUpdate`, a key watch list must be provided.
 
 #### `.declare()`
 
@@ -464,9 +458,7 @@ fabricate.onKeyDown((state, key) => {
 
 A few methods are available to make it easy to maintain some basic global state
 and to update components when those states change. A list of keys to watch
-can be provided, otherwise all state updates are notified.
-
-> Note: In strict mode, a key filter must always be provided.
+must be provided.
 
 ```js
 // View can watch some state - specifically, 'state.counter' and initial update
@@ -511,9 +503,8 @@ fabricate.clearState();
 #### `.buildKey()`
 
 When state keys cannot be known in advance (such as with lists of components
-representing variable data from an API) when using the `strict` option, the
-`buildKey()` helper can be used to construct state keys in a predictable way.
-Keys made this way are allowed by the `strict` mode.
+representing variable data from an API), the `buildKey()` helper can be used to
+construct state keys in a predictable way, allowing them for state updates.
 
 > As much specificity can be used as required, just use more parameters.
 
@@ -730,5 +721,9 @@ Fabricate 3.0:
 - [x] ~async updates~
 - [x] Theming palette for built-in components
 - [x] Narrow styles
+- [x] Remove strict option
+- [x] Only allow known key updates by default
+- [x] Text default fontSize 1rem
+- [x] Warn when large numbers of children are added or removed.
 - [ ] Cleaner component composition?
 - [ ] Util components for simpler grid layouts (centering, standard paddings?)

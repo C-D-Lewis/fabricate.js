@@ -12,7 +12,7 @@
 
     <script>
       // Declare a new component with props
-      fab.declare('ColorfulText', ({ color }) => fabricate('span').setStyles({ color }));
+      fabricate.declare('ColorfulText', ({ color }) => fabricate('span').setStyles({ color }));
 
       const App = () => fabricate('Column')
         .setChildren([

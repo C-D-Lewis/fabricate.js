@@ -177,8 +177,6 @@ export type FabricateOptions = {
   logStateUpdates?: boolean;
   /** Persist some state keys in localStorage */
   persistState?: string[] | undefined;
-  /** Only allow updating known state */
-  strict?: boolean;
   /** Custom theme provided in setStyles */
   theme?: {
     palette: object,
