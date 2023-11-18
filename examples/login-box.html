@@ -19,15 +19,15 @@
        */
       const LoginForm = () => fabricate('div')
         .setChildren([
-          fab('TextInput', { placeholder: 'Email' })
+          fabricate('TextInput', { placeholder: 'Email' })
             .setStyles({ margin: 'auto' })
             .onChange((el, state, value) => fabricate.update({ email: value })),
-          fab('TextInput', { placeholder: 'Password' })
+          fabricate('TextInput', { placeholder: 'Password' })
             .setStyles({ margin: 'auto' })
             .setAttributes({ type: 'password' })
             .onChange((el, state, value) => fabricate.update({ password: value })),
 
-          fab('Button', { text: 'Submit' })
+          fabricate('Button', { text: 'Submit' })
             .setStyles({ margin: '15px auto' })
             .onClick((el, state) => {
               if (!state.email || !state.password) {
@@ -48,7 +48,7 @@
        * 
        * @returns {HTMLElement}
        */
-      const LoginBox = () => fab('Card')
+      const LoginBox = () => fabricate('Card')
         .setStyles({
           minWidth: '420px',
           minHeight: '300px',
@@ -56,10 +56,10 @@
           textAlign: 'center',
         })
         .setChildren([
-          fab('Text')
+          fabricate('Text')
             .setText('Login')
             .setStyles({ fontWeight: 'bold', fontSize: '1.5rem' }),
-          fab('Image', { src: './assets/account.png' })
+          fabricate('Image', { src: './assets/account.png' })
             .setStyles({
               margin: '5px auto',
               width: '100px',
@@ -68,23 +68,23 @@
 
           LoginForm()
             .displayWhen(({ isLoading }) => !isLoading),
-          fab('Loader')
+          fabricate('Loader')
             .setStyles({ margin: '20px auto' })
             .displayWhen((state) => state.isLoading && !state.isCompleted),
         ]);
 
-      const App = () => fab('Column')
+      const App = () => fabricate('Column')
         .setStyles({ padding: '40px' })
         .setChildren([
-          fab('Text').setText('Login completed!')
+          fabricate('Text').setText('Login completed!')
             .displayWhen(({ isCompleted }) => isCompleted),
-          fab('Fader').setChildren([LoginBox()])
+          fabricate('Fader').setChildren([LoginBox()])
             .displayWhen(({ isCompleted }) => !isCompleted),
         ]);
 
       const initialState = {
-        email: undefined,
-        password: undefined,
+        email: '',
+        password: '',
         isLoading: false,
         isCompleted: false,
       };
