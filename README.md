@@ -718,12 +718,12 @@ npm test
 Fabricate 3.0:
 
 - [x] `app()` accepts builder function instead of already built component
-- [x] ~async updates~
+- [ ] ~async updates~
 - [x] Theming palette for built-in components
 - [x] Narrow styles
 - [x] Remove strict option
 - [x] Only allow known key updates by default
 - [x] Text default fontSize 1rem
 - [x] Warn when large numbers of children are added or removed.
-- [ ] Cleaner component composition?
-- [ ] Util components for simpler grid layouts (centering, standard paddings?)
+- [ ] ~Cleaner component composition?~
+- [ ] ~Util components for simpler grid layouts (centering, standard paddings?)~
