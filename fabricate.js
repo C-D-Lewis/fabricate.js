@@ -148,6 +148,29 @@ const _notifyStateChange = (keys) => {
   });
 };
 
+/**
+ * Validate loaded options. TypeScript users won't need this.
+ */
+const _validateOptions = () => {
+  const { logStateUpdates, persistState, theme } = _fabricate.options;
+
+  if (logStateUpdates && typeof logStateUpdates !== 'boolean') {
+    throw new Error(`logStateUpdates option must be boolean, was ${typeof logStateUpdates}`);
+  }
+  if (persistState && !Array.isArray(persistState)) {
+    throw new Error(`persistState option must be string array, was ${typeof persistState}`);
+  }
+  if (theme
+    && (
+      (theme.palette && typeof theme.palette !== 'object')
+      || (theme.styles && typeof theme.styles !== 'object')
+      || (!theme.palette && !theme.styles)
+    )
+  ) {
+    throw new Error('theme option must contain palette and/or styles objects');
+  }
+};
+
 /// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
 /**
@@ -559,6 +582,7 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
 
   // Apply options
   Object.assign(_fabricate.options, opts);
+  _validateOptions();
   if (opts.persistState) _loadPersistState();
 
   // Build app

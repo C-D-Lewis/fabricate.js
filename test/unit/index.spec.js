@@ -1062,5 +1062,20 @@ describe('fabricate.js', () => {
     //   fabricate.update('counter', (prev) => prev.counter + 1);
     //   console.log(_fabricate.stateWatchers.length);
     // });
+
+    it('should validate options', () => {
+      const App = () => fabricate('div');
+
+      expect(() => fabricate.app(App, {}, { logStateUpdates: 'false' })).to.throw(Error);
+      expect(() => fabricate.app(App, {}, { logStateUpdates: true })).to.not.throw(Error);
+
+      expect(() => fabricate.app(App, {}, { persistState: 'counter' })).to.throw(Error);
+      expect(() => fabricate.app(App, {}, { persistState: ['counter'] })).to.not.throw(Error);
+
+      expect(() => fabricate.app(App, {}, { theme: { foo: 'bar' } })).to.throw(Error);
+      expect(
+        () => fabricate.app(App, {}, { theme: { palette: {}, styles: {} } }),
+      ).to.not.throw(Error);
+    });
   });
 });

@@ -7,7 +7,7 @@
 </p>
 
 A tiny vanilla JS webapp framework with a fluent API and zero dependencies,
-intended for small apps with relatively simply layouts. Includes with some
+intended for small apps with relatively simply layouts. Includes some
 pre-prepared components to get started quickly.
 
 - [Introduction](#introduction)
@@ -16,8 +16,6 @@ pre-prepared components to get started quickly.
 - [Built-in components](#built-in-components)
 - [Run tests](#run-tests)
 - [Future](#future)
-
-See `examples` for some simple example apps.
 
 
 ## Introduction
@@ -31,7 +29,7 @@ For example, a text element in a padded container:
 
 ```js
 const Label = ({ text }) => fabricate('span')
-  .setStyles({ fontSize: '1.1rem' })
+  .setStyles({ fontSize: '0.9rem' })
   .setText(text);
 
 // Column is one of many included basic components
@@ -56,16 +54,10 @@ const BasicButton = () => fabricate('div')
     padding: '8px 10px',
     color: 'white',
     backgroundColor: 'gray',
-    borderRadius: '5px',
-    justifyContent: 'center',
     cursor: 'pointer',
   })
   .setText('Click me!')
-  .onClick(onButtonClicked)
-  .onHover({
-    start: el => el.addStyles({ filter: 'brightness(1.1)' }),
-    end: el => el.addStyles({ filter: 'brightness(1)' }),
-  });
+  .onClick(onButtonClicked);
 ```
 
 This component can then be specialised for other uses:
@@ -110,7 +102,16 @@ reference `fabricate.js` from `node_modules`:
 TypeScript users can import types from the `types/fabricate.d.ts` file:
 
 ```js
-import { Fabricate } from '../node_modules/fabricate.js/types/fabricate';
+import { Fabricate, FabricateComponent } from 'fabricate.js';
+
+/** App's state type */
+type AppState = {
+  counter: string;
+  page: 'LoginPage' | 'ListPage';
+};
+
+// Required when global is declared with <script> import
+declare const fabricate: Fabricate<AppState>;
 ```
 
 
@@ -120,11 +121,12 @@ The API is split into two sections - component construction and app helpers.
 
 ### Component construction
 
-* [Create `Component`](#component)
+* [Create components](#component)
   * [`.asFlex()`](#asflex)
   * [`.setStyles()` / `setAttributes()`](#setstyles--setattributes)
   * [`.setChildren()` / `addChildren`](#setchildren--addchildren)
   * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
+  * [`.setText()` / `setHtml()`](#settext--sethtml)
   * [`.onDestroy()`](#ondestroy)
   * [`.onEvent()`](#onevent)
   * [`.displayWhen()`](#displaywhen)
@@ -132,20 +134,19 @@ The API is split into two sections - component construction and app helpers.
 
 ### App helpers
 
-* [`fabricate` / `fab` helpers](#fabricate--fab)
+* [`fabricate` / `fab` helpers](#fabricate--fab-helpers)
   * [`.isNarrow()`](#isnarrow)
   * [`.app()`](#app)
   * [`.declare()`](#declare)
   * [`.onKeyDown()`](#onkeydown)
   * [`.update()` / `.onUpdate()`](#update--onupdate)
-  * [`.clearState()`](#clearstate)
   * [`.buildKey()`](#buildkey)
   * [`.conditional()`](#conditional)
 
 
-### `Component`
+### Create components
 
-To create a `Component`, simply specify the tag or declared component name:
+To create a component, simply specify the tag or declared component name:
 
 ```js
 const EmptyDivComponent = () => fabricate('div');
@@ -185,8 +186,9 @@ fabricate('Text')
 
 If the `theme` option was used, `palette` and `styles` can be used during this
 function:
+
 ```js
-fabricate('Text')
+const App = () => fabricate('Text')
   .setStyles(({ palette, styles }) => ({
     color: palette.customColor,
     boxShadow: styles.dropShadow,
@@ -221,14 +223,14 @@ const ButtonRow = () => fabricate('Row')
 Later, add more children to the existing list:
 
 ```js
-ButtonRow.addChildren([
-  fabricate('Button', { text: 'Later'}),
+buttonRow.addChildren([
+  fabricate('Button', { text: 'Added Later'}),
 ]);
 ```
 
 #### `.onClick()` / `onHover()` / `.onChange()`
 
-Add click and hover behaviors, which are provided the same element to allow
+Add click and hover behaviors, which are provided the self-same element to allow
 updating styles and attributes etc:
 
 > All component callbacks and handlers have the same signature:
@@ -298,23 +300,21 @@ fabricate('Image', { src })
 
 #### `.displayWhen()`
 
-> Formally `.when()`
-
 Conditionally show or hide a component (or tree of components) using the
-`displayWhen` method:
+`displayWhen` method. The component is created immediately, but hidden until
+the state test returns `true`:
+
+> To conditionally create components, use the `.conditional()` helper.
 
 ```js
-const App = () => fabricate('Column')
-  .setChildren([
-    fabricate('Text')
-      .setText('Now you see me!')
-      .displayWhen(state => state.showText),
-  ]);
+const App = () => fabricate('Text')
+  .setText('Now you see me!')
+  .displayWhen(state => state.showText);
 
 // Use as the root app element and provide first state values
 fabricate.app(App, { showText: false });
 
-// Later, add the text
+// Later, show the text
 setInterval(
   () => fabricate.update('showText', state => !state.showText),
   2000,
@@ -325,19 +325,13 @@ setInterval(
 > hidden.
 
 ```js
-const App = () => fabricate('Column')
-  .setChildren([
-    fabricate('Text')
-      .setText('Now you see me!')
-      .displayWhen(
-        state => state.showText,
-        (el, state, isVisible) => console.log(`Am I visible now? ${isVisible}`),
-      ),
-  ]);
+const App = () => fabricate('Text')
+  .setText('Now you see me!')
+  .displayWhen(
+    state => state.showText,
+    (el, state, isVisible) => console.log(`Am I visible now? ${isVisible}`),
+  );
 ```
-
-See [`examples/login.html`](examples/login.html) for a more complex example of
-conditional rendering in action.
 
 #### `.empty()`
 
@@ -352,15 +346,15 @@ const UserList = () => fabricate('Column')
   .onUpdate((el, { userList }) => {
     el.empty();
     el.addChildren(userList.map(User));
-  });
+  }, ['userList']);
 
 /**
  * When new data is available, update state and hence the list.
  */
 const refreshUserList = () => {
-  const newUsers = await fetchUsers();
+  const userList = await fetchUsers();
 
-  fabricate.update('userList', newUsers);
+  fabricate.update({ userList });
 };
 ```
 
@@ -368,7 +362,7 @@ const refreshUserList = () => {
 > better option for this scenario.
 
 
-### `fabricate` / `fab`
+### `fabricate` / `fab` helpers
 
 The main exported object also has some helper methods to use:
 
@@ -388,16 +382,14 @@ Use `app()` to start an app from the `document.body`. You can also specify an
 initial state and some extra options.
 
 ```js
-const App = () => fab('Column')
-  .setChildren([
-    fabricate('NavBar', { title: 'My New App' }),
-    MainContent()
-      .setChildren([
-        HeroImage(),
-        Title(),
-        Article(),
-      ]),
-  ]);
+const App = () => fab('Column').setChildren([
+  fabricate('NavBar', { title: 'My New App' }),
+  MainContent().setChildren([
+    HeroImage(),
+    Title(),
+    Article(),
+  ]),
+]);
 
 const initialState = {
   article: {
@@ -420,7 +412,7 @@ The options available are:
 | Name | Type | Description |
 |------|------|-------------|
 | `logStateUpdates` | `boolean` | Log all state updates in the console. |
-| `persistState` | `Array<string>` | List of state keys to persist in LocalStorage. |
+| `persistState` | `Array<string>` | List of state keys to persist values in LocalStorage. |
 | `theme` | `{ palette, styles }` | Provide a palette and common styles for use in `setStyles` |
 
 #### `.declare()`
@@ -442,7 +434,7 @@ fabricate('ColorfulText', { color: 'red' })
   .setText('Red custom component!');
 ```
 
-#### `.onKeyDown`
+#### `.onKeyDown()`
 
 Listen globally for 'keydown' events. Useful for keyboard shortcuts.
 
@@ -492,14 +484,6 @@ There are some special events that can be used:
 * `fabricate:init` - Called when the application is first run.
 * `fabricate:created` - Called for a particular component when it is first created.
 
-#### `.clearState()`
-
-Clear all state stored in `fabricate.js`:
-
-```js
-fabricate.clearState();
-```
-
 #### `.buildKey()`
 
 When state keys cannot be known in advance (such as with lists of components
@@ -523,7 +507,7 @@ API.fetchUsers()
   .then((users) => {
     users.forEach((user) => {
       if (user.online) {
-        const isOnlineKey = fabricate.buildKey('UserCard', userId, 'isOnline');
+        const isOnlineKey = fabricate.buildKey('UserCard', user.id, 'isOnline');
         fabricate.update(isOnlineKey, true);
       }
     });
@@ -724,6 +708,7 @@ Fabricate 3.0:
 - [x] Remove strict option
 - [x] Only allow known key updates by default
 - [x] Text default fontSize 1rem
-- [x] Warn when large numbers of children are added or removed.
+- [x] Warn when large numbers of children are added or removed
+- [x] Validate options
 - [ ] ~Cleaner component composition?~
 - [ ] ~Util components for simpler grid layouts (centering, standard paddings?)~
