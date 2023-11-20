@@ -19,12 +19,10 @@ describe('fabricate.js', () => {
   });
 
   afterEach(() => {
-    fabricate.clearState();
+    _fabricate.clearState();
     mockIsNarrow(fabricate, false);
 
-    // Reset options to default
-    fabricate.app(() => fabricate('div'));
-
+    // Empty virtual page
     document.getElementsByTagName('html')[0].innerHTML = '';
   });
 

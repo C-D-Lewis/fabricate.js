@@ -13,16 +13,16 @@ const _fabricate = {
       styles: {},
     },
   },
-  /** Minium children before groups are added with timeout */
+  /** Minimum children before groups are added with timeout */
   MANY_CHILDREN_GROUP_SIZE: 50,
 
-  // Library state
+  // Main library state
   state: {},
   stateWatchers: [],
   customComponents: {},
   options: undefined,
   onDestroyObserver: undefined,
-  __internal__ignore_strict: false,
+  ignoreStrict: false,
 
   // Internal helpers
   /**
@@ -31,6 +31,13 @@ const _fabricate = {
    * @returns {object} The copy.
    */
   getStateCopy: () => Object.freeze({ ..._fabricate.state }),
+  /**
+   * Clear library state.
+   */
+  clearState: () => {
+    _fabricate.state = {};
+    _fabricate.stateWatchers = [];
+  },
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
@@ -132,11 +139,9 @@ const _loadPersistState = () => {
  * @param {Array<string>} keys - Key that was updated.
  */
 const _notifyStateChange = (keys) => {
-  const {
-    stateWatchers, state, options,
-  } = _fabricate;
+  const { stateWatchers, state, options } = _fabricate;
 
-  if (options.logStateUpdates) { console.log(`fabricate _notifyStateChange: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
+  if (options.logStateUpdates) { console.log(`fabricate state update: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
   if (options.persistState) _savePersistState();
 
   stateWatchers.forEach(({ el, cb, watchKeys }) => {
@@ -175,7 +180,7 @@ const _validateOptions = () => {
 
 /**
  * Create an element of a given tag type, with fluent methods for continuing
- * to define it. When done, use 'build()' to get the element itself.
+ * to define it. This is the basis of all fabricate.js component composition.
  *
  * @param {string} name - HTML tag name, such as 'div', or declared custom component name.
  * @param {object} [customProps] - Props to pass to a custom component being instantiated.
@@ -282,17 +287,17 @@ const fabricate = (name, customProps) => {
      *
      * @returns {void}
      */
-    const nextGroup = () => {
+    const addNextGroup = () => {
       if (!children.length) return;
 
       setTimeout(() => {
-        children.splice(0, 50).forEach((child) => el.appendChild(child));
-        nextGroup();
+        children.splice(0, 50).forEach((p) => el.appendChild(p));
+        addNextGroup();
       }, 10);
     };
 
     console.warn(`Adding children in groups for performance (size=${children.length})`);
-    nextGroup();
+    addNextGroup();
     return el;
   };
 
@@ -415,7 +420,7 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.onUpdate = (cb, watchKeys = []) => {
-    if (!_fabricate.__internal__ignore_strict && (!watchKeys || !watchKeys.length)) {
+    if (!_fabricate.ignoreStrict && (!watchKeys.length)) {
       throw new Error('A watchKeys option must be provided');
     }
 
@@ -479,9 +484,9 @@ const fabricate = (name, customProps) => {
     };
 
     // Only known exception - displayWhen does not know what testCb watches for
-    _fabricate.__internal__ignore_strict = true;
+    _fabricate.ignoreStrict = true;
     el.onUpdate(onStateUpdate);
-    _fabricate.__internal__ignore_strict = false;
+    _fabricate.ignoreStrict = false;
 
     // Test right away
     onStateUpdate();
@@ -542,19 +547,11 @@ fabricate.buildKey = (name, ...rest) => {
   const key = `${name}:${rest.join(':')}`;
 
   // Allow this key by adding it, but trigger no updates
-  if (!_fabricate.__internal__ignore_strict && typeof _fabricate.state[key] === 'undefined') {
+  if (!_fabricate.ignoreStrict && typeof _fabricate.state[key] === 'undefined') {
     _fabricate.state[key] = null;
   }
 
   return key;
-};
-
-/**
- * Clear all state and state watchers.
- */
-fabricate.clearState = () => {
-  _fabricate.state = {};
-  _fabricate.stateWatchers = [];
 };
 
 /// /////////////////////////////////////////// Helpers ////////////////////////////////////////////
@@ -589,7 +586,7 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
   const root = rootCb();
   document.body.appendChild(root);
 
-  // Power onDestroy handlers
+  // Power onDestroy() handlers
   if (!_fabricate.onDestroyObserver) {
     _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => mutation.removedNodes.forEach(_notifyRemovedRecursive));
@@ -658,8 +655,6 @@ fabricate.conditional = (testCb, builderCb) => {
     el: wrapper,
     cb: onStateUpdate,
   });
-
-  // Unregister when wrapper is destroyed
   wrapper.onDestroy(() => _unregisterStateWatcher(wrapper));
 
   // Test right away

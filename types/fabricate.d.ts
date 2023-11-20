@@ -209,12 +209,6 @@ export type Fabricate<StateShape> = {
     param2?: ((oldState: StateShape) => any) | object | string | number | boolean | undefined | null,
   ) => void;
   /**
-   * Clear entire fabricate.js app state.
-   * 
-   * @returns {void}
-   */
-  clearState: () => void,
-  /**
    * Test if on a 'narrow' device.
    *
    * @returns {boolean} true if the device is 'narrow' or phone-like.
