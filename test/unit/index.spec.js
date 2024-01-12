@@ -145,6 +145,15 @@ describe('fabricate.js', () => {
       expect(created).to.equal(true);
     });
 
+    it('should allow doing something after component creation with optional onCreate()', () => {
+      let created;
+      fabricate('div').onCreate(() => {
+        created = true;
+      });
+
+      expect(created).to.equal(true);
+    });
+
     // TODO Works in browser, but not in mocked tests
     it('should detect element removal');
     // () => {
@@ -1073,6 +1082,14 @@ describe('fabricate.js', () => {
       expect(() => fabricate.app(App, {}, { theme: { foo: 'bar' } })).to.throw(Error);
       expect(
         () => fabricate.app(App, {}, { theme: { palette: {}, styles: {} } }),
+      ).to.not.throw(Error);
+      expect(
+        () => fabricate.app(App, {}, { theme: { palette: {}, styles: {}, foo: 'bar' } }),
+      ).to.not.throw(Error);
+
+      expect(() => fabricate.app(App, {}, { disableGroupAddChildrenOptim: 'false' })).to.throw(Error);
+      expect(
+        () => fabricate.app(App, {}, { disableGroupAddChildrenOptim: true }),
       ).to.not.throw(Error);
     });
   });

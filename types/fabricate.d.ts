@@ -1,6 +1,9 @@
 /** setStyles callback optional form */
 type ThemeCallback = ({ palette: object, styles: object }) => Partial<CSSStyleDeclaration>;
 
+/** Built-in state keys */
+type BuiltinKeys = 'fabricate:init' | 'fabricate:created';
+
 /**
  * Fabricate component extends HTMLElement - and uses shape of app's state.
  *
@@ -124,7 +127,19 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
       state: StateShape,
       keysChanged: string[],
     ) => void,
-    watchKeys?: (keyof StateShape)[],
+    watchKeys: (keyof StateShape | BuiltinKeys)[],
+  ) => FabricateComponent<StateShape>;
+  /**
+   * Optional on create handler, alternative to 'fabricate:created' event.
+   *
+   * @param {Function} cb - Callback to be notified.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  onCreate: (
+    cb: (
+      el: FabricateComponent<StateShape>,
+      state: StateShape,
+    ) => void,
   ) => FabricateComponent<StateShape>;
   /**
    * Convenience method to run some statements when a component is removed from
@@ -179,9 +194,15 @@ export type FabricateOptions = {
   persistState?: string[] | undefined;
   /** Custom theme provided in setStyles */
   theme?: {
+    /** Color palette */
     palette: object,
+    /** Reusable styles, like shadows or borders */
     styles?: object,
+    /** Other things developer may want in their theme, like 'fonts' */
+    [key: string]: string | object,
   };
+  /** Disable group children adding optimisation */
+  disableGroupAddChildrenOptim?: boolean;
 }
 
 /** Fabricate.js library */
@@ -255,7 +276,7 @@ export type Fabricate<StateShape> = {
    * @param  {...string} rest - Remaining qualifiers of the key.
    * @returns {string} Constructed state key.
    */
-  buildKey: (name: string, ...rest: [string]) => string,
+  buildKey: (name: string, ...rest: string[]) => string,
   /**
    * Create a component when a state test is passed.
    *

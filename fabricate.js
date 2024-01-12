@@ -157,7 +157,9 @@ const _notifyStateChange = (keys) => {
  * Validate loaded options. TypeScript users won't need this.
  */
 const _validateOptions = () => {
-  const { logStateUpdates, persistState, theme } = _fabricate.options;
+  const {
+    logStateUpdates, persistState, theme, disableGroupAddChildrenOptim,
+  } = _fabricate.options;
 
   if (logStateUpdates && typeof logStateUpdates !== 'boolean') {
     throw new Error(`logStateUpdates option must be boolean, was ${typeof logStateUpdates}`);
@@ -167,12 +169,15 @@ const _validateOptions = () => {
   }
   if (theme
     && (
-      (theme.palette && typeof theme.palette !== 'object')
+      (typeof theme.palette !== 'object')
       || (theme.styles && typeof theme.styles !== 'object')
-      || (!theme.palette && !theme.styles)
+      || !theme.palette
     )
   ) {
     throw new Error('theme option must contain palette and/or styles objects');
+  }
+  if (disableGroupAddChildrenOptim && typeof disableGroupAddChildrenOptim !== 'boolean') {
+    throw new Error(`disableGroupAddChildrenOptim option must be boolean, was ${typeof disableGroupAddChildrenOptim}`);
   }
 };
 
@@ -276,6 +281,14 @@ const fabricate = (name, customProps) => {
     // const fragment = document.createDocumentFragment();
     // children.forEach((c) => fragment.appendChild(c));
     // el.appendChild(fragment);
+
+    // Allow disabling the below optimisation, though not recommended
+    const { disableGroupAddChildrenOptim } = _fabricate.options;
+    if (disableGroupAddChildrenOptim) {
+      console.warn('disableGroupAddChildrenOptim enabled, may impact performance.');
+      children.forEach((child) => el.appendChild(child));
+      return el;
+    }
 
     if (children.length < _fabricate.MANY_CHILDREN_GROUP_SIZE) {
       children.forEach((child) => el.appendChild(child));
@@ -432,6 +445,17 @@ const fabricate = (name, customProps) => {
       cb(el, _fabricate.getStateCopy(), ['fabricate:created']);
     }
 
+    return el;
+  };
+
+  /**
+   * Optional on create handler, alternative to 'fabricate:created' event.
+   *
+   * @param {Function} cb - Callback to be notified.
+   * @returns {FabricateComponent} Fabricate component.
+   */
+  el.onCreate = (cb) => {
+    cb(el, _fabricate.getStateCopy());
     return el;
   };
 

@@ -19,6 +19,7 @@ const App = (): FabricateComponent<AppState> => fabricate('Column')
   .setChildren([
     fabricate('h3').setText('Test TypeScript app'),
     fabricate('p')
+      .onCreate(console.log)
       .onUpdate((el, { counter }) => {
         el.setText(`Counted to ${counter}`);
       }, ['counter']),
@@ -35,6 +36,10 @@ const options: FabricateOptions = {
     styles: {
       dropShadow: '2px 0px 4px black',
     },
+    fonts: {
+      body: 'sans-serif',
+    },
+    foo: 'bar',
   },
 };
 
@@ -83,6 +88,8 @@ fabricate.declare(
     fabricate('div').setText(props.label),
 );
 
+fabricate('FooComponent', { label: 'foo' });
+
 fabricate.onKeyDown((state, key) => console.log(key));
 
-fabricate.buildKey('test', 'prop');
+fabricate.buildKey('test', 'prop', 'more', 'more');
