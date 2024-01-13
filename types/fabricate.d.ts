@@ -1,5 +1,9 @@
 /** setStyles callback optional form */
-type ThemeCallback = ({ palette: object, styles: object }) => Partial<CSSStyleDeclaration>;
+type ThemeCallback = (theme: {
+  palette: any,
+  styles: any,
+  [key: string]: any,
+}) => Partial<CSSStyleDeclaration>;
 
 /** Built-in state keys */
 type BuiltinKeys = 'fabricate:init' | 'fabricate:created';

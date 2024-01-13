@@ -52,11 +52,12 @@ setInterval(() => fabricate.update('counter', ({ counter }) => counter + 1), 100
 fabricate('div')
   .asFlex('column')
   .setStyles({ color: 'white' })
-  .setStyles(({ palette, styles }) => ({
+  .setStyles(({ palette }) => ({
     color: palette.success,
   }))
-  .setNarrowStyles(({ palette }) => ({
+  .setNarrowStyles(({ palette, fonts }) => ({
     color: palette.success,
+    fontFamily: fonts.body,
   }))
   .setAttributes({ disabled: true })
   .addChildren([fabricate('div')])
