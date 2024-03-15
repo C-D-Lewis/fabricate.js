@@ -292,4 +292,18 @@ export type Fabricate<StateShape> = {
     testCb: (state: StateShape) => boolean,
     builderCb: () => FabricateComponent<StateShape>,
   ) => FabricateComponent<StateShape>;
+  /**
+   * Render a router that changes pages when fabricate.navigate() is used.
+   *
+   * @param {FabricateRouter} router - Description of routes.
+   * @returns {FabricateComponent} Wrapper component.
+   */
+  router: (router: FabricateRouter) => FabricateComponent<StateShape>,
+  /**
+   * Navigate to a route, if it was declared.
+   *
+   * @param {string} route - Route to use.
+   * @returns {void}
+   */
+  navigate: (route: string) => void,
 };

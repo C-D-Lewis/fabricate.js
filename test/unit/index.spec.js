@@ -38,6 +38,10 @@ describe('fabricate.js', () => {
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
+    it('should throw when styles are omitted', () => {
+      expect(() => fabricate('div').setStyles(undefined)).to.throw(Error);
+    });
+
     it('should create a div with narrow styles', () => {
       mockIsNarrow(fabricate, true);
 
@@ -553,6 +557,49 @@ describe('fabricate.js', () => {
       // Retain app-set value
       fabricate.buildKey('isVisible', 'AppCard', '1');
       expect(_fabricate.state[key]).to.equal(true);
+    });
+
+    it('should allow use of router', () => {
+      const HomePage = () => fabricate('div');
+      const App = () => fabricate.router({
+        '/': HomePage,
+      });
+
+      fabricate.app(App);
+    });
+
+    it('should throw for bad routes', () => {
+      expect(() => fabricate.router({ foo: 'bar' })).to.throw(Error);
+    });
+
+    it('should throw for if root route is not provided', () => {
+      expect(() => fabricate.router({ '/foo': () => fabricate('div') })).to.throw(Error);
+    });
+
+    it('should route to valid page', () => {
+      const HomePage = () => fabricate('div');
+      const TestPage = () => fabricate('div');
+      const App = () => fabricate.router({
+        '/': HomePage,
+        '/test': TestPage,
+      });
+
+      fabricate.app(App);
+
+      fabricate.navigate('/test');
+
+      expect(_fabricate.route).to.equal('/test');
+    });
+
+    it('should throw for an invalid route', () => {
+      const HomePage = () => fabricate('div');
+      const App = () => fabricate.router({
+        '/': HomePage,
+      });
+
+      fabricate.app(App);
+
+      expect(() => fabricate.navigate('/foo')).to.throw(Error);
     });
   });
 

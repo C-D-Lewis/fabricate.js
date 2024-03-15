@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../../fabricate.js"></script>
+
+    <script>
+      const HomePage = () => fabricate('Column')
+        .setChildren([
+          fabricate('h1').setText('This is HomePage'),
+          fabricate('Button', { text: 'Go to StatusPage' })
+            .onClick(() => fabricate.navigate('/status')),
+      ]);
+      const StatusPage = () => fabricate('Column')
+        .setChildren([
+          fabricate('h1').setText('This is StatusPage'),
+          fabricate('Button', { text: 'Go to HomePage' })
+            .onClick(() => fabricate.navigate('/')),
+      ]);
+
+      const App = () => fabricate.router({
+        '/': HomePage,
+        '/status': StatusPage,
+      });
+
+      // Use as the root app element
+      fabricate.app(App);
+    </script>
+  </body>
+</html>

@@ -123,10 +123,10 @@ The API is split into two sections - component construction and app helpers.
 
 * [Create components](#component)
   * [`.asFlex()`](#asflex)
-  * [`.setStyles()` / `setAttributes()`](#setstyles--setattributes)
-  * [`.setChildren()` / `addChildren`](#setchildren--addchildren)
-  * [`.onClick()` / `onHover()` / `onChange()`](#onclick--onhover--onchange)
-  * [`.setText()` / `setHtml()`](#settext--sethtml)
+  * [`.setStyles()` / `.setAttributes()`](#setstyles--setattributes)
+  * [`.setChildren()` / `.addChildren`](#setchildren--addchildren)
+  * [`.onClick()` / `.onHover()` / `.onChange()`](#onclick--onhover--onchange)
+  * [`.setText()` / `.setHtml()`](#settext--sethtml)
   * [`.onDestroy()`](#ondestroy)
   * [`.onEvent()`](#onevent)
   * [`.displayWhen()`](#displaywhen)
@@ -134,7 +134,7 @@ The API is split into two sections - component construction and app helpers.
 
 ### App helpers
 
-* [`fabricate` / `fab` helpers](#fabricate--fab-helpers)
+* [`fabricate` helpers](#fabricate-helpers)
   * [`.isNarrow()`](#isnarrow)
   * [`.app()`](#app)
   * [`.declare()`](#declare)
@@ -142,6 +142,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.update()` / `.onUpdate()`](#update--onupdate)
   * [`.buildKey()`](#buildkey)
   * [`.conditional()`](#conditional)
+  * [`.router()` / `.navigate()`](#router--navigate)
 
 
 ### Create components
@@ -536,6 +537,34 @@ fabricate('Column')
     mainPage,
     settingsPage,
   ]);
+```
+
+### `.router()` / `.navigate()`
+
+For a multi-page app, use `.router()` to declare pages to be displayed when
+`.navigate()` is used, usually at the top level.
+
+```js
+const HomePage = () => fabricate('Column')
+  .setChildren([
+    fabricate('h1').setText('This is HomePage'),
+    fabricate('Button', { text: 'Go to StatusPage' })
+      .onClick(() => fabricate.navigate('/status')),
+]);
+const StatusPage = () => fabricate('Column')
+  .setChildren([
+    fabricate('h1').setText('This is StatusPage'),
+    fabricate('Button', { text: 'Go to HomePage' })
+      .onClick(() => fabricate.navigate('/')),
+]);
+
+const App = () => fabricate.router({
+  '/': HomePage,
+  '/status': StatusPage,
+});
+
+// Use as the root app element
+fabricate.app(App);
 ```
 
 

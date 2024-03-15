@@ -15,6 +15,11 @@ const _fabricate = {
   },
   /** Minimum children before groups are added with timeout */
   MANY_CHILDREN_GROUP_SIZE: 50,
+  StateKeys: {
+    Init: 'fabricate:init',
+    Created: 'fabricate:created',
+    Route: 'fabricate:route',
+  },
 
   // Main library state
   state: {},
@@ -23,6 +28,8 @@ const _fabricate = {
   options: undefined,
   onDestroyObserver: undefined,
   ignoreStrict: false,
+  router: {},
+  route: '',
 
   // Internal helpers
   /**
@@ -440,16 +447,16 @@ const fabricate = (name, customProps) => {
     _fabricate.stateWatchers.push({ el, cb, watchKeys });
     el.onDestroy(_unregisterStateWatcher);
 
-    if (watchKeys.includes('fabricate:created')) {
+    if (watchKeys.includes(_fabricate.StateKeys.Created)) {
       // Emulate onCreate immediately if this method is used
-      cb(el, _fabricate.getStateCopy(), ['fabricate:created']);
+      cb(el, _fabricate.getStateCopy(), [_fabricate.StateKeys.Created]);
     }
 
     return el;
   };
 
   /**
-   * Optional on create handler, alternative to 'fabricate:created' event.
+   * Optional on create handler, alternative to _fabricate.StateKeys.Created event.
    *
    * @param {Function} cb - Callback to be notified.
    * @returns {FabricateComponent} Fabricate component.
@@ -557,6 +564,7 @@ fabricate.update = (param1, param2) => {
     return;
   }
 
+  // Should never happen
   throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);
 };
 
@@ -618,7 +626,7 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
     _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
   }
 
-  _notifyStateChange(['fabricate:init']);
+  _notifyStateChange([_fabricate.StateKeys.Init]);
 };
 
 /**
@@ -687,18 +695,87 @@ fabricate.conditional = (testCb, builderCb) => {
   return wrapper;
 };
 
+/**
+ * Use a router to show many pages inside the parent component.
+ *
+ * Example:
+ * {
+ *   '/': HomePage,
+ *   '/user': UserPage,
+ * }
+ *
+ * @param {object} router - Object of routes and components to render.
+ * @returns {void}
+ */
+fabricate.router = ((router) => {
+  // Validate
+  if (!Object.entries(router).every(([route, builderCb]) => {
+    const isValid = route.startsWith('/') && typeof builderCb === 'function';
+    return isValid;
+  })) {
+    throw new Error('Every route in router must be builder function');
+  }
+  if (!router['/']) {
+    throw new Error('Must provide initial route /');
+  }
+
+  _fabricate.router = router;
+
+  // Add all routes in router
+  const wrapper = fabricate('div');
+  Object.entries(router).forEach(([route, builderCb]) => {
+    wrapper.addChildren([
+      fabricate.conditional(
+        (state) => state[_fabricate.StateKeys.Route] === route,
+        builderCb,
+      ),
+    ]);
+  });
+
+  // Initial route is '/'
+  fabricate.update(_fabricate.StateKeys.Route, '/');
+
+  return wrapper;
+});
+
+/**
+ * Navigate to a given route. If it exists, it is rendered.
+ *
+ * @param {string} route - Route to show.
+ */
+fabricate.navigate = ((route) => {
+  if (!_fabricate.router[route]) {
+    throw new Error(`Unknown route: ${route}`);
+  }
+
+  _fabricate.route = route;
+  fabricate.update(_fabricate.StateKeys.Route, route);
+});
+
 /// //////////////////////////////////// Built-in Components ///////////////////////////////////////
 
+/**
+ * Row built-in component.
+ */
 fabricate.declare('Row', () => fabricate('div').asFlex('row'));
 
+/**
+ * Column built-in component.
+ */
 fabricate.declare('Column', () => fabricate('div').asFlex('column'));
 
+/**
+ * Text built-in component.
+ */
 fabricate.declare('Text', ({ text } = {}) => {
   if (text) throw new Error('Text component text param was removed - use setText instead');
 
   return fabricate('p').setStyles({ fontSize: '1rem', margin: '5px' });
 });
 
+/**
+ * Image built-in component.
+ */
 fabricate.declare('Image', ({ src = '', width, height } = {}) => {
   if (width || height) throw new Error('Image component width/height params removed - use setStyles instead');
 
@@ -707,6 +784,9 @@ fabricate.declare('Image', ({ src = '', width, height } = {}) => {
     .setAttributes({ src });
 });
 
+/**
+ * Button built-in component.
+ */
 fabricate.declare('Button', ({
   text = 'Button',
   color = 'white',
@@ -736,6 +816,9 @@ fabricate.declare('Button', ({
   })
   .setText(text));
 
+/**
+ * NavBar built-in component.
+ */
 fabricate.declare('NavBar', ({
   title = 'NavBar Title',
   color = 'white',
@@ -772,6 +855,9 @@ fabricate.declare('NavBar', ({
   return navbar;
 });
 
+/**
+ * TextInput built-in component.
+ */
 fabricate.declare('TextInput', ({
   placeholder = 'Enter value',
   color = 'black',
@@ -790,6 +876,9 @@ fabricate.declare('TextInput', ({
   })
   .setAttributes({ type: 'text', placeholder }));
 
+/**
+ * Loader built-in component.
+ */
 fabricate.declare('Loader', ({
   size = 48,
   lineWidth = 5,
@@ -824,6 +913,9 @@ fabricate.declare('Loader', ({
   return container;
 });
 
+/**
+ * Card built-in component.
+ */
 fabricate.declare('Card', () => fabricate('Column')
   .setStyles({
     width: 'max-content',
@@ -833,6 +925,9 @@ fabricate.declare('Card', () => fabricate('Column')
     overflow: 'hidden',
   }));
 
+/**
+ * Fader built-in component.
+ */
 fabricate.declare('Fader', ({
   durationS = '0.6',
   delayMs = 300,
@@ -840,8 +935,11 @@ fabricate.declare('Fader', ({
   .setStyles({ opacity: 0, transition: `opacity ${durationS}s` })
   .onUpdate((el) => {
     setTimeout(() => el.setStyles({ opacity: 1 }), delayMs);
-  }, ['fabricate:created']));
+  }, [_fabricate.StateKeys.Created]));
 
+/**
+ * Pill built-in component.
+ */
 fabricate.declare('Pill', ({
   text = 'Pill',
   color = 'white',
@@ -866,6 +964,9 @@ fabricate.declare('Pill', ({
   })
   .setText(text));
 
+/**
+ * FabricateAttribution built-in component.
+ */
 fabricate.declare('FabricateAttribution', () => fabricate('img')
   .setAttributes({
     src: 'https://raw.githubusercontent.com/C-D-Lewis/fabricate.js/main/assets/logo_small.png',

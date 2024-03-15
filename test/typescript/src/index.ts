@@ -11,11 +11,10 @@ type AppState = {
 };
 
 /**
- * App component.
- *
- * @returns {FabricateComponent} The component.
+ * TestPage
+ * @returns {FabricateComponent} TestPage component.
  */
-const App = (): FabricateComponent<AppState> => fabricate('Column')
+const TestPage = () => fabricate('Column')
   .setChildren([
     fabricate('h3').setText('Test TypeScript app'),
     fabricate('p')
@@ -24,6 +23,16 @@ const App = (): FabricateComponent<AppState> => fabricate('Column')
         el.setText(`Counted to ${counter}`);
       }, ['counter']),
   ]);
+
+/**
+ * App component.
+ *
+ * @returns {FabricateComponent} The component.
+ */
+const App = (): FabricateComponent<AppState> => fabricate.router({
+  '/': TestPage,
+});
+setTimeout(() => fabricate.navigate('/'), 1000);
 
 const initialState = { counter: 0, updated: false };
 const options: FabricateOptions = {
