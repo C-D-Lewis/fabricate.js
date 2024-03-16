@@ -458,7 +458,7 @@ must be provided.
 const App = () => fabricate('Text')
   .onUpdate(
     (el, state, key) => el.setText(state.counter),
-    ['fabricate:init', 'counter'],
+    [fabricate.StateKeys.Init, 'counter'],
   );
 
 // Initialise first state
@@ -482,8 +482,9 @@ fabricate.update({ counter: 0 });
 
 There are some special events that can be used:
 
-* `fabricate:init` - Called when the application is first run.
-* `fabricate:created` - Called for a particular component when it is first created.
+* `fabricate.StateKeys.Init` - Called when the application is first run.
+* `fabricate.StateKeys.Created` - Called for a particular component when it is first created.
+* `fabricate.StateKeys.Route` - Called when router changes route.
 
 #### `.buildKey()`
 

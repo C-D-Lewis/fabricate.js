@@ -108,3 +108,7 @@ fabricate('FooComponent', { label: 'foo' });
 fabricate.onKeyDown((state, key) => console.log(key));
 
 fabricate.buildKey('test', 'prop', 'more', 'more');
+
+console.log(fabricate.StateKeys);
+fabricate('div')
+  .onUpdate(() => {}, [fabricate.StateKeys.Init]);

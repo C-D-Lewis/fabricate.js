@@ -6,7 +6,12 @@ type ThemeCallback = (theme: {
 }) => Partial<CSSStyleDeclaration>;
 
 /** Built-in state keys */
-type BuiltinKeys = 'fabricate:init' | 'fabricate:created';
+type BuiltinKeys = 'fabricate:init' | 'fabricate:created' | 'fabricate:route';
+
+/** Router type */
+type FabricateRouter = {
+  [key: string]: () => any; // should be FabricateComponent<StateShape>
+};
 
 /**
  * Fabricate component extends HTMLElement - and uses shape of app's state.
@@ -219,6 +224,13 @@ export type Fabricate<StateShape> = {
    * @returns {FabricateComponent<StateShape>} New component.
    */
   (componentName: string, props?: object): FabricateComponent<StateShape>;
+
+  // Constants
+  StateKeys: {
+    Init: 'fabricate:init',
+    Created: 'fabricate:created',
+    Route: 'fabricate:route',
+  };
 
   /**
    * Update fabricate.js app state.

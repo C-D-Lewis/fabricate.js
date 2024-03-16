@@ -1025,10 +1025,12 @@ fabricate.declare('FabricateAttribution', () => fabricate('img')
   })
   .onClick(() => window.open('https://github.com/C-D-Lewis/fabricate.js', '_blank')));
 
-/// ////////////////////////////////////// Convenience alias ///////////////////////////////////////
+/// //////////////////////////////// Convenience alias / constants /////////////////////////////////
 
 // Convenient alternative
 window.fab = fabricate;
+
+fabricate.StateKeys = Object.freeze({ ..._fabricate.StateKeys });
 
 /// /////////////////////////////////////////// Styles /////////////////////////////////////////////
 

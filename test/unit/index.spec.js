@@ -472,6 +472,10 @@ describe('fabricate.js', () => {
   });
 
   describe('Helpers', () => {
+    it('should throw if app is not builder function', () => {
+      expect(() => fabricate.app('foo')).to.throw('App root must be a builder function');
+    });
+
     it('should allow detection of narrow screens', () => {
       expect(fabricate.isNarrow()).to.equal(false);
 
@@ -638,6 +642,18 @@ describe('fabricate.js', () => {
       fabricate.goBack();
 
       expect(_fabricate.routeHistory).to.deep.equal(['/']);
+    });
+
+    it('should handle repeated navigates', () => {
+      const App = () => fabricate.router({
+        '/': () => fabricate('div'),
+        '/test': () => fabricate('div'),
+      });
+
+      fabricate.app(App);
+
+      fabricate.navigate('/test');
+      expect(() => fabricate.navigate('/test')).not.to.throw(Error);
     });
 
     it('should throw if not using router', () => {
@@ -1210,6 +1226,20 @@ describe('fabricate.js', () => {
       expect(
         () => fabricate.app(App, {}, { disableGroupAddChildrenOptim: true }),
       ).to.not.throw(Error);
+    });
+  });
+
+  describe('Other exports', () => {
+    it('should have fab convenience alias', () => {
+      expect(window.fab).to.be.a('function');
+    });
+
+    it('should export StateKeys', () => {
+      expect(fabricate.StateKeys).to.deep.equal({
+        Init: 'fabricate:init',
+        Created: 'fabricate:created',
+        Route: 'fabricate:route',
+      });
     });
   });
 });
