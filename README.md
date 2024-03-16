@@ -142,7 +142,7 @@ The API is split into two sections - component construction and app helpers.
   * [`.update()` / `.onUpdate()`](#update--onupdate)
   * [`.buildKey()`](#buildkey)
   * [`.conditional()`](#conditional)
-  * [`.router()` / `.navigate()`](#router--navigate)
+  * [`.router()`](#router)
 
 
 ### Create components
@@ -539,10 +539,10 @@ fabricate('Column')
   ]);
 ```
 
-### `.router()` / `.navigate()`
+### `.router()`
 
-For a multi-page app, use `.router()` to declare pages to be displayed when
-`.navigate()` is used, usually at the top level.
+For a multi-page app, use `router()` to declare pages to be displayed when
+`navigate()` is used, usually at the top level.
 
 ```js
 const HomePage = () => fabricate('Column')
@@ -566,6 +566,9 @@ const App = () => fabricate.router({
 // Use as the root app element
 fabricate.app(App);
 ```
+
+After navigating, `goBack()` can be used to go back a step, and
+`getRouteHistory()` displays the current route history.
 
 
 ## Built-in components

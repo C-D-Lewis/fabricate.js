@@ -28,8 +28,8 @@ const _fabricate = {
   options: undefined,
   onDestroyObserver: undefined,
   ignoreStrict: false,
-  router: {},
-  route: '',
+  router: undefined,
+  routeHistory: undefined,
 
   // Internal helpers
   /**
@@ -181,7 +181,7 @@ const _validateOptions = () => {
       || !theme.palette
     )
   ) {
-    throw new Error('theme option must contain palette and/or styles objects');
+    throw new Error('theme option must contain .palette and/or .styles objects');
   }
   if (disableGroupAddChildrenOptim && typeof disableGroupAddChildrenOptim !== 'boolean') {
     throw new Error(`disableGroupAddChildrenOptim option must be boolean, was ${typeof disableGroupAddChildrenOptim}`);
@@ -539,6 +539,8 @@ const fabricate = (name, customProps) => {
 fabricate.update = (param1, param2) => {
   const { state } = _fabricate;
 
+  if (!param1) throw new Error('No update data provided');
+
   const keys = typeof param1 === 'object' ? Object.keys(param1) : [param1];
 
   // Only allow known state key updates
@@ -561,11 +563,11 @@ fabricate.update = (param1, param2) => {
   if (typeof param1 === 'string') {
     _fabricate.state[param1] = typeof param2 === 'function' ? param2(state) : param2;
     _notifyStateChange(keys);
-    return;
+    // return;
   }
 
-  // Should never happen
-  throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);
+  // Should never happen but can't be covered easily
+  // throw new Error(`Invalid state update: ${typeof param1} ${typeof param2}`);
 };
 
 /**
@@ -608,6 +610,8 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
   // Reset state
   _fabricate.state = initialState;
   _fabricate.options = _getDefaultOptions();
+  _fabricate.router = undefined;
+  _fabricate.routeHistory = undefined;
 
   // Apply options
   Object.assign(_fabricate.options, opts);
@@ -707,50 +711,92 @@ fabricate.conditional = (testCb, builderCb) => {
  * @param {object} router - Object of routes and components to render.
  * @returns {void}
  */
-fabricate.router = ((router) => {
+fabricate.router = (router) => {
   // Validate
-  if (!Object.entries(router).every(([route, builderCb]) => {
-    const isValid = route.startsWith('/') && typeof builderCb === 'function';
-    return isValid;
-  })) {
+  if (!router || !router['/']) throw new Error('Must provide initial route /');
+  if (!Object.entries(router).every(
+    ([route, builderCb]) => route.startsWith('/') && typeof builderCb === 'function',
+  )) {
     throw new Error('Every route in router must be builder function');
   }
-  if (!router['/']) {
-    throw new Error('Must provide initial route /');
-  }
+  if (_fabricate.router) throw new Error('There can only be one router per app');
 
   _fabricate.router = router;
 
   // Add all routes in router
   const wrapper = fabricate('div');
-  Object.entries(router).forEach(([route, builderCb]) => {
-    wrapper.addChildren([
-      fabricate.conditional(
-        (state) => state[_fabricate.StateKeys.Route] === route,
-        builderCb,
-      ),
-    ]);
-  });
+  Object.entries(router)
+    .forEach(([route, builderCb]) => {
+      wrapper.addChildren([
+        fabricate.conditional(
+          (state) => state[_fabricate.StateKeys.Route] === route,
+          builderCb,
+        ),
+      ]);
+    });
 
   // Initial route is '/'
+  _fabricate.routeHistory = ['/'];
   fabricate.update(_fabricate.StateKeys.Route, '/');
 
   return wrapper;
-});
+};
 
 /**
  * Navigate to a given route. If it exists, it is rendered.
  *
  * @param {string} route - Route to show.
  */
-fabricate.navigate = ((route) => {
+fabricate.navigate = (route) => {
+  if (!_fabricate.routeHistory) {
+    throw new Error('No route history - are you using fabricate.router()?');
+  }
   if (!_fabricate.router[route]) {
     throw new Error(`Unknown route: ${route}`);
   }
 
-  _fabricate.route = route;
+  const [last] = _fabricate.routeHistory.slice(-1);
+  if (route === last) {
+    console.warn('Ignoring navigate to current route');
+    return;
+  }
+
+  _fabricate.routeHistory.push(route);
+
   fabricate.update(_fabricate.StateKeys.Route, route);
-});
+};
+
+/**
+ * Navigate back one route.
+ */
+fabricate.goBack = () => {
+  if (!_fabricate.routeHistory) {
+    throw new Error('No route history - are you using fabricate.router()?');
+  }
+  if (_fabricate.routeHistory.length < 2) {
+    console.warn('No history to go back in, doing nothing');
+    return;
+  }
+
+  _fabricate.routeHistory.pop();
+  const [last] = _fabricate.routeHistory.slice(-1);
+
+  fabricate.update(_fabricate.StateKeys.Route, last);
+};
+
+/**
+ * Get a copy of the route history, in case apps need to know where they came from.
+ * The last item is always the current route.
+ *
+ * @returns {Array<string>} Router route history, if any.
+ */
+fabricate.getRouteHistory = () => {
+  if (!_fabricate.routeHistory) {
+    throw new Error('No route history - are you using fabricate.router()?');
+  }
+
+  return [..._fabricate.routeHistory];
+};
 
 /// //////////////////////////////////// Built-in Components ///////////////////////////////////////
 

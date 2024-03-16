@@ -306,4 +306,17 @@ export type Fabricate<StateShape> = {
    * @returns {void}
    */
   navigate: (route: string) => void,
+  /**
+   * Navigate back one route.
+   *
+   * @returns {void}
+   */
+  goBack: () => void,
+  /**
+   * Get a copy of the route history, in case apps need to know where they came from.
+   * The last item is always the current route.
+   *
+   * @returns {Array<string>} Router route history, if any.
+   */
+  getRouteHistory: () => string[],
 };

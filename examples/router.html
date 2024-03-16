@@ -20,8 +20,8 @@
       const StatusPage = () => fabricate('Column')
         .setChildren([
           fabricate('h1').setText('This is StatusPage'),
-          fabricate('Button', { text: 'Go to HomePage' })
-            .onClick(() => fabricate.navigate('/')),
+          fabricate('Button', { text: 'Go back' })
+            .onClick(() => fabricate.goBack()),
       ]);
 
       const App = () => fabricate.router({

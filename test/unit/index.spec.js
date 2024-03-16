@@ -39,7 +39,8 @@ describe('fabricate.js', () => {
     });
 
     it('should throw when styles are omitted', () => {
-      expect(() => fabricate('div').setStyles(undefined)).to.throw(Error);
+      expect(() => fabricate('div').setStyles(undefined))
+        .to.throw('Callback or styles object is expected');
     });
 
     it('should create a div with narrow styles', () => {
@@ -440,7 +441,8 @@ describe('fabricate.js', () => {
     });
 
     it('should throw if state update key not specified', () => {
-      expect(() => fabricate.update(undefined, () => false)).to.throw(Error);
+      expect(() => fabricate.update(undefined, () => false))
+        .to.throw('No update data provided');
     });
 
     it('should allow data value state update', async () => {
@@ -513,11 +515,13 @@ describe('fabricate.js', () => {
     });
 
     it('should not allow re-declaring a built-in component', () => {
-      expect(() => fabricate.declare('Button')).to.throw(Error);
+      expect(() => fabricate.declare('Button'))
+        .to.throw('Component already declared');
     });
 
     it('should not allow invalid names', () => {
-      expect(() => fabricate.declare('My Component')).to.throw(Error);
+      expect(() => fabricate.declare('My Component'))
+        .to.throw('Declared component names must be a single word of letters');
     });
 
     it('should allow creating keyboard shortcuts', () => {
@@ -560,46 +564,106 @@ describe('fabricate.js', () => {
     });
 
     it('should allow use of router', () => {
-      const HomePage = () => fabricate('div');
-      const App = () => fabricate.router({
-        '/': HomePage,
-      });
+      const App = () => fabricate.router({ '/': () => fabricate('div') });
 
       fabricate.app(App);
+
+      expect(_fabricate.routeHistory).to.deep.equal(['/']);
     });
 
-    it('should throw for bad routes', () => {
-      expect(() => fabricate.router({ foo: 'bar' })).to.throw(Error);
+    it('should throw for bad router object', () => {
+      expect(() => fabricate.router({ '/': fabricate('div'), foo: 'bar' }))
+        .to.throw('Every route in router must be builder function');
+      expect(() => fabricate.router()).to.throw('Must provide initial route /');
     });
 
     it('should throw for if root route is not provided', () => {
-      expect(() => fabricate.router({ '/foo': () => fabricate('div') })).to.throw(Error);
+      expect(() => fabricate.router({ '/foo': () => fabricate('div') }))
+        .to.throw('Must provide initial route /');
+    });
+
+    it('should throw for duplicate routers', () => {
+      const App = () => fabricate.router({ '/': () => fabricate('div') });
+
+      fabricate.app(App);
+
+      expect(() => App()).to.throw('There can only be one router per app');
     });
 
     it('should route to valid page', () => {
-      const HomePage = () => fabricate('div');
-      const TestPage = () => fabricate('div');
       const App = () => fabricate.router({
-        '/': HomePage,
-        '/test': TestPage,
+        '/': () => fabricate('div'),
+        '/test': () => fabricate('div'),
       });
 
       fabricate.app(App);
 
       fabricate.navigate('/test');
 
-      expect(_fabricate.route).to.equal('/test');
+      expect(_fabricate.routeHistory).to.deep.equal(['/', '/test']);
     });
 
     it('should throw for an invalid route', () => {
-      const HomePage = () => fabricate('div');
+      const App = () => fabricate.router({ '/': () => fabricate('div') });
+
+      fabricate.app(App);
+
+      expect(() => fabricate.navigate('/foo')).to.throw('Unknown route: /foo');
+    });
+
+    it('should go back in route history', () => {
       const App = () => fabricate.router({
-        '/': HomePage,
+        '/': () => fabricate('div'),
+        '/test': () => fabricate('div'),
       });
 
       fabricate.app(App);
 
-      expect(() => fabricate.navigate('/foo')).to.throw(Error);
+      fabricate.navigate('/test');
+      fabricate.goBack();
+
+      expect(_fabricate.routeHistory).to.deep.equal(['/']);
+    });
+
+    it('should not go back if no more history', () => {
+      const App = () => fabricate.router({
+        '/': () => fabricate('div'),
+        '/test': () => fabricate('div'),
+      });
+
+      fabricate.app(App);
+
+      fabricate.navigate('/test');
+      fabricate.goBack();
+      fabricate.goBack();
+
+      expect(_fabricate.routeHistory).to.deep.equal(['/']);
+    });
+
+    it('should throw if not using router', () => {
+      const HomePage = () => fabricate('div');
+
+      fabricate.app(HomePage);
+
+      expect(() => fabricate.navigate())
+        .to.throw('No route history - are you using fabricate.router()?');
+      expect(() => fabricate.getRouteHistory())
+        .to.throw('No route history - are you using fabricate.router()?');
+      expect(() => fabricate.goBack())
+        .to.throw('No route history - are you using fabricate.router()?');
+    });
+
+    it('should provide route history', () => {
+      const App = () => fabricate.router({
+        '/': () => fabricate('div'),
+        '/test': () => fabricate('div'),
+      });
+
+      fabricate.app(App);
+
+      fabricate.navigate('/test');
+
+      expect(fabricate.getRouteHistory()).to.deep.equal(['/', '/test']);
     });
   });
 
@@ -656,7 +720,8 @@ describe('fabricate.js', () => {
       const width = '128px';
       const height = '128px';
 
-      expect(() => fabricate('Image', { width, height })).to.throw(Error);
+      expect(() => fabricate('Image', { width, height }))
+        .to.throw('Image component width/height params removed - use setStyles instead');
     });
 
     it('should provide Button with default props', () => {
@@ -866,7 +931,8 @@ describe('fabricate.js', () => {
     });
 
     it('should reject Text with old props', () => {
-      expect(() => fabricate('Text', { text: 'foo' })).to.throw(Error);
+      expect(() => fabricate('Text', { text: 'foo' }))
+        .to.throw('Text component text param was removed - use setText instead');
     });
 
     it('should provide Loader with default props', () => {
@@ -1077,13 +1143,15 @@ describe('fabricate.js', () => {
       const initialState = { known: true };
       fabricate.app(() => fabricate('div'), initialState);
 
-      expect(() => fabricate.update('unknown', true)).to.throw(Error);
+      expect(() => fabricate.update('unknown', true))
+        .to.throw('Unknown state key unknown - do you need to use buildKey()?');
     });
 
     it('should require watchKeys for onUpdate', () => {
       fabricate.app(() => fabricate('div'), {});
 
-      expect(() => fabricate('div').onUpdate(console.log)).to.throw(Error);
+      expect(() => fabricate('div').onUpdate(console.log))
+        .to.throw('A watchKeys option must be provided');
     });
 
     it('should make an exception for no watchKeys for displayWhen', () => {
@@ -1120,13 +1188,16 @@ describe('fabricate.js', () => {
     it('should validate options', () => {
       const App = () => fabricate('div');
 
-      expect(() => fabricate.app(App, {}, { logStateUpdates: 'false' })).to.throw(Error);
+      expect(() => fabricate.app(App, {}, { logStateUpdates: 'false' }))
+        .to.throw('logStateUpdates option must be boolean, was string');
       expect(() => fabricate.app(App, {}, { logStateUpdates: true })).to.not.throw(Error);
 
-      expect(() => fabricate.app(App, {}, { persistState: 'counter' })).to.throw(Error);
+      expect(() => fabricate.app(App, {}, { persistState: 'counter' }))
+        .to.throw('persistState option must be string array, was string');
       expect(() => fabricate.app(App, {}, { persistState: ['counter'] })).to.not.throw(Error);
 
-      expect(() => fabricate.app(App, {}, { theme: { foo: 'bar' } })).to.throw(Error);
+      expect(() => fabricate.app(App, {}, { theme: { foo: 'bar' } }))
+        .to.throw('theme option must contain .palette and/or .styles objects');
       expect(
         () => fabricate.app(App, {}, { theme: { palette: {}, styles: {} } }),
       ).to.not.throw(Error);
@@ -1134,7 +1205,8 @@ describe('fabricate.js', () => {
         () => fabricate.app(App, {}, { theme: { palette: {}, styles: {}, foo: 'bar' } }),
       ).to.not.throw(Error);
 
-      expect(() => fabricate.app(App, {}, { disableGroupAddChildrenOptim: 'false' })).to.throw(Error);
+      expect(() => fabricate.app(App, {}, { disableGroupAddChildrenOptim: 'false' }))
+        .to.throw('disableGroupAddChildrenOptim option must be boolean, was string');
       expect(
         () => fabricate.app(App, {}, { disableGroupAddChildrenOptim: true }),
       ).to.not.throw(Error);

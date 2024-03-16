@@ -37,6 +37,7 @@ const hasAttributes = (el, attributes) => Object
 const mockIsNarrow = (fabricate, isNarrow) => {
   /**
    * Mock isNarrow function.
+   * FIXME: Mock the conditions, not replacing the function (no coverage)
    *
    * @returns {boolean} Mocked result.
    */

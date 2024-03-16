@@ -31,8 +31,13 @@ const TestPage = () => fabricate('Column')
  */
 const App = (): FabricateComponent<AppState> => fabricate.router({
   '/': TestPage,
+  '/other': TestPage,
 });
-setTimeout(() => fabricate.navigate('/'), 1000);
+setTimeout(() => {
+  fabricate.navigate('/other');
+  fabricate.goBack();
+  console.log(fabricate.getRouteHistory());
+}, 1000);
 
 const initialState = { counter: 0, updated: false };
 const options: FabricateOptions = {
