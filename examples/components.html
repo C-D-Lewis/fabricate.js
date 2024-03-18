@@ -56,9 +56,24 @@
                   ]),
               ]),
           )
-            .setStyles({
-              minHeight: '100px',
-            }),
+            .setStyles({ minHeight: '50px' }),
+          
+          Title().setText('FabricateAttribution'),
+          fabricate('FabricateAttribution'),
+
+          Title().setText('Tabs'),
+          fabricate('Tabs', {
+            tabs: {
+              Home: () => fabricate('Text').setText('HOME TAB'),
+              User: () => fabricate('Text').setText('USER TAB'),
+              Settings: () => fabricate('Text').setText('SETTINGS TAB'),
+            },
+            tabStyles: {
+              color: 'gold',
+              backgroundColor: 'green',
+            },
+          })
+            .setStyles({ width: '400px' }),
         ]);
 
       fabricate.app(App, { showFader: false });

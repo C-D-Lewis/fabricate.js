@@ -626,7 +626,7 @@ describe('fabricate.js', () => {
       fabricate.navigate('/test');
       fabricate.goBack();
 
-      expect(_fabricate.routeHistory).to.deep.equal(['/']);
+      expect(_fabricate.routeHistory).to.deep.equal(['/', '/test', '/']);
     });
 
     it('should not go back if no more history', () => {
@@ -637,7 +637,6 @@ describe('fabricate.js', () => {
 
       fabricate.app(App);
 
-      fabricate.navigate('/test');
       fabricate.goBack();
       fabricate.goBack();
 
@@ -1001,6 +1000,13 @@ describe('fabricate.js', () => {
       expect(hasStyles(canvas, canvasStyles)).to.equal(true);
     });
 
+    it('should provide Card', () => {
+      const el = fabricate('Card');
+      const styles = { display: 'flex', flexDirection: 'column' };
+
+      expect(hasStyles(el, styles)).to.equal(true);
+    });
+
     it('should provide Fader with default props', (done) => {
       const el = fabricate('Fader');
       const styles = {
@@ -1121,13 +1127,6 @@ describe('fabricate.js', () => {
       expect(hasStyles(el, styles)).to.equal(true);
     });
 
-    it('should provide Card', () => {
-      const el = fabricate('Card');
-      const styles = { display: 'flex', flexDirection: 'column' };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
     it('should provide FabricateAttribution', () => {
       const el = fabricate('FabricateAttribution');
       const styles = {
@@ -1138,6 +1137,93 @@ describe('fabricate.js', () => {
       };
 
       expect(hasStyles(el, styles)).to.equal(true);
+    });
+
+    it('should provide Tabs', () => {
+      const tabStyles = {
+        color: 'white',
+        backgroundColor: 'green',
+      };
+      const tabs = fabricate('Tabs', {
+        tabs: {
+          Home: () => fabricate('Text').setText('Home tab'),
+          User: () => fabricate('Text').setText('User tab'),
+          Settings: () => fabricate('Text').setText('Settings tab'),
+        },
+        tabStyles,
+      });
+
+      // Correct names
+      const tabBar = tabs.childNodes[0];
+      expect(tabBar.childNodes[0].innerText).to.equal('Home');
+      expect(tabBar.childNodes[1].innerText).to.equal('User');
+      expect(tabBar.childNodes[2].innerText).to.equal('Settings');
+
+      // Custom styles
+      const selectedStyles = {
+        ...tabStyles,
+        filter: 'brightness(1)',
+        fontWeight: 'bold',
+      };
+      expect(hasStyles(tabBar.childNodes[0], selectedStyles)).to.equal(true);
+      const unselectedStyles = {
+        ...tabStyles,
+        filter: 'brightness(0.8)',
+      };
+      expect(hasStyles(tabBar.childNodes[1], unselectedStyles)).to.equal(true);
+    });
+
+    it('should provide Tabs with default styles', () => {
+      const tabs = fabricate('Tabs', {
+        tabs: {
+          Home: () => fabricate('Text').setText('Home tab'),
+          User: () => fabricate('Text').setText('User tab'),
+          Settings: () => fabricate('Text').setText('Settings tab'),
+        },
+      });
+
+      const tabBar = tabs.childNodes[0];
+
+      const styles = {
+        color: 'white',
+        backgroundColor: 'rgb(102, 102, 102)',
+      };
+      expect(hasStyles(tabBar.childNodes[0], styles)).to.equal(true);
+    });
+
+    it('should navigate Tabs', () => {
+      const tabs = fabricate('Tabs', {
+        tabs: {
+          Home: () => fabricate('Text').setText('Home tab'),
+          User: () => fabricate('Text').setText('User tab'),
+          Settings: () => fabricate('Text').setText('Settings tab'),
+        },
+      });
+
+      // Change tab
+      const tabBar = tabs.childNodes[0];
+      tabBar.childNodes[1].click();
+
+      const selectedStyles = {
+        filter: 'brightness(1)',
+        fontWeight: 'bold',
+      };
+      expect(hasStyles(tabBar.childNodes[1], selectedStyles)).to.equal(true);
+      const unselectedStyles = {
+        filter: 'brightness(0.8)',
+      };
+      expect(hasStyles(tabBar.childNodes[0], unselectedStyles)).to.equal(true);
+    });
+
+    it('should throw if missing tabs', () => {
+      expect(() => fabricate('Tabs')).to.throw("Invalid 'tabs' configuration");
+      expect(() => fabricate('Tabs', {})).to.throw("Invalid 'tabs' configuration");
+      expect(() => fabricate('Tabs', { tabs: {} })).to.throw("Invalid 'tabs' configuration");
+    });
+
+    it('should throw if tabs are invalid', () => {
+      expect(() => fabricate('Tabs', { tabs: { 0: 'my tab' } }))
+        .to.throw("Invalid 'tabs' configuration");
     });
   });
 

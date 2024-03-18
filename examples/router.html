@@ -24,10 +24,17 @@
             .onClick(() => fabricate.goBack()),
       ]);
 
-      const App = () => fabricate.router({
-        '/': HomePage,
-        '/status': StatusPage,
-      });
+      const App = () => fabricate('Column')
+        .setChildren([
+          fabricate.router({
+            '/': HomePage,
+            '/status': StatusPage,
+          }),
+          fabricate('pre')
+            .onUpdate((el) => {
+              el.setText(JSON.stringify(fabricate.getRouteHistory(), null, 2));
+            }, [fabricate.StateKeys.Init, fabricate.StateKeys.Route]),
+      ]);
 
       // Use as the root app element
       fabricate.app(App);

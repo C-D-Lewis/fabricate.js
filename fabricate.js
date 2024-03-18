@@ -778,10 +778,8 @@ fabricate.goBack = () => {
     return;
   }
 
-  _fabricate.routeHistory.pop();
-  const [last] = _fabricate.routeHistory.slice(-1);
-
-  fabricate.update(_fabricate.StateKeys.Route, last);
+  const [last] = _fabricate.routeHistory.slice(-2);
+  fabricate.navigate(last);
 };
 
 /**
@@ -1024,6 +1022,102 @@ fabricate.declare('FabricateAttribution', () => fabricate('img')
     cursor: 'pointer',
   })
   .onClick(() => window.open('https://github.com/C-D-Lewis/fabricate.js', '_blank')));
+
+/**
+ * Tabs component built-in component.
+ * Child 'tabs' specified with object key names and value builderCb.
+ *
+ * Example:
+ *
+ * fabricate('Tabs', {
+ *   tabs: {
+ *     Home: HomeTab,
+ *     'User Settings': SettingsTab,
+ *   },
+ *   tabStyles: {
+ *     color: 'white',
+ *     backgroundColor: 'orange',
+ *   }
+ * })
+ */
+fabricate.declare('Tabs', ({
+  tabs = {},
+  tabStyles = {},
+} = {}) => {
+  // Validation
+  const names = Object.keys(tabs);
+  const allTabsValid = Object
+    .entries(tabs)
+    .every(([name, builderCb]) => typeof name === 'string' && typeof builderCb === 'function');
+  if (names.length === 0 || !allTabsValid) {
+    throw new Error('Invalid \'tabs\' configuration');
+  }
+
+  const stateKey = `fabricate:Tabs:${names.join('_')}`;
+  const {
+    color = 'white',
+    backgroundColor = '#666',
+  } = tabStyles;
+
+  /**
+   * Tab component.
+   *
+   * @param {object} props - Component props.
+   * @param {string} props.name - Tab name.
+   * @param {number} props.index - Tab index.
+   * @returns {FabricateComponent} Tab component.
+   */
+  const Tab = ({
+    name,
+    index,
+  }) => fabricate('div')
+    .setStyles({
+      alignItems: 'center',
+      textAlign: 'center',
+      padding: '8px 12px',
+      flex: 1,
+      cursor: 'pointer',
+      ...tabStyles,
+    })
+    .setText(name)
+    .onClick(() => fabricate.update(stateKey, index))
+    .onUpdate((el, state) => {
+      const isSelected = state[stateKey] === index;
+
+      el.setStyles({
+        fontWeight: isSelected ? 'bold' : 'initial',
+        filter: `brightness(${isSelected ? '1' : '0.8'})`,
+        color,
+        backgroundColor,
+        ...tabStyles,
+      });
+    }, [
+      fabricate.StateKeys.Created,
+      stateKey,
+    ]);
+
+  // Build tabs
+  const bar = fabricate('Row')
+    .setChildren([
+      ...names.map((name, index) => Tab({ name, index })),
+    ]);
+
+  // Build views
+  const views = Object.values(tabs)
+    .map((builderCb, i) => fabricate.conditional(
+      (state) => state[stateKey] === i,
+      builderCb,
+    ));
+
+  const root = fabricate('Column')
+    .setChildren([
+      bar,
+      ...views,
+    ]);
+
+  fabricate.update(stateKey, 0);
+  return root;
+});
 
 /// //////////////////////////////// Convenience alias / constants /////////////////////////////////
 

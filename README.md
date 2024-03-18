@@ -587,6 +587,7 @@ See `examples/components` for a page displaying all example components.
 * [`Card`](#card)
 * [`Fader`](#fader)
 * [`Pill`](#pill)
+* [`FabricateAttribution`](#fabricateattribution)
 
 #### `Row`
 
@@ -597,7 +598,7 @@ fabricate('Row')
   .setChildren([
     fabricate('Button').setText('Confirm'),
     fabricate('Button').setText('Cancel'),
-  ]);
+  ])
 ```
 
 #### `Column`
@@ -609,7 +610,7 @@ fabricate('Column')
   .setChildren([
     fabricate('Image', { src: '/assets/images/gallery1.png' }),
     fabricate('Image', { src: '/assets/images/gallery2.png' }),
-  ]);
+  ])
 ```
 
 #### `Text`
@@ -617,7 +618,7 @@ fabricate('Column')
 Basic text component:
 
 ```js
-fabricate('Text').setText('Hello, world!');
+fabricate('Text').setText('Hello, world!')
 ```
 
 #### `Image`
@@ -625,7 +626,7 @@ fabricate('Text').setText('Hello, world!');
 Basic image component:
 
 ```js
-fabricate('Image', { src: '/assets/images/gallery01.png' });
+fabricate('Image', { src: '/assets/images/gallery01.png' })
 ```
 
 #### `Button`
@@ -638,7 +639,7 @@ fabricate('Button', {
   color: 'white',
   backgroundColor: 'gold',
   highlight: true,
-});
+})
 ```
 
 #### `NavBar`
@@ -654,7 +655,7 @@ fabricate('NavBar', {
   .setChildren([
     fabricate('Button', { text: 'Home' }).onClick(goHome),
     fabricate('Button', { text: 'Gallery' }).onClick(goToGallery),
-  ]);
+  ])
 ```
 
 NavBar has the following extra methods:
@@ -671,7 +672,7 @@ fabricate('TextInput', {
   color: '#444',
   backgroundColor: 'white'
 })
-  .onChange((el, state, newVal) => console.log(`Email now ${newVal}`));
+  .onChange((el, state, newVal) => console.log(`Email now ${newVal}`))
 ```
 
 #### `Loader`
@@ -684,7 +685,7 @@ fabricate('Loader', {
   lineWidth: 5,
   color: 'red',
   backgroundColor: '#ddd',
-});
+})
 ```
 
 #### `Card`
@@ -695,7 +696,7 @@ Simple Material-like card component for housing sections of other components:
 fabricate('Card')
   .setChildren([
     fabricate('Image', { src: '/assets/images/gallery01.png' }),
-  ]);
+  ])
 ```
 
 #### `Fader`
@@ -706,7 +707,7 @@ Container that fades in upon creation to smoothly show other components inside:
 fabricate('Fader', {
   durationS: 0.6,
   delayMs: 300,
-});
+})
 ```
 
 #### `Pill`
@@ -718,7 +719,36 @@ fabricate('Pill', {
   text: 'Favourites',
   color: 'white',
   backgroundColor: 'orange',
-});
+})
+```
+
+#### `FabricateAttribution`
+
+Logo with link for quick attribution to use of fabricate.js (optional but cool!).
+
+```js
+FabricateAttribution()
+```
+
+#### `Tabs`
+
+Tab bar and tabs components which can be used for horizontal navigation
+between a number of different views. Tabs are specified as key name and a
+function that builds the view. Additional customisation of the tabs themselves
+is available.
+
+```js
+fabricate('Tabs', {
+  tabs: {
+    Home: HomeTab,
+    User: UserTab,
+    Settings: SettingsTab,
+  },
+  tabStyles: {
+    color: 'white',
+    backgroundColor: 'green',
+  },
+})
 ```
 
 ## Run tests
