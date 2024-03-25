@@ -1026,38 +1026,21 @@ fabricate.declare('FabricateAttribution', () => fabricate('img')
 /**
  * Tabs component built-in component.
  * Child 'tabs' specified with object key names and value builderCb.
- *
- * Example:
- *
- * fabricate('Tabs', {
- *   tabs: {
- *     Home: HomeTab,
- *     'User Settings': SettingsTab,
- *   },
- *   tabStyles: {
- *     color: 'white',
- *     backgroundColor: 'orange',
- *   }
- * })
  */
 fabricate.declare('Tabs', ({
   tabs = {},
+  barStyles = {},
   tabStyles = {},
 } = {}) => {
   // Validation
   const names = Object.keys(tabs);
   const allTabsValid = Object
     .entries(tabs)
-    .every(([name, builderCb]) => typeof name === 'string' && typeof builderCb === 'function');
-  if (names.length === 0 || !allTabsValid) {
-    throw new Error('Invalid \'tabs\' configuration');
-  }
+    .every(([name, cb]) => typeof name === 'string' && typeof cb === 'function');
+  if (names.length === 0 || !allTabsValid) throw new Error('Invalid \'tabs\' configuration');
 
   const stateKey = `fabricate:Tabs:${names.join('_')}`;
-  const {
-    color = 'white',
-    backgroundColor = '#666',
-  } = tabStyles;
+  const { color = 'white', backgroundColor = '#666' } = tabStyles;
 
   /**
    * Tab component.
@@ -1067,10 +1050,7 @@ fabricate.declare('Tabs', ({
    * @param {number} props.index - Tab index.
    * @returns {FabricateComponent} Tab component.
    */
-  const Tab = ({
-    name,
-    index,
-  }) => fabricate('div')
+  const Tab = ({ name, index }) => fabricate('div')
     .setStyles({
       alignItems: 'center',
       textAlign: 'center',
@@ -1098,9 +1078,8 @@ fabricate.declare('Tabs', ({
 
   // Build tabs
   const bar = fabricate('Row')
-    .setChildren([
-      ...names.map((name, index) => Tab({ name, index })),
-    ]);
+    .setStyles({ ...barStyles })
+    .setChildren([...names.map((name, index) => Tab({ name, index }))]);
 
   // Build views
   const views = Object.values(tabs)
@@ -1109,13 +1088,35 @@ fabricate.declare('Tabs', ({
       builderCb,
     ));
 
-  const root = fabricate('Column')
-    .setChildren([
-      bar,
-      ...views,
-    ]);
+  const root = fabricate('Column').setChildren([bar, ...views]);
 
   fabricate.update(stateKey, 0);
+  return root;
+});
+
+/**
+ * Select component with options of 'label' and 'value'.
+ */
+fabricate.declare('Select', ({ options = [] } = {}) => {
+  // Validate options
+  if (!options.length || !options.every((p) => typeof p.label === 'string' && !!p.value)) {
+    throw new Error('Invalid \'options\' configuration');
+  }
+
+  const root = fabricate('select')
+    .setStyles({
+      padding: '5px',
+      fontSize: '1rem',
+      maxWidth: '400px',
+    });
+
+  options.forEach((p) => {
+    const option = document.createElement('option');
+    option.value = p.value;
+    option.innerHTML = p.label;
+    root.appendChild(option);
+  });
+
   return root;
 });
 

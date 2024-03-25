@@ -72,8 +72,17 @@
               color: 'gold',
               backgroundColor: 'green',
             },
-          })
-            .setStyles({ width: '400px' }),
+            barStyles: { width: '400px' },
+          }),
+          
+          Title().setText('Select'),
+          fabricate('Select', {
+            options: [
+              { label: 'Apple', value: 'apple' },
+              { label: 'Orange', value: 'orange' },
+              { label: 'Lemon', value: 'lemon' },
+            ],
+          }),
         ]);
 
       fabricate.app(App, { showFader: false });

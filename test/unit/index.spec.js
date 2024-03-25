@@ -683,547 +683,614 @@ describe('fabricate.js', () => {
   });
 
   describe('Basic components', () => {
-    it('should provide Row', () => {
-      const el = fabricate('Row');
-      const styles = { display: 'flex', flexDirection: 'row' };
+    describe('Row', () => {
+      it('should provide Row', () => {
+        const el = fabricate('Row');
+        const styles = { display: 'flex', flexDirection: 'row' };
 
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide Column', () => {
-      const el = fabricate('Column');
-      const styles = { display: 'flex', flexDirection: 'column' };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide Text', () => {
-      const el = fabricate('Text').setText('foo');
-      const styles = { fontSize: '1rem', margin: '5px' };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-      expect(el.innerText).to.equal('foo');
-    });
-
-    it('should provide Text with default props', () => {
-      const el = fabricate('Text');
-
-      expect(el.innerText).to.equal(undefined);
-    });
-
-    it('should provide Image with default props', () => {
-      const el = fabricate('Image');
-      const styles = { width: '128px', height: '128px' };
-      const attributes = { src: '' };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-      expect(hasAttributes(el, attributes)).to.equal(true);
-    });
-
-    it('should provide Image with custom props', () => {
-      const el = fabricate('Image', {
-        src: 'https://example.com/image.png',
+        expect(hasStyles(el, styles)).to.equal(true);
       });
-      const styles = { width: '128px', height: '128px' };
-      const attributes = { src: 'https://example.com/image.png' };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-      expect(hasAttributes(el, attributes)).to.equal(true);
     });
 
-    it('should reject Image with old props', () => {
-      const width = '128px';
-      const height = '128px';
+    describe('Column', () => {
+      it('should provide Column', () => {
+        const el = fabricate('Column');
+        const styles = { display: 'flex', flexDirection: 'column' };
 
-      expect(() => fabricate('Image', { width, height }))
-        .to.throw('Image component width/height params removed - use setStyles instead');
-    });
-
-    it('should provide Button with default props', () => {
-      const el = fabricate('Button');
-      const styles = {
-        minWidth: '80px',
-        height: '20px',
-        color: 'white',
-        backgroundColor: 'rgb(68, 68, 68)',
-        borderRadius: '5px',
-        padding: '8px 10px',
-        margin: '5px',
-        justifyContent: 'center',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        cursor: 'pointer',
-        userSelect: 'none',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide Button with custom props', () => {
-      const color = 'pink';
-      const backgroundColor = 'blue';
-      const el = fabricate('Button', {
-        text: 'Example',
-        color,
-        backgroundColor,
-        highlight: false,
+        expect(hasStyles(el, styles)).to.equal(true);
       });
-      const styles = {
-        minWidth: '80px',
-        height: '20px',
-        color,
-        backgroundColor,
-        borderRadius: '5px',
-        padding: '8px 10px',
-        margin: '5px',
-        justifyContent: 'center',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        cursor: 'pointer',
-        userSelect: 'none',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
     });
 
-    it('should provide Button with highlight behavior', () => {
-      const el = fabricate('Button');
-      const styles = {
-        minWidth: '80px',
-        height: '20px',
-        color: 'white',
-        backgroundColor: 'rgb(68, 68, 68)',
-        borderRadius: '5px',
-        padding: '8px 10px',
-        margin: '5px',
-        justifyContent: 'center',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        cursor: 'pointer',
-        userSelect: 'none',
-        filter: 'brightness(1.2)',
-      };
+    describe('Text', () => {
+      it('should provide Text', () => {
+        const el = fabricate('Text').setText('foo');
+        const styles = { fontSize: '1rem', margin: '5px' };
 
-      // Hover
-      el.dispatchEvent(new CustomEvent('mouseenter'));
-      expect(hasStyles(el, styles)).to.equal(true);
-
-      // End hover
-      el.dispatchEvent(new CustomEvent('mouseleave'));
-      styles.filter = 'brightness(1)';
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide Button with no highlight behavior', () => {
-      const el = fabricate('Button', { highlight: false });
-      const styles = {
-        minWidth: '80px',
-        height: '20px',
-        color: 'white',
-        backgroundColor: 'rgb(68, 68, 68)',
-        borderRadius: '5px',
-        padding: '8px 10px',
-        margin: '5px',
-        justifyContent: 'center',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        cursor: 'pointer',
-        userSelect: 'none',
-        filter: 'brightness(1)',
-      };
-
-      el.dispatchEvent(new CustomEvent('mouseenter'));
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide NavBar with default props', () => {
-      // Parent
-      const navbar = fabricate('NavBar');
-      const navbarStyles = {
-        padding: '10px 20px',
-        height: '40px',
-        backgroundColor: 'forestgreen',
-        alignItems: 'center',
-      };
-
-      expect(hasStyles(navbar, navbarStyles)).to.equal(true);
-
-      // Children
-      const title = navbar.childNodes[0];
-      const titleStyles = {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: '1.2rem',
-        cursor: 'default',
-      };
-
-      expect(hasStyles(title, titleStyles)).to.equal(true);
-      expect(title.innerText).to.equal('NavBar Title');
-    });
-
-    it('should provide NavBar with custom props', () => {
-      // Parent
-      const navbar = fabricate('NavBar', {
-        title: 'Custom Title',
-        color: 'pink',
-        backgroundColor: 'blue',
-      });
-      const navbarStyles = {
-        padding: '10px 20px',
-        height: '40px',
-        alignItems: 'center',
-        backgroundColor: 'blue',
-      };
-
-      expect(hasStyles(navbar, navbarStyles)).to.equal(true);
-
-      // Children
-      const title = navbar.childNodes[0];
-      const titleStyles = {
-        color: 'pink',
-        fontWeight: 'bold',
-        fontSize: '1.2rem',
-        cursor: 'default',
-      };
-
-      expect(hasStyles(title, titleStyles)).to.equal(true);
-      expect(title.innerText).to.equal('Custom Title');
-    });
-
-    it('should provide NavBar with setTitle method', () => {
-      // Initial state
-      const navbar = fabricate('NavBar');
-      const title = navbar.childNodes[0];
-      expect(title.innerText).to.equal('NavBar Title');
-
-      // Change title
-      navbar.setTitle('new title');
-      expect(title.innerText).to.equal('new title');
-    });
-
-    it('should provide TextInput with default props', () => {
-      const el = fabricate('TextInput');
-      const styles = {
-        border: '1px solid white',
-        color: 'black',
-        backgroundColor: 'rgb(245, 245, 245)',
-        borderRadius: '5px',
-        padding: '7px 9px',
-        fontSize: '1.1rem',
-        margin: '5px 0px',
-      };
-      const attrbutes = {
-        type: 'text',
-        placeholder: 'Enter value',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-      expect(hasAttributes(el, attrbutes)).to.equal(true);
-    });
-
-    it('should provide TextInput with custom props', () => {
-      const el = fabricate('TextInput', {
-        placeholder: 'Email address',
-        color: 'white',
-        backgroundColor: 'red',
-      });
-      const styles = {
-        border: '1px solid white',
-        color: 'white',
-        backgroundColor: 'red',
-        borderRadius: '5px',
-        padding: '7px 9px',
-        fontSize: '1.1rem',
-        margin: '5px 0px',
-      };
-      const attrbutes = {
-        type: 'text',
-        placeholder: 'Email address',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-      expect(hasAttributes(el, attrbutes)).to.equal(true);
-    });
-
-    it('should reject Text with old props', () => {
-      expect(() => fabricate('Text', { text: 'foo' }))
-        .to.throw('Text component text param was removed - use setText instead');
-    });
-
-    it('should provide Loader with default props', () => {
-      // Parent
-      const loader = fabricate('Loader');
-      const loaderStyles = {
-        display: 'flex',
-        flexDirection: 'column',
-        width: '48px',
-        height: '48px',
-      };
-
-      expect(hasStyles(loader, loaderStyles)).to.equal(true);
-
-      // Canvas
-      const canvas = loader.childNodes[0];
-      const canvasStyles = {
-        width: '48px',
-        height: '48px',
-        animation: 'spin 0.7s linear infinite',
-      };
-
-      expect(hasStyles(canvas, canvasStyles)).to.equal(true);
-    });
-
-    it('should provide Loader with custom props', () => {
-      // Parent
-      const loader = fabricate('Loader', {
-        size: 128,
-        lineWidth: 1,
-        color: 'green',
-      });
-      const loaderStyles = {
-        display: 'flex',
-        flexDirection: 'column',
-        width: '128px',
-        height: '128px',
-      };
-
-      expect(hasStyles(loader, loaderStyles)).to.equal(true);
-
-      // Canvas
-      const canvas = loader.childNodes[0];
-      const canvasStyles = {
-        width: '128px',
-        height: '128px',
-        animation: 'spin 0.7s linear infinite',
-      };
-
-      expect(hasStyles(canvas, canvasStyles)).to.equal(true);
-    });
-
-    it('should provide Card', () => {
-      const el = fabricate('Card');
-      const styles = { display: 'flex', flexDirection: 'column' };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide Fader with default props', (done) => {
-      const el = fabricate('Fader');
-      const styles = {
-        opacity: '0',
-        transition: 'opacity 0.6s',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-
-      // Fades
-      setTimeout(() => {
-        expect(el.style.opacity).to.equal('1');
-        done();
-      }, 350);
-    });
-
-    it('should provide Fader with custom props', (done) => {
-      const el = fabricate('Fader', {
-        durationS: '1',
-        delayMs: 100,
-      });
-      const styles = {
-        opacity: '0',
-        transition: 'opacity 1s',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-
-      // Fades
-      setTimeout(() => {
-        expect(el.style.opacity).to.equal('1');
-        done();
-      }, 150);
-    });
-
-    it('should provide Pill with default props', () => {
-      const el = fabricate('Pill');
-      const styles = {
-        display: 'flex',
-        flexDirection: 'column',
-        color: 'white',
-        backgroundColor: 'rgb(102, 102, 102)',
-        justifyContent: 'center',
-        borderRadius: '20px',
-        padding: '7px 8px 5px 8px',
-        margin: '5px',
-        cursor: 'pointer',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-      expect(el.innerText).to.equal('Pill');
-    });
-
-    it('should provide Pill with custom props', () => {
-      const el = fabricate('Pill', {
-        text: 'Example',
-        color: 'red',
-        backgroundColor: 'blue',
-        highlight: false,
-      });
-      const styles = {
-        display: 'flex',
-        flexDirection: 'column',
-        color: 'red',
-        backgroundColor: 'blue',
-        justifyContent: 'center',
-        borderRadius: '20px',
-        padding: '7px 8px 5px 8px',
-        margin: '5px',
-        cursor: 'pointer',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-      expect(el.innerText).to.equal('Example');
-    });
-
-    it('should provide Pill with highlight behavior', () => {
-      const el = fabricate('Pill');
-      const styles = {
-        display: 'flex',
-        flexDirection: 'column',
-        color: 'white',
-        backgroundColor: 'rgb(102, 102, 102)',
-        justifyContent: 'center',
-        borderRadius: '20px',
-        padding: '7px 8px 5px 8px',
-        margin: '5px',
-        cursor: 'pointer',
-        filter: 'brightness(1.2)',
-      };
-
-      // Hover
-      el.dispatchEvent(new CustomEvent('mouseenter'));
-      expect(hasStyles(el, styles)).to.equal(true);
-
-      // End hover
-      el.dispatchEvent(new CustomEvent('mouseleave'));
-      styles.filter = 'brightness(1)';
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide Pill with no highlight behavior', () => {
-      const el = fabricate('Pill', { highlight: false });
-      const styles = {
-        display: 'flex',
-        flexDirection: 'column',
-        color: 'white',
-        backgroundColor: 'rgb(102, 102, 102)',
-        justifyContent: 'center',
-        borderRadius: '20px',
-        padding: '7px 8px 5px 8px',
-        margin: '5px',
-        cursor: 'pointer',
-        filter: 'brightness(1)',
-      };
-
-      el.dispatchEvent(new CustomEvent('mouseenter'));
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide FabricateAttribution', () => {
-      const el = fabricate('FabricateAttribution');
-      const styles = {
-        width: '64px',
-        height: 'auto',
-        objectFit: 'cover',
-        cursor: 'pointer',
-      };
-
-      expect(hasStyles(el, styles)).to.equal(true);
-    });
-
-    it('should provide Tabs', () => {
-      const tabStyles = {
-        color: 'white',
-        backgroundColor: 'green',
-      };
-      const tabs = fabricate('Tabs', {
-        tabs: {
-          Home: () => fabricate('Text').setText('Home tab'),
-          User: () => fabricate('Text').setText('User tab'),
-          Settings: () => fabricate('Text').setText('Settings tab'),
-        },
-        tabStyles,
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(el.innerText).to.equal('foo');
       });
 
-      // Correct names
-      const tabBar = tabs.childNodes[0];
-      expect(tabBar.childNodes[0].innerText).to.equal('Home');
-      expect(tabBar.childNodes[1].innerText).to.equal('User');
-      expect(tabBar.childNodes[2].innerText).to.equal('Settings');
+      it('should provide Text with default props', () => {
+        const el = fabricate('Text');
 
-      // Custom styles
-      const selectedStyles = {
-        ...tabStyles,
-        filter: 'brightness(1)',
-        fontWeight: 'bold',
-      };
-      expect(hasStyles(tabBar.childNodes[0], selectedStyles)).to.equal(true);
-      const unselectedStyles = {
-        ...tabStyles,
-        filter: 'brightness(0.8)',
-      };
-      expect(hasStyles(tabBar.childNodes[1], unselectedStyles)).to.equal(true);
-    });
-
-    it('should provide Tabs with default styles', () => {
-      const tabs = fabricate('Tabs', {
-        tabs: {
-          Home: () => fabricate('Text').setText('Home tab'),
-          User: () => fabricate('Text').setText('User tab'),
-          Settings: () => fabricate('Text').setText('Settings tab'),
-        },
+        expect(el.innerText).to.equal(undefined);
       });
 
-      const tabBar = tabs.childNodes[0];
-
-      const styles = {
-        color: 'white',
-        backgroundColor: 'rgb(102, 102, 102)',
-      };
-      expect(hasStyles(tabBar.childNodes[0], styles)).to.equal(true);
+      it('should reject Text with old props', () => {
+        expect(() => fabricate('Text', { text: 'foo' }))
+          .to.throw('Text component text param was removed - use setText instead');
+      });
     });
 
-    it('should navigate Tabs', () => {
-      const tabs = fabricate('Tabs', {
-        tabs: {
-          Home: () => fabricate('Text').setText('Home tab'),
-          User: () => fabricate('Text').setText('User tab'),
-          Settings: () => fabricate('Text').setText('Settings tab'),
-        },
+    describe('Image', () => {
+      it('should provide Image with default props', () => {
+        const el = fabricate('Image');
+        const styles = { width: '128px', height: '128px' };
+        const attributes = { src: '' };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(hasAttributes(el, attributes)).to.equal(true);
       });
 
-      // Change tab
-      const tabBar = tabs.childNodes[0];
-      tabBar.childNodes[1].click();
+      it('should provide Image with custom props', () => {
+        const el = fabricate('Image', {
+          src: 'https://example.com/image.png',
+        });
+        const styles = { width: '128px', height: '128px' };
+        const attributes = { src: 'https://example.com/image.png' };
 
-      const selectedStyles = {
-        filter: 'brightness(1)',
-        fontWeight: 'bold',
-      };
-      expect(hasStyles(tabBar.childNodes[1], selectedStyles)).to.equal(true);
-      const unselectedStyles = {
-        filter: 'brightness(0.8)',
-      };
-      expect(hasStyles(tabBar.childNodes[0], unselectedStyles)).to.equal(true);
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(hasAttributes(el, attributes)).to.equal(true);
+      });
+
+      it('should reject Image with old props', () => {
+        const width = '128px';
+        const height = '128px';
+
+        expect(() => fabricate('Image', { width, height }))
+          .to.throw('Image component width/height params removed - use setStyles instead');
+      });
     });
 
-    it('should throw if missing tabs', () => {
-      expect(() => fabricate('Tabs')).to.throw("Invalid 'tabs' configuration");
-      expect(() => fabricate('Tabs', {})).to.throw("Invalid 'tabs' configuration");
-      expect(() => fabricate('Tabs', { tabs: {} })).to.throw("Invalid 'tabs' configuration");
+    describe('Button', () => {
+      it('should provide Button with default props', () => {
+        const el = fabricate('Button');
+        const styles = {
+          minWidth: '80px',
+          height: '20px',
+          color: 'white',
+          backgroundColor: 'rgb(68, 68, 68)',
+          borderRadius: '5px',
+          padding: '8px 10px',
+          margin: '5px',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+
+      it('should provide Button with custom props', () => {
+        const color = 'pink';
+        const backgroundColor = 'blue';
+        const el = fabricate('Button', {
+          text: 'Example',
+          color,
+          backgroundColor,
+          highlight: false,
+        });
+        const styles = {
+          minWidth: '80px',
+          height: '20px',
+          color,
+          backgroundColor,
+          borderRadius: '5px',
+          padding: '8px 10px',
+          margin: '5px',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+
+      it('should provide Button with highlight behavior', () => {
+        const el = fabricate('Button');
+        const styles = {
+          minWidth: '80px',
+          height: '20px',
+          color: 'white',
+          backgroundColor: 'rgb(68, 68, 68)',
+          borderRadius: '5px',
+          padding: '8px 10px',
+          margin: '5px',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+          filter: 'brightness(1.2)',
+        };
+
+        // Hover
+        el.dispatchEvent(new CustomEvent('mouseenter'));
+        expect(hasStyles(el, styles)).to.equal(true);
+
+        // End hover
+        el.dispatchEvent(new CustomEvent('mouseleave'));
+        styles.filter = 'brightness(1)';
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+
+      it('should provide Button with no highlight behavior', () => {
+        const el = fabricate('Button', { highlight: false });
+        const styles = {
+          minWidth: '80px',
+          height: '20px',
+          color: 'white',
+          backgroundColor: 'rgb(68, 68, 68)',
+          borderRadius: '5px',
+          padding: '8px 10px',
+          margin: '5px',
+          justifyContent: 'center',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+          filter: 'brightness(1)',
+        };
+
+        el.dispatchEvent(new CustomEvent('mouseenter'));
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
     });
 
-    it('should throw if tabs are invalid', () => {
-      expect(() => fabricate('Tabs', { tabs: { 0: 'my tab' } }))
-        .to.throw("Invalid 'tabs' configuration");
+    describe('NavBar', () => {
+      it('should provide NavBar with default props', () => {
+        // Parent
+        const navbar = fabricate('NavBar');
+        const navbarStyles = {
+          padding: '10px 20px',
+          height: '40px',
+          backgroundColor: 'forestgreen',
+          alignItems: 'center',
+        };
+
+        expect(hasStyles(navbar, navbarStyles)).to.equal(true);
+
+        // Children
+        const title = navbar.childNodes[0];
+        const titleStyles = {
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '1.2rem',
+          cursor: 'default',
+        };
+
+        expect(hasStyles(title, titleStyles)).to.equal(true);
+        expect(title.innerText).to.equal('NavBar Title');
+      });
+
+      it('should provide NavBar with custom props', () => {
+        // Parent
+        const navbar = fabricate('NavBar', {
+          title: 'Custom Title',
+          color: 'pink',
+          backgroundColor: 'blue',
+        });
+        const navbarStyles = {
+          padding: '10px 20px',
+          height: '40px',
+          alignItems: 'center',
+          backgroundColor: 'blue',
+        };
+
+        expect(hasStyles(navbar, navbarStyles)).to.equal(true);
+
+        // Children
+        const title = navbar.childNodes[0];
+        const titleStyles = {
+          color: 'pink',
+          fontWeight: 'bold',
+          fontSize: '1.2rem',
+          cursor: 'default',
+        };
+
+        expect(hasStyles(title, titleStyles)).to.equal(true);
+        expect(title.innerText).to.equal('Custom Title');
+      });
+
+      it('should provide NavBar with setTitle method', () => {
+        // Initial state
+        const navbar = fabricate('NavBar');
+        const title = navbar.childNodes[0];
+        expect(title.innerText).to.equal('NavBar Title');
+
+        // Change title
+        navbar.setTitle('new title');
+        expect(title.innerText).to.equal('new title');
+      });
+    });
+
+    describe('TextInput', () => {
+      it('should provide TextInput with default props', () => {
+        const el = fabricate('TextInput');
+        const styles = {
+          border: '1px solid white',
+          color: 'black',
+          backgroundColor: 'rgb(245, 245, 245)',
+          borderRadius: '5px',
+          padding: '7px 9px',
+          fontSize: '1.1rem',
+          margin: '5px 0px',
+        };
+        const attrbutes = {
+          type: 'text',
+          placeholder: 'Enter value',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(hasAttributes(el, attrbutes)).to.equal(true);
+      });
+
+      it('should provide TextInput with custom props', () => {
+        const el = fabricate('TextInput', {
+          placeholder: 'Email address',
+          color: 'white',
+          backgroundColor: 'red',
+        });
+        const styles = {
+          border: '1px solid white',
+          color: 'white',
+          backgroundColor: 'red',
+          borderRadius: '5px',
+          padding: '7px 9px',
+          fontSize: '1.1rem',
+          margin: '5px 0px',
+        };
+        const attrbutes = {
+          type: 'text',
+          placeholder: 'Email address',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(hasAttributes(el, attrbutes)).to.equal(true);
+      });
+    });
+
+    describe('Loader', () => {
+      it('should provide Loader with default props', () => {
+        // Parent
+        const loader = fabricate('Loader');
+        const loaderStyles = {
+          display: 'flex',
+          flexDirection: 'column',
+          width: '48px',
+          height: '48px',
+        };
+
+        expect(hasStyles(loader, loaderStyles)).to.equal(true);
+
+        // Canvas
+        const canvas = loader.childNodes[0];
+        const canvasStyles = {
+          width: '48px',
+          height: '48px',
+          animation: 'spin 0.7s linear infinite',
+        };
+
+        expect(hasStyles(canvas, canvasStyles)).to.equal(true);
+      });
+
+      it('should provide Loader with custom props', () => {
+        // Parent
+        const loader = fabricate('Loader', {
+          size: 128,
+          lineWidth: 1,
+          color: 'green',
+        });
+        const loaderStyles = {
+          display: 'flex',
+          flexDirection: 'column',
+          width: '128px',
+          height: '128px',
+        };
+
+        expect(hasStyles(loader, loaderStyles)).to.equal(true);
+
+        // Canvas
+        const canvas = loader.childNodes[0];
+        const canvasStyles = {
+          width: '128px',
+          height: '128px',
+          animation: 'spin 0.7s linear infinite',
+        };
+
+        expect(hasStyles(canvas, canvasStyles)).to.equal(true);
+      });
+    });
+
+    describe('Card', () => {
+      it('should provide Card', () => {
+        const el = fabricate('Card');
+        const styles = { display: 'flex', flexDirection: 'column' };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+    });
+
+    describe('Fader', () => {
+      it('should provide Fader with default props', (done) => {
+        const el = fabricate('Fader');
+        const styles = {
+          opacity: '0',
+          transition: 'opacity 0.6s',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+
+        // Fades
+        setTimeout(() => {
+          expect(el.style.opacity).to.equal('1');
+          done();
+        }, 350);
+      });
+
+      it('should provide Fader with custom props', (done) => {
+        const el = fabricate('Fader', {
+          durationS: '1',
+          delayMs: 100,
+        });
+        const styles = {
+          opacity: '0',
+          transition: 'opacity 1s',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+
+        // Fades
+        setTimeout(() => {
+          expect(el.style.opacity).to.equal('1');
+          done();
+        }, 150);
+      });
+    });
+
+    describe('Pill', () => {
+      it('should provide Pill with default props', () => {
+        const el = fabricate('Pill');
+        const styles = {
+          display: 'flex',
+          flexDirection: 'column',
+          color: 'white',
+          backgroundColor: 'rgb(102, 102, 102)',
+          justifyContent: 'center',
+          borderRadius: '20px',
+          padding: '7px 8px 5px 8px',
+          margin: '5px',
+          cursor: 'pointer',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(el.innerText).to.equal('Pill');
+      });
+
+      it('should provide Pill with custom props', () => {
+        const el = fabricate('Pill', {
+          text: 'Example',
+          color: 'red',
+          backgroundColor: 'blue',
+          highlight: false,
+        });
+        const styles = {
+          display: 'flex',
+          flexDirection: 'column',
+          color: 'red',
+          backgroundColor: 'blue',
+          justifyContent: 'center',
+          borderRadius: '20px',
+          padding: '7px 8px 5px 8px',
+          margin: '5px',
+          cursor: 'pointer',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(el.innerText).to.equal('Example');
+      });
+
+      it('should provide Pill with highlight behavior', () => {
+        const el = fabricate('Pill');
+        const styles = {
+          display: 'flex',
+          flexDirection: 'column',
+          color: 'white',
+          backgroundColor: 'rgb(102, 102, 102)',
+          justifyContent: 'center',
+          borderRadius: '20px',
+          padding: '7px 8px 5px 8px',
+          margin: '5px',
+          cursor: 'pointer',
+          filter: 'brightness(1.2)',
+        };
+
+        // Hover
+        el.dispatchEvent(new CustomEvent('mouseenter'));
+        expect(hasStyles(el, styles)).to.equal(true);
+
+        // End hover
+        el.dispatchEvent(new CustomEvent('mouseleave'));
+        styles.filter = 'brightness(1)';
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+
+      it('should provide Pill with no highlight behavior', () => {
+        const el = fabricate('Pill', { highlight: false });
+        const styles = {
+          display: 'flex',
+          flexDirection: 'column',
+          color: 'white',
+          backgroundColor: 'rgb(102, 102, 102)',
+          justifyContent: 'center',
+          borderRadius: '20px',
+          padding: '7px 8px 5px 8px',
+          margin: '5px',
+          cursor: 'pointer',
+          filter: 'brightness(1)',
+        };
+
+        el.dispatchEvent(new CustomEvent('mouseenter'));
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+    });
+
+    describe('FabricateAttribution', () => {
+      it('should provide FabricateAttribution', () => {
+        const el = fabricate('FabricateAttribution');
+        const styles = {
+          width: '64px',
+          height: 'auto',
+          objectFit: 'cover',
+          cursor: 'pointer',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+    });
+
+    describe('Tabs', () => {
+      it('should provide Tabs', () => {
+        const tabStyles = {
+          color: 'white',
+          backgroundColor: 'green',
+        };
+        const tabs = fabricate('Tabs', {
+          tabs: {
+            Home: () => fabricate('Text').setText('Home tab'),
+            User: () => fabricate('Text').setText('User tab'),
+            Settings: () => fabricate('Text').setText('Settings tab'),
+          },
+          tabStyles,
+        });
+
+        // Correct names
+        const tabBar = tabs.childNodes[0];
+        expect(tabBar.childNodes[0].innerText).to.equal('Home');
+        expect(tabBar.childNodes[1].innerText).to.equal('User');
+        expect(tabBar.childNodes[2].innerText).to.equal('Settings');
+
+        // Custom styles
+        const selectedStyles = {
+          ...tabStyles,
+          filter: 'brightness(1)',
+          fontWeight: 'bold',
+        };
+        expect(hasStyles(tabBar.childNodes[0], selectedStyles)).to.equal(true);
+        const unselectedStyles = {
+          ...tabStyles,
+          filter: 'brightness(0.8)',
+        };
+        expect(hasStyles(tabBar.childNodes[1], unselectedStyles)).to.equal(true);
+      });
+
+      it('should provide Tabs with default styles', () => {
+        const tabs = fabricate('Tabs', {
+          tabs: {
+            Home: () => fabricate('Text').setText('Home tab'),
+            User: () => fabricate('Text').setText('User tab'),
+            Settings: () => fabricate('Text').setText('Settings tab'),
+          },
+        });
+
+        const tabBar = tabs.childNodes[0];
+
+        const styles = {
+          color: 'white',
+          backgroundColor: 'rgb(102, 102, 102)',
+        };
+        expect(hasStyles(tabBar.childNodes[0], styles)).to.equal(true);
+      });
+
+      it('should navigate Tabs', () => {
+        const tabs = fabricate('Tabs', {
+          tabs: {
+            Home: () => fabricate('Text').setText('Home tab'),
+            User: () => fabricate('Text').setText('User tab'),
+            Settings: () => fabricate('Text').setText('Settings tab'),
+          },
+        });
+
+        // Change tab
+        const tabBar = tabs.childNodes[0];
+        tabBar.childNodes[1].click();
+
+        const selectedStyles = {
+          filter: 'brightness(1)',
+          fontWeight: 'bold',
+        };
+        expect(hasStyles(tabBar.childNodes[1], selectedStyles)).to.equal(true);
+        const unselectedStyles = {
+          filter: 'brightness(0.8)',
+        };
+        expect(hasStyles(tabBar.childNodes[0], unselectedStyles)).to.equal(true);
+      });
+
+      it('should throw if missing tabs', () => {
+        expect(() => fabricate('Tabs')).to.throw("Invalid 'tabs' configuration");
+        expect(() => fabricate('Tabs', {})).to.throw("Invalid 'tabs' configuration");
+        expect(() => fabricate('Tabs', { tabs: {} })).to.throw("Invalid 'tabs' configuration");
+      });
+
+      it('should throw if tabs are invalid', () => {
+        expect(() => fabricate('Tabs', { tabs: { 0: 'my tab' } }))
+          .to.throw("Invalid 'tabs' configuration");
+      });
+    });
+
+    describe('Select', () => {
+      it('should provide Select with options', () => {
+        const select = fabricate('Select', {
+          options: [
+            { label: 'Apple', value: 'apple' },
+            { label: 'Orange', value: 'orange' },
+            { label: 'Lemon', value: 'lemon' },
+          ],
+        });
+
+        expect(select.childNodes[0].innerHTML).to.equal('Apple');
+        expect(select.childNodes[1].innerHTML).to.equal('Orange');
+        expect(select.childNodes[2].innerHTML).to.equal('Lemon');
+
+        const styles = {
+          padding: '5px',
+          fontSize: '1rem',
+          maxWidth: '400px',
+        };
+        expect(hasStyles(select, styles)).to.equal(true);
+      });
+
+      it('should provide throw with bad options', () => {
+        const Select = () => fabricate('Select', {
+          options: [
+            { label: 'Apple', value: 'apple' },
+            { label: 'Orange', value: 'orange' },
+            { label: 'Lemon' },
+          ],
+        });
+
+        expect(Select).to.throw('Invalid \'options\' configuration');
+      });
+
+      it('should provide throw with no options', () => {
+        const Select = () => fabricate('Select');
+
+        expect(Select).to.throw('Invalid \'options\' configuration');
+      });
     });
   });
 

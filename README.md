@@ -588,6 +588,8 @@ See `examples/components` for a page displaying all example components.
 * [`Fader`](#fader)
 * [`Pill`](#pill)
 * [`FabricateAttribution`](#fabricateattribution)
+* [`Tabs`](#tabs)
+* [`Select`](#select)
 
 #### `Row`
 
@@ -734,8 +736,8 @@ FabricateAttribution()
 
 Tab bar and tabs components which can be used for horizontal navigation
 between a number of different views. Tabs are specified as key name and a
-function that builds the view. Additional customisation of the tabs themselves
-is available.
+function that builds the view. Additional customisation of the tab bar and
+tabs themselves is available.
 
 ```js
 fabricate('Tabs', {
@@ -748,6 +750,21 @@ fabricate('Tabs', {
     color: 'white',
     backgroundColor: 'green',
   },
+  barStyles: { width: '400px' },
+})
+```
+
+#### `Select`
+
+Slightly styles select component that provides options.
+
+```js
+fabricate('Select', {
+  options: [
+    { label: 'Apple', value: 'apple' },
+    { label: 'Orange', value: 'orange' },
+    { label: 'Lemon', value: 'lemon' },
+  ],
 })
 ```
 
