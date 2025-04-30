@@ -271,7 +271,7 @@ const fabricate = (name, customProps) => {
    * @param {Array<HTMLElement>} children - Children to append inside.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.addChildren = (children) => {
+  el.addChildren = (children, label) => {
     // Original approach
     // children.forEach((child) => {
     //   // It's another element
@@ -316,7 +316,7 @@ const fabricate = (name, customProps) => {
       }, 10);
     };
 
-    console.warn(`Adding children in groups for performance (size=${children.length})`);
+    console.warn(`Adding children in groups for performance (size=${children.length}) label:${label}`);
     addNextGroup();
     return el;
   };
@@ -327,9 +327,9 @@ const fabricate = (name, customProps) => {
    * @param {Array<HTMLElement>} children - Children to append inside.
    * @returns {FabricateComponent} Fabricate component.
    */
-  el.setChildren = (children) => {
+  el.setChildren = (children, label) => {
     el.empty();
-    el.addChildren(children);
+    el.addChildren(children, label);
     return el;
   };
 

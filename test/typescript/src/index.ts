@@ -78,7 +78,7 @@ fabricate('div')
   .setChildren([
     fabricate('div'),
     fabricate.conditional((state) => state.counter > 0, () => fabricate('Text'))
-  ])
+  ], 'foo')
   .setHtml('<div/>')
   .setText('foo')
   .onClick((el, state) => console.log(state))

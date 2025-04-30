@@ -55,14 +55,14 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
    * @param {FabricateComponent[]} newChildren - New children to add.
    * @returns {FabricateComponent<StateShape>} This component.
    */
-  addChildren: (newChildren: FabricateComponent<StateShape>[]) => FabricateComponent<StateShape>;
+  addChildren: (newChildren: FabricateComponent<StateShape>[], label?: string) => FabricateComponent<StateShape>;
   /**
    * Set all child elements, removing any existing ones.
    *
    * @param {FabricateComponent[]} children - Children to append inside.
    * @returns {FabricateComponent<StateShape>} This component.
    */
-  setChildren: (children: FabricateComponent<StateShape>[]) => FabricateComponent<StateShape>;
+  setChildren: (children: FabricateComponent<StateShape>[], label?: string) => FabricateComponent<StateShape>;
   /**
    * Set element innerHtml.
    *
