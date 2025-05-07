@@ -15,11 +15,14 @@
 
       const Title = () => fabricate('h2');
 
+      // Some post with an update and destroy watchers
       const PostView = ({ title, subtitle }) => fabricate('Card')
         .setChildren([
           Title().setText(title),
           fabricate('Text').setText(subtitle),
-        ]);
+        ])
+        .onUpdate(() => {}, ['posts'])
+        .onDestroy(() => {});
 
       const ManyElementsTest = () => fabricate('Row')
         .setChildren([
@@ -44,7 +47,7 @@
             }),
           fabricate('Column')
             .onUpdate((el, { posts }) => {
-              console.log(posts)
+              console.log(posts);
               const now = Date.now();
               if (posts.length > 0) {
                 el.setChildren(posts.map(PostView));
@@ -64,6 +67,8 @@
 
       fabricate.app(App, {
         posts: [],
+      }, {
+        debugStateUpdates: true,
       });
     </script>
   </body>

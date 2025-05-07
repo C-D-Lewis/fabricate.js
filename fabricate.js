@@ -8,6 +8,7 @@ const _fabricate = {
   DEFAULT_OPTIONS: {
     logStateUpdates: false,
     persistState: undefined,
+    debugStateUpdates: false,
     theme: {
       palette: {},
       styles: {},
@@ -26,7 +27,6 @@ const _fabricate = {
   stateWatchers: [],
   customComponents: {},
   options: undefined,
-  onDestroyObserver: undefined,
   ignoreStrict: false,
   router: undefined,
   routeHistory: undefined,
@@ -62,7 +62,6 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  * @param {HTMLElement} el - Element being removed.
  */
 const _notifyRemovedRecursive = (el) => {
-  console.log(`el onDestroyHandlers: ${el.onDestroyHandlers && el.onDestroyHandlers.length} and child nodes: ${el.childNodes.length}`);
   if (el.onDestroyHandlers) el.onDestroyHandlers.forEach((p) => p());
 
   el.childNodes.forEach(_notifyRemovedRecursive);
@@ -387,11 +386,20 @@ const fabricate = (name, customProps) => {
       console.warn(`Removing a large number of children (${el.childElementCount}) - could impact performance`);
     }
 
+    const { options } = _fabricate;
+    if (options.debugStateUpdates) {
+      console.log(`debugStateWatchers: before empty() ${_fabricate.stateWatchers.length}`);
+    }
+
     // Method 2 - remove each child in turn
     while (el.firstElementChild) {
       // Avoid using MutationObserver - almost impossible to unit test with browser-env or jsdom
       _notifyRemovedRecursive(el.firstElementChild);
       el.firstElementChild.remove();
+    }
+
+    if (options.debugStateUpdates) {
+      console.log(`debugStateWatchers: after empty() ${_fabricate.stateWatchers.length}`);
     }
 
     // Alternative - remove all children in one go
@@ -631,14 +639,6 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
   // Build app
   const root = rootCb();
   document.body.appendChild(root);
-
-  // Power onDestroy() handlers
-  // if (!_fabricate.onDestroyObserver) {
-  //   _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
-  //     mutations.forEach((mutation) => mutation.removedNodes.forEach(_notifyRemovedRecursive));
-  //   });
-  //   _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
-  // }
 
   _notifyStateChange([_fabricate.StateKeys.Init]);
 };
