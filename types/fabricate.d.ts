@@ -212,6 +212,8 @@ export type FabricateOptions = {
   };
   /** Disable group children adding optimisation */
   disableGroupAddChildrenOptim?: boolean;
+  /** Log more information about state updates and state watchers */
+  debugStateUpdates?: boolean;
 }
 
 /** Fabricate.js library */
