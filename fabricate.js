@@ -59,11 +59,13 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 /**
  * Recursively check all children since only parent is reported.
  *
- * @param {HTMLElement} parent - Parent node.
+ * @param {HTMLElement} el - Element being removed.
  */
-const _notifyRemovedRecursive = (parent) => {
-  if (parent.onDestroyHandlers) parent.onDestroyHandlers.forEach((p) => p());
-  parent.childNodes.forEach(_notifyRemovedRecursive);
+const _notifyRemovedRecursive = (el) => {
+  console.log(`el onDestroyHandlers: ${el.onDestroyHandlers && el.onDestroyHandlers.length} and child nodes: ${el.childNodes.length}`);
+  if (el.onDestroyHandlers) el.onDestroyHandlers.forEach((p) => p());
+
+  el.childNodes.forEach(_notifyRemovedRecursive);
 };
 
 /**
@@ -269,6 +271,7 @@ const fabricate = (name, customProps) => {
    * Add new children in addition to any existing ones.
    *
    * @param {Array<HTMLElement>} children - Children to append inside.
+   * @param {string} label - Optional label for logging.
    * @returns {FabricateComponent} Fabricate component.
    */
   el.addChildren = (children, label) => {
@@ -325,6 +328,7 @@ const fabricate = (name, customProps) => {
    * Set all child elements, removing any existing ones.
    *
    * @param {Array<HTMLElement>} children - Children to append inside.
+   * @param {string} label - Optional label for logging.
    * @returns {FabricateComponent} Fabricate component.
    */
   el.setChildren = (children, label) => {
@@ -380,11 +384,17 @@ const fabricate = (name, customProps) => {
     // nextGroup();
 
     if (el.childElementCount > _fabricate.MANY_CHILDREN_GROUP_SIZE) {
-      console.warn(`Removing a large number of children - could impact performance (size=${el.childElementCount})`);
+      console.warn(`Removing a large number of children (${el.childElementCount}) - could impact performance`);
     }
 
-    while (el.firstElementChild) el.firstElementChild.remove();
+    // Method 2 - remove each child in turn
+    while (el.firstElementChild) {
+      // Avoid using MutationObserver - almost impossible to unit test with browser-env or jsdom
+      _notifyRemovedRecursive(el.firstElementChild);
+      el.firstElementChild.remove();
+    }
 
+    // Alternative - remove all children in one go
     // el.innerHTML = '';
     return el;
   };
@@ -623,12 +633,12 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
   document.body.appendChild(root);
 
   // Power onDestroy() handlers
-  if (!_fabricate.onDestroyObserver) {
-    _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => mutation.removedNodes.forEach(_notifyRemovedRecursive));
-    });
-    _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
-  }
+  // if (!_fabricate.onDestroyObserver) {
+  //   _fabricate.onDestroyObserver = new MutationObserver((mutations) => {
+  //     mutations.forEach((mutation) => mutation.removedNodes.forEach(_notifyRemovedRecursive));
+  //   });
+  //   _fabricate.onDestroyObserver.observe(root, { subtree: true, childList: true });
+  // }
 
   _notifyStateChange([_fabricate.StateKeys.Init]);
 };

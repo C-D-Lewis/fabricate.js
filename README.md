@@ -15,8 +15,8 @@ pre-prepared components to get started quickly.
 - [API](#api)
 - [Built-in components](#built-in-components)
 - [Run tests](#run-tests)
-- [Future](#future)
 
+> :warning: Run all test suites before a new release.
 
 ## Introduction
 
@@ -772,6 +772,14 @@ fabricate('Select', {
 
 Run unit tests:
 
+> Due to usage of browser-env (and it's hard to replace) use node <= 16
+
 ```
 npm test
 ```
+
+Check performance with `test/perf`.
+
+Check watchers are cleaned up with `test/watchers`.
+
+Check TypeScript types with `test/typescript`.

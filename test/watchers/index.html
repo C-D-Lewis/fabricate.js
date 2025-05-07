@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>fabricate.js watchers tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      * { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" src="../../fabricate.js"></script>
+
+    <script>
+      const Title = () => fabricate('h2');
+
+      const Test = ({
+        title,
+        testCb,
+        assertCb,
+      }) => fabricate('Column')
+        .setChildren([
+          fabricate('h3').setText(title),
+          fabricate('Button')
+            .setText('Run')
+            .onClick(async (el) => {
+              _fabricate.clearState();
+
+              await testCb();
+
+              if (assertCb()) {
+                el.setText('Passed');
+                el.setStyles({ backgroundColor: 'green' });
+              } else {
+                el.setText('Failed');
+                el.setStyles({ backgroundColor: 'red' });
+              }
+            }),
+        ]);
+
+      const shouldNotLeakStateWatchersTest = () => Test({
+        title: 'should not leak stateWatchers',
+        testCb: () => {
+          // Watches 'counter'
+          const Watcher = () => fabricate('Text')
+            .setText('Should see me only once')
+            .onUpdate(() => {}, ['counter']);
+
+          // When counter is updated, add a new watcher and remove the old one
+          const App = () => fabricate('div')
+            .onUpdate((el) => {
+              el.setChildren([Watcher()]);
+            }, ['counter']);
+
+          fabricate.app(App, { counter: 0 });
+
+          // Update counter twice, so one watchers should watch at a time
+          fabricate.update({ counter: 1 });
+          fabricate.update({ counter: 2 });
+          fabricate.update({ counter: 3 });
+          fabricate.update({ counter: 4 });
+          fabricate.update({ counter: 5 });
+        },
+        assertCb: () => {
+          // Only two watchers - the App and the most recent Watcher
+          return _fabricate.stateWatchers.length === 2;
+        },
+      });
+
+      const shouldDetectElementRemovalTest = () => {
+        let destoyed;
+
+        return Test({
+          title: 'should detect element removal',
+          testCb: () => {
+            const Child = () => fabricate('div').onDestroy(() => {
+              destoyed = true;
+            });
+
+            const parent = fabricate('div').setChildren([Child()]);
+
+            fabricate.app(() => parent, {});
+
+            parent.empty();
+          },
+          assertCb: () => {
+            // Should notify the child and not leave behind any watchers
+            return !!destoyed && _fabricate.stateWatchers.length === 0;
+          },
+        });
+      };
+
+      const shouldListenForOtherEventsTest = () => {
+        let loaded;
+
+        return Test({
+          title: 'should listen for other event types',
+          testCb: () => {
+            return new Promise((resolve) => {
+              const App = () => fabricate('Image', {
+                src: 'https://en.wikipedia.org/static/images/icons/wikipedia.png',
+              })
+                .onEvent('load', (el, state, event) => {
+                  console.log(event);
+                  loaded = true;
+                  resolve();
+                });
+
+              fabricate.app(App, {});
+            });
+          },
+          assertCb: () => {
+            // Should notify the image and not leave behind any watchers
+            return !!loaded && _fabricate.stateWatchers.length === 0;
+          },
+        });
+      };
+
+      const onUpdateAndConditionalShouldRemoveWatchersTest = () => {
+        let alertCreated;
+
+        return Test({
+          title: 'onUpdate and conditional should remove state watchers',
+          testCb: () => {
+            // Check .conditional() works
+            const Alert = () => fabricate('Alert')
+              .setText('Counter was not zero')
+              .onCreate(() => {
+                alertCreated = true;
+              });
+
+            const alertContainer = fabricate('div')
+              .setChildren([
+                fabricate.conditional(state => state.counter > 0, Alert),
+              ]);
+
+            const App = () => fabricate('div')
+              .onUpdate((el) => {}, ['counter'])
+              .setChildren([alertContainer]);
+
+            fabricate.app(App, { counter: 0 });
+
+            // Show alert, then hide it
+            fabricate.update({ counter: 1 });
+            fabricate.update({ counter: 0 });
+
+            // Remove the parent of the .conditional()
+            alertContainer.empty();
+          },
+          assertCb: () => {
+            // Should notify the child and only app should be watching
+            return alertCreated && _fabricate.stateWatchers.length === 1;
+          },
+        });
+      };
+
+      const App = () => fabricate('Column')
+        .setChildren([
+          Title().setText('State watchers tests'),
+          shouldNotLeakStateWatchersTest(),
+          shouldDetectElementRemovalTest(),
+          shouldListenForOtherEventsTest(),
+          onUpdateAndConditionalShouldRemoveWatchersTest(),
+        ]);
+
+      fabricate.app(App, {});
+    </script>
+  </body>
+</html>

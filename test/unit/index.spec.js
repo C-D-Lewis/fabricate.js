@@ -159,35 +159,14 @@ describe('fabricate.js', () => {
       expect(created).to.equal(true);
     });
 
-    // TODO Works in browser, but not in mocked tests
-    it('should detect element removal');
-    // () => {
-    //   let destoyed;
+    // onDestroy doesn't work in unit tests
+    it('should detect element removal (see test/watchers)');
 
-    //   const child = fabricate('div').onDestroy(() => {
-    //     destoyed = true;
-    //   });
+    // Events don't work in unit tests
+    it('should allow listening for other event types (see test/watchers');
 
-    //   const parent = fabricate('div').setChildren([child]);
-    //   parent.empty();
-
-    //   expect(destoyed).to.equal(true);
-    // });
-
-    // TODO Works in browser, but not in mocked tests
-    it('should allow listening for other Events');
-    // (done) => {
-    //   fabricate('Image', {
-    //     src: 'https://en.wikipedia.org/static/images/icons/wikipedia.png',
-    //   })
-    //     .onEvent('load', (el, state, event) => {
-    //       console.log({ event });
-    //       done();
-    //     });
-    // });
-
-    // TODO Test onUpdate and conditional() remove their state watchers
-    it('should remove used stateWatchers');
+    // onDestroy doesn't work in unit tests
+    it('onUpdate and conditional should remove used stateWatchers (see test/watchers)');
 
     it('should not create immediately when using conditional', () => {
       let created;
@@ -1329,30 +1308,8 @@ describe('fabricate.js', () => {
       expect(() => fabricate('div').displayWhen(() => true)).to.not.throw(Error);
     });
 
-    // TODO: onDestroy doesn't work in unit tests
-    it('should not leak stateWatchers');
-    // , () => {
-    //   let startCount = _fabricate.stateWatchers.length;
-
-    //   const Watcher = () => fabricate('div').onUpdate(() => {}, ['counter']);
-
-    //   const list = fabricate('div')
-    //     .onUpdate((el) => {
-    //       el.setChildren([Watcher()]);
-    //     }, ['counter']);
-
-    //   const App = () => list;
-    //   fabricate.app(App, { counter: 0 });
-
-    //   fabricate.update('counter', (prev) => prev.counter + 1);
-    //   console.log(_fabricate.stateWatchers.length);
-    //   fabricate.update('counter', (prev) => prev.counter + 1);
-    //   console.log(_fabricate.stateWatchers.length);
-    //   fabricate.update('counter', (prev) => prev.counter + 1);
-    //   console.log(_fabricate.stateWatchers.length);
-    //   fabricate.update('counter', (prev) => prev.counter + 1);
-    //   console.log(_fabricate.stateWatchers.length);
-    // });
+    // onDestroy doesn't work in unit tests
+    it('should not leak stateWatchers (see test/watchers)');
 
     it('should validate options', () => {
       const App = () => fabricate('div');
