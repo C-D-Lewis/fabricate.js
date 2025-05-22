@@ -153,6 +153,22 @@
         });
       };
 
+      const shouldNotAddWatchersIfNotUsedTest = () => {
+        let alertCreated;
+
+        return Test({
+          title: 'should not add watchers if not added to DOM',
+          testCb: () => {
+            // Create an element with a state watcher but do not add it to the DOM
+            const el = fabricate('span').onUpdate(() => {}, ['counter']);
+          },
+          assertCb: () => {
+            // Should not add any watchers
+            return _fabricate.stateWatchers.length === 0;
+          },
+        });
+      };
+
       const App = () => fabricate('Column')
         .setChildren([
           Title().setText('State watchers tests'),
@@ -160,6 +176,7 @@
           shouldDetectElementRemovalTest(),
           shouldListenForOtherEventsTest(),
           onUpdateAndConditionalShouldRemoveWatchersTest(),
+          shouldNotAddWatchersIfNotUsedTest(),
         ]);
 
       fabricate.app(App, {});

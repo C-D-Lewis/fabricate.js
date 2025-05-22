@@ -104,8 +104,8 @@ const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
  */
 const _unregisterStateWatcher = (el) => {
   const index = _fabricate.stateWatchers.findIndex((p) => p.el === el);
-  if (index < 0) {
-    console.warn('Failed to remove state watcher!');
+  if (index < 0 && _fabricate.options.debugStateUpdates) {
+    console.warn('Not removing state watcher - not found');
     console.warn(el);
     return;
   }
@@ -189,6 +189,20 @@ const _validateOptions = () => {
   }
 };
 
+/**
+ * If an element has stateWatchers, add them to the global list once it is added to the DOM.
+ * Prevents leaking them if the element is created but never used.
+ *
+ * @param {FabricateComponent} el - Element to check.
+ */
+const _applyStateWatchers = (el) => {
+  if (!el.stateWatchers.length) return;
+
+  el.stateWatchers.forEach((p) => _fabricate.stateWatchers.push(p));
+  // eslint-disable-next-line no-param-reassign
+  el.stateWatchers = [];
+};
+
 /// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
 /**
@@ -210,6 +224,7 @@ const fabricate = (name, customProps) => {
   // Set some additional data
   el.componentName = name;
   el.onDestroyHandlers = [];
+  el.stateWatchers = [];
 
   /**
    * Augment existing styles with new ones.
@@ -268,6 +283,7 @@ const fabricate = (name, customProps) => {
 
   /**
    * Add new children in addition to any existing ones.
+   * If the children have stateWatchers, add them to the global list.
    *
    * @param {Array<HTMLElement>} children - Children to append inside.
    * @param {string} label - Optional label for logging.
@@ -291,16 +307,28 @@ const fabricate = (name, customProps) => {
     // children.forEach((c) => fragment.appendChild(c));
     // el.appendChild(fragment);
 
+    /**
+     * Add children to the element, applying state watchers.
+     *
+     * @param {Array<HTMLElement>} arr - Children to append.
+     */
+    const addChildrenToElement = (arr) => {
+      arr.forEach((p) => {
+        _applyStateWatchers(p);
+        el.appendChild(p);
+      });
+    };
+
     // Allow disabling the below optimisation, though not recommended
     const { disableGroupAddChildrenOptim } = _fabricate.options;
     if (disableGroupAddChildrenOptim) {
       console.warn('disableGroupAddChildrenOptim enabled, may impact performance.');
-      children.forEach((child) => el.appendChild(child));
+      addChildrenToElement(children);
       return el;
     }
 
     if (children.length < _fabricate.MANY_CHILDREN_GROUP_SIZE) {
-      children.forEach((child) => el.appendChild(child));
+      addChildrenToElement(children);
       return el;
     }
 
@@ -313,7 +341,7 @@ const fabricate = (name, customProps) => {
       if (!children.length) return;
 
       setTimeout(() => {
-        children.splice(0, 50).forEach((p) => el.appendChild(p));
+        addChildrenToElement(children.splice(0, 50));
         addNextGroup();
       }, 10);
     };
@@ -462,7 +490,7 @@ const fabricate = (name, customProps) => {
       throw new Error('A watchKeys option must be provided');
     }
 
-    _fabricate.stateWatchers.push({ el, cb, watchKeys });
+    el.stateWatchers.push({ el, cb, watchKeys });
     el.onDestroy(_unregisterStateWatcher);
 
     if (watchKeys.includes(_fabricate.StateKeys.Created)) {
@@ -638,6 +666,7 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
 
   // Build app
   const root = rootCb();
+  _applyStateWatchers(root);
   document.body.appendChild(root);
 
   _notifyStateChange([_fabricate.StateKeys.Init]);
@@ -697,6 +726,7 @@ fabricate.conditional = (testCb, builderCb) => {
     }
   };
 
+  // Edge case: Assume conditional is always used straight away
   _fabricate.stateWatchers.push({
     el: wrapper,
     cb: onStateUpdate,
