@@ -161,6 +161,9 @@
           testCb: () => {
             // Create an element with a state watcher but do not add it to the DOM
             const el = fabricate('span').onUpdate(() => {}, ['counter']);
+
+            // Use conditional to create a watcher that is not added to the DOM
+            fabricate.conditional(() => false, () => fabricate('span').onUpdate(() => {}, ['counter']));
           },
           assertCb: () => {
             // Should not add any watchers
@@ -177,6 +180,7 @@
           shouldListenForOtherEventsTest(),
           onUpdateAndConditionalShouldRemoveWatchersTest(),
           shouldNotAddWatchersIfNotUsedTest(),
+
         ]);
 
       fabricate.app(App, {});

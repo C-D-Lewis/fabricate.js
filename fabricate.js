@@ -720,14 +720,16 @@ fabricate.conditional = (testCb, builderCb) => {
 
     lastResult = newResult;
     if (newResult) {
-      wrapper.setChildren([builderCb()]);
+      const child = builderCb();
+      _applyStateWatchers(child);
+      wrapper.setChildren([child]);
     } else {
       wrapper.empty();
     }
   };
 
   // Edge case: Assume conditional is always used straight away
-  _fabricate.stateWatchers.push({
+  wrapper.stateWatchers.push({
     el: wrapper,
     cb: onStateUpdate,
   });
