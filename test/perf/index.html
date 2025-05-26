@@ -12,64 +12,61 @@
 
     <script>
       const NUM_POSTS = 10000;
+      let addStart;
 
       const Title = () => fabricate('h2');
 
       // Some post with an update and destroy watchers
-      const PostView = ({ title, subtitle }) => fabricate('Card')
-        .setChildren([
-          Title().setText(title),
-          fabricate('Text').setText(subtitle),
-        ])
-        .onUpdate(() => {}, ['posts'])
-        .onDestroy(() => {});
+      const CardItem = () => fabricate('Card')
+        .setStyles({ margin: '1px'})
+        .setAttributes({ id: 'CardItem' })
+        .onUpdate(() => {}, ['count'])
+        .onDestroy(() => {})
+        .setText('*');
 
-      const ManyElementsTest = () => fabricate('Row')
+      const ManyElementsTest = () => fabricate('Column')
         .setChildren([
-          fabricate('Text')
-            .onUpdate((el, { posts }) => {
-              el.setText(`${posts.length} posts`);
-            }, ['posts']),
+          fabricate('Text').setAttributes({ id: 'Text-counter' }),
           fabricate('Button')
             .setText('Remove')
-            .onClick(() => fabricate.update({ posts: [] })),
+            .onClick(() => fabricate.update({ count: 0 })),
           fabricate('Button')
             .setText('Add')
-            .onClick(() => {
-              const posts = [];
-              while (posts.length < NUM_POSTS) {
-                posts.push({
-                  title: `Post ${posts.length}`,
-                  subtitle: 'This is example text for the post',
-                });
-              }
-              fabricate.update({ posts });
-            }),
-          fabricate('Column')
-            .onUpdate((el, { posts }) => {
-              console.log(posts);
+            .onClick(() => fabricate.update({ count: NUM_POSTS })),
+          fabricate('Row')
+            .setStyles({ flexWrap: 'wrap' })
+            .onUpdate((el, { count }) => {
               const now = Date.now();
-              if (posts.length > 0) {
-                el.setChildren(posts.map(PostView));
-              } else {
-                el.setChildren([]);
-              }
-              console.log(`Updated in ${Date.now() - now}ms`);
-            }, ['posts']),
+              const children = [];
+              for (let i = 0; i < count; i++) children.push(CardItem());
+
+              addStart = Date.now();
+              el.setChildren(children);
+              console.log(`Updated handled in ${Date.now() - now}ms`);
+            }, ['count']),
         ]);
 
       const App = () => fabricate('Column')
         .setChildren([
           Title().setText('Performance tests'),
-          Title().setText('Many posts'),
+          Title().setText('Many items'),
           ManyElementsTest(),
         ]);
 
-      fabricate.app(App, {
-        posts: [],
-      }, {
-        debugStateUpdates: true,
-      });
+      fabricate.app(App, { count: 0 }, { debugStateUpdates: true });
+
+      // Live monitor actual added groups
+      let handle = setInterval(() => {
+        const view = document.getElementById('Text-counter');
+        const found = document.querySelectorAll('#CardItem').length;
+        view.setText(`Count: ${found}`);
+
+        if (found === NUM_POSTS) {
+          const elapsed = Date.now() - addStart;
+          console.log(`Added ${NUM_POSTS} items in ${elapsed}ms`);
+          clearInterval(handle);
+        }
+      }, 100);
     </script>
   </body>
 </html>
