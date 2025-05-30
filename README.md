@@ -112,6 +112,8 @@ type AppState = {
 
 // Required when global is declared with <script> import
 declare const fabricate: Fabricate<AppState>;
+// Also declare simple builder if required
+declare const fab: Fabricate<AppState>;
 ```
 
 
@@ -150,10 +152,24 @@ The API is split into two sections - component construction and app helpers.
 To create a component, simply specify the tag or declared component name:
 
 ```js
-const EmptyDivComponent = () => fabricate('div');
+const VerySimplePage = () => fabricate('h1')
+  .setStyles({ color: 'red' })
+  .setText('This is the title!')
+  .setChildren([
+    fabricate('p').setText('This is the body!'),
+  ]);
 ```
 
-> The shorter convenience alias `fab` is also available.
+The shorter convenience alias `fab` is also available for very simple HTML
+components. It accepts the tag name, styles, and children as optional:
+
+```js
+const VerySimplePage = () => fab('h1',
+  { color: 'red' },
+  [fab('p').setText('This is the body!')],
+)
+  .setText('This is the title!'),
+```
 
 #### `.asFlex()`
 
@@ -383,20 +399,23 @@ Use `app()` to start an app from the `document.body`. You can also specify an
 initial state and some extra options.
 
 ```js
-const App = () => fab('Column').setChildren([
-  fabricate('NavBar', { title: 'My New App' }),
-  MainContent().setChildren([
-    HeroImage(),
-    Title(),
-    Article(),
-  ]),
-]);
+const App = () => fabricate('Column')
+  .setChildren([
+    fabricate('NavBar', { title: 'My New App' }),
+    MainContent()
+      .setChildren([
+        HeroImage(),
+        Title(),
+        Article(),
+      ]),
+  ]);
 
 const initialState = {
-  article: {
+  currentArticle: {
     title: 'Using fabricate.js in web apps',
     description: 'Lorem ipsum...',
   },
+  readingList: [],
 };
 
 // Log all state updates, and persist 'readingList' state across reloads
@@ -454,11 +473,11 @@ and to update components when those states change. A list of keys to watch
 must be provided.
 
 ```js
-// View can watch some state - specifically, 'state.counter' and initial update
+// View can watch some state - specifically, 'state.counter'
 const App = () => fabricate('Text')
   .onUpdate(
-    (el, state, key) => el.setText(state.counter),
-    [fabricate.StateKeys.Init, 'counter'],
+    (el, state, keys) => el.setText(state.counter),
+    ['counter'],
   );
 
 // Initialise first state
@@ -468,19 +487,17 @@ fabricate.app(App, { counter: 0 });
 There are three ways to update state:
 
 ```js
-// Update the state using the previous state
-setInterval(() => {
-  fabricate.update('counter', prev => prev.counter + 1);
-}, 1000);
+// As a state slice
+fabricate.update({ counter: 0 });
+
+// Using the previous state
+fabricate.update('counter', prev => prev.counter + 1);
 
 // Or just the new data
 fabricate.update('counter', 0);
-
-// Or as a state slice
-fabricate.update({ counter: 0 });
 ```
 
-There are some special events that can be used:
+There are some special event keys that can be used:
 
 * `fabricate.StateKeys.Init` - Called when the application is first run.
 * `fabricate.StateKeys.Created` - Called for a particular component when it is first created.

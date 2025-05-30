@@ -1164,8 +1164,24 @@ fabricate.declare('Select', ({ options = [] } = {}) => {
 
 /// //////////////////////////////// Convenience alias / constants /////////////////////////////////
 
-// Convenient alternative
-window.fab = fabricate;
+/**
+ * Convenient alias for fabricate() function for simple components.
+ *
+ * @param {string} name - HTML tag name, such as 'div', or declared custom component name.
+ * @param {object} [styles] - Styles to apply to the element.
+ * @param {Array<HTMLElement>} [children] - Children to append inside.
+ * @returns {FabricateComponent} Fabricate component.
+ */
+const fab = (name, styles, children) => {
+  const el = fabricate(name);
+
+  if (styles) el.setStyles(styles);
+  if (children) el.setChildren(children);
+
+  return el;
+};
+
+window.fab = fab;
 
 fabricate.StateKeys = Object.freeze({ ..._fabricate.StateKeys });
 
@@ -1183,5 +1199,6 @@ if (typeof module !== 'undefined') {
   module.exports = {
     fabricate,
     _fabricate,
+    fab,
   };
 }

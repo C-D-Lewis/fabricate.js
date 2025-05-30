@@ -219,13 +219,23 @@ export type FabricateOptions = {
 /** Fabricate.js library */
 export type Fabricate<StateShape> = {
   /**
-   * Main component builder, using component name or HTML tag name.
+   * fabricate() - Main component builder, using component name or HTML tag name.
    *
    * @param {string} componentName - Component or HTML tag name.
    * @param {object} props - Component props.
    * @returns {FabricateComponent<StateShape>} New component.
    */
   (componentName: string, props?: object): FabricateComponent<StateShape>;
+
+  /**
+   * fab() - Simple builder for a component with styles and children.
+   *
+   * @param {string} componentName - Component or HTML tag name.
+   * @param {Partial<CSSStyleDeclaration>} [styles] - Optional styles to apply.
+   * @param {FabricateComponent<StateShape>[]} [children] - Optional children to append.
+   * @returns {FabricateComponent<StateShape>} New component.
+   */
+  (componentName: string, styles?: Partial<CSSStyleDeclaration>, children?: FabricateComponent<StateShape>[]): FabricateComponent<StateShape>;
 
   // Constants
   StateKeys: {

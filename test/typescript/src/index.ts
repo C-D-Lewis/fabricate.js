@@ -1,6 +1,7 @@
 import { Fabricate, FabricateComponent, FabricateOptions } from "../../../types/fabricate";
 
 declare const fabricate: Fabricate<AppState>;
+declare const fab: Fabricate<AppState>;
 
 ///////////////////////////////////////// Example app build ////////////////////////////////////////
 
@@ -22,6 +23,11 @@ const TestPage = () => fabricate('Column')
       .onUpdate((el, { counter }) => {
         el.setText(`Counted to ${counter}`);
       }, ['counter']),
+    
+    // Simple builder
+    fab('div', { color: 'red' }, [
+      fab('Text').setText('This is a test div'),
+    ]),
   ]);
 
 /**

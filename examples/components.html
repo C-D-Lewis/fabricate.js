@@ -11,48 +11,49 @@
     <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const Title = () => fab('Text').setStyles({ fontSize: '2rem', marginTop: '30px' });
+      const Title = () => fabricate('Text').setStyles({ fontSize: '2rem', marginTop: '30px' });
 
-      const App = () => fab('Column')
+      const App = () => fabricate('Column')
         .setChildren([
           Title().setText('Text'),
-          fab('Text').setText('This is some example text to show the Text component.'),
+          fabricate('Text').setText('This is some example text to show the Text component.'),
 
           Title().setText('Image'),
-          fab('Image', { src: './assets/account.png' })
+          fabricate('Image', { src: './assets/account.png' })
             .setStyles({ width: '64px', height: '64px' })
             .onEvent('load', (el, state, event) => console.log(event)),
 
           Title().setText('Button'),
-          fab('Button', { text: 'Confirm', backgroundColor: 'royalblue' }),
+          fabricate('Button', { text: 'Confirm', backgroundColor: 'royalblue' }),
 
           Title().setText('NavBar'),
-          fab('NavBar', { title: 'Example NavBar Title' }),
+          fabricate('NavBar', { title: 'Example NavBar Title' }),
 
           Title().setText('TextInput'),
-          fab('TextInput', { placeholder: 'Enter text here' }),
+          fabricate('TextInput', { placeholder: 'Enter text here' }),
 
           Title().setText('Loader'),
-          fab('Loader'),
+          fabricate('Loader'),
 
           Title().setText('Card'),
-          fab('Card')
+          fabricate('Card')
             .setStyles({ padding: '10px' })
             .setChildren([
-              fab('Text').setText('Some text inside the card'),
+              fabricate('Text').setText('Some text inside the card'),
             ]),
 
           Title().setText('Pill'),
-          fab('Pill', { text: 'Example Pill' }),
+          fabricate('Pill', { text: 'Example Pill' }),
 
           Title().setText('Fader'),
           fabricate.conditional(
             (state) => state.showFader,
-            () => fab('Column').setStyles({ height: '50px' })
+            () => fabricate('Column')
+              .setStyles({ height: '50px' })
               .setChildren([
-                fab('Fader')
+                fabricate('Fader')
                   .setChildren([
-                    fab('Text').setText('Text fades in'),
+                    fabricate('Text').setText('Text fades in'),
                   ]),
               ]),
           )
@@ -87,7 +88,7 @@
 
       fabricate.app(App, { showFader: false });
 
-      setInterval(() => fab.update('showFader', prev => !prev.showFader), 1000);
+      setInterval(() => fabricate.update('showFader', prev => !prev.showFader), 1000);
     </script>
   </body>
 </html>

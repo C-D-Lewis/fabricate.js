@@ -8,20 +8,20 @@
     </style>
   </head>
   <body>
-    <script type="text/javascript" src="../../fabricate.js"></script>
+    <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const CounterView = () => fab('Text').setText('counter now 0')
+      const CounterView = () => fabricate('Text').setText('counter now 0')
         .setStyles({ fontSize: '2rem' })
         .onUpdate((el, state) => el.setText(`counter now ${state.counter}`), ['counter']);
 
-      const App = () => fab('Column')
+      const App = () => fabricate('Column')
         .setStyles({ padding: '10px' })
         .setChildren([
-          fab('Text').setText('The counter below counts button clicks:'),
+          fabricate('Text').setText('The counter below counts button clicks:'),
           CounterView(),
-          fab('Button', { text: 'Increment' })
-            .onClick(() => fab.update('counter', state => state.counter + 1)),
+          fabricate('Button', { text: 'Increment' })
+            .onClick(() => fabricate.update('counter', state => state.counter + 1)),
         ]);
 
       // Use as the root app element

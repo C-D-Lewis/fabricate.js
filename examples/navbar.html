@@ -9,25 +9,25 @@
     </style>
   </head>
   <body>
-    <script type="text/javascript" src="../../fabricate.js"></script>
+    <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const Content = () => fab('Column')
+      const Content = () => fabricate('Column')
         .setStyles({ padding: '15px' })
         .setChildren([
-          fab('Text')
-            .setText(`Your device appears to be a ${fab.isNarrow() ? 'mobile' : 'desktop'} device.`),
+          fabricate('Text')
+            .setText(`Your device appears to be a ${fabricate.isNarrow() ? 'mobile' : 'desktop'} device.`),
 
-          fab('TextInput', { placeholder: 'Enter your name' })
+          fabricate('TextInput', { placeholder: 'Enter your name' })
             .setStyles({ marginLeft: '5px', marginTop: '20px' })
-            .onChange((el, state, newValue) => fab.update({ name: newValue })),
-          fab('Button', { text: 'Submit'})
+            .onChange((el, state, newValue) => fabricate.update({ name: newValue })),
+          fabricate('Button', { text: 'Submit'})
             .onClick((el, state) => alert(`Thank you for clicking me, ${state.name}`)),
 
-          fab('Text').setText('An image component is shown below inside a card:')
+          fabricate('Text').setText('An image component is shown below inside a card:')
             .setStyles({ marginTop: '20px' }),
-          fab('Card').setChildren([
-            fab('Image', { src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png' })
+          fabricate('Card').setChildren([
+            fabricate('Image', { src: 'https://en.wikipedia.org/static/images/project-logos/enwiki.png' })
               .setStyles({
                 margin: '10px',
                 width: '135px',
@@ -35,14 +35,21 @@
               }),
           ]),
 
-          fab('Text').setText('Some pills are also shown below:')
+          fabricate('Text')
+            .setText('Some pills are also shown below:')
             .setStyles({ marginTop: '20px' }),
-          fab('Row').setChildren(['red', 'green', 'blue'].map(p => fab('Pill', { text: p }))),
+          fabricate('Row')
+            .setChildren(
+              ['red', 'green', 'blue'].map(
+                p => fabricate('Pill', { text: p }).setStyles({ backgroundColor: p }),
+              )
+            ),
         ]);
 
-      const App = () => fab('Column')
+      const App = () => fabricate('Column')
         .setChildren([
-          fab('NavBar', { title: 'Fabricate example app' }).addChildren([fab('Button', { text: 'Home' })]),
+          fabricate('NavBar', { title: 'Fabricate example app' })
+            .addChildren([fabricate('Button', { text: 'Home' })]),
           Content(),
         ]);
 

@@ -6,7 +6,7 @@ const browserEnv = require('browser-env');
 browserEnv({ url: 'http://localhost' });
 
 const { expect } = require('chai');
-const { fabricate, _fabricate } = require('../../fabricate');
+const { fabricate, _fabricate, fab } = require('../../fabricate');
 const { hasStyles, hasAttributes, mockIsNarrow } = require('../util');
 
 describe('fabricate.js', () => {
@@ -1342,6 +1342,12 @@ describe('fabricate.js', () => {
   describe('Other exports', () => {
     it('should have fab convenience alias', () => {
       expect(window.fab).to.be.a('function');
+
+      const el = fab('div', { color: 'red' }, [fab('div')]);
+      expect(el.tagName).to.equal('DIV');
+      expect(el.style.color).to.equal('red');
+      expect(el.childElementCount).to.equal(1);
+      expect(el.childNodes[0].tagName).to.equal('DIV');
     });
 
     it('should export StateKeys', () => {

@@ -8,13 +8,13 @@
     </style>
   </head>
   <body>
-    <script type="text/javascript" src="../../fabricate.js"></script>
+    <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
       const App = () => fabricate('div')
         .setStyles({ padding: '10px' })
         .setChildren([
-          fab('Text').setText('Hello, world!'),
+          fabricate('Text').setText('Hello, world!'),
         ]);
 
       // Use as the root app element
