@@ -197,8 +197,6 @@ export interface FabricateComponent<StateShape> extends HTMLElement {
 
 /** Options for fabricate.js behavior */
 export type FabricateOptions = {
-  /** Log all state changes in console */
-  logStateUpdates?: boolean;
   /** Persist some state keys in localStorage */
   persistState?: string[] | undefined;
   /** Custom theme provided in setStyles */
@@ -213,7 +211,7 @@ export type FabricateOptions = {
   /** Disable group children adding optimisation */
   disableGroupAddChildrenOptim?: boolean;
   /** Log more information about state updates and state watchers */
-  debugStateUpdates?: boolean;
+  debug?: boolean;
 }
 
 /** Fabricate.js library */

@@ -1290,8 +1290,8 @@ describe('fabricate.js', () => {
   });
 
   describe('Options', () => {
-    it('should allow logging of state updates', () => {
-      fabricate.app(() => fabricate('div'), {}, { logStateUpdates: true });
+    it('should allow debugging of state updates', () => {
+      fabricate.app(() => fabricate('div'), {}, { debug: true });
     });
 
     it('should persist certain state', async () => {
@@ -1330,9 +1330,10 @@ describe('fabricate.js', () => {
     it('should validate options', () => {
       const App = () => fabricate('div');
 
-      expect(() => fabricate.app(App, {}, { logStateUpdates: 'false' }))
-        .to.throw('logStateUpdates option must be boolean, was string');
-      expect(() => fabricate.app(App, {}, { logStateUpdates: true })).to.not.throw(Error);
+      expect(() => fabricate.app(App, {}, { debug: true })).to.not.throw(Error);
+
+      expect(() => fabricate.app(App, {}, { logStateUpdates: true }))
+        .to.throw('logStateUpdates option is deprecated, use debug instead');
 
       expect(() => fabricate.app(App, {}, { persistState: 'counter' }))
         .to.throw('persistState option must be string array, was string');

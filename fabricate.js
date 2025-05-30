@@ -6,13 +6,13 @@ const _fabricate = {
   STORAGE_KEY_STATE: '_fabricate:state',
   /** Default options */
   DEFAULT_OPTIONS: {
-    logStateUpdates: false,
     persistState: undefined,
-    debugStateUpdates: false,
+    debug: false,
     theme: {
       palette: {},
       styles: {},
     },
+    disableGroupAddChildrenOptim: false,
   },
   /** Minimum children before groups are added with timeout */
   MANY_CHILDREN_GROUP_SIZE: 50,
@@ -30,6 +30,7 @@ const _fabricate = {
   ignoreStrict: false,
   router: undefined,
   routeHistory: undefined,
+  currentUpdateKeys: [],
 
   // Internal helpers
   /**
@@ -37,7 +38,7 @@ const _fabricate = {
    *
    * @returns {object} The copy.
    */
-  getStateCopy: () => Object.freeze({ ..._fabricate.state }),
+  getStateCopy: () => ({ ..._fabricate.state }),
   /**
    * Clear library state.
    */
@@ -104,7 +105,7 @@ const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
  */
 const _unregisterStateWatcher = (el) => {
   const index = _fabricate.stateWatchers.findIndex((p) => p.el === el);
-  if (index < 0 && _fabricate.options.debugStateUpdates) {
+  if (index < 0 && _fabricate.options.debug) {
     console.warn('Not removing state watcher - not found');
     console.warn(el);
     return;
@@ -148,9 +149,12 @@ const _loadPersistState = () => {
  */
 const _notifyStateChange = (keys) => {
   const { stateWatchers, state, options } = _fabricate;
+  const { persistState, debug } = options;
 
-  if (options.logStateUpdates) { console.log(`fabricate state update: keys=${keys.join(',')} watchers=${stateWatchers.length} state=${JSON.stringify(state)}`); }
-  if (options.persistState) _savePersistState();
+  const updateStart = performance.now();
+  if (persistState) _savePersistState();
+
+  _fabricate.currentUpdateKeys = keys;
 
   stateWatchers.forEach(({ el, cb, watchKeys }) => {
     // If watchKeys is used, filter state updates
@@ -159,6 +163,12 @@ const _notifyStateChange = (keys) => {
     // Notify the watching component
     cb(el, _fabricate.getStateCopy(), keys);
   });
+  const msTaken = performance.now() - updateStart;
+  if (debug) {
+    console.log(`debug: update keys=${keys.join(',')} time=${msTaken}ms watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
+  }
+
+  _fabricate.currentUpdateKeys = [];
 };
 
 /**
@@ -166,11 +176,14 @@ const _notifyStateChange = (keys) => {
  */
 const _validateOptions = () => {
   const {
-    logStateUpdates, persistState, theme, disableGroupAddChildrenOptim,
+    logStateUpdates, persistState, theme, disableGroupAddChildrenOptim, debug,
   } = _fabricate.options;
 
-  if (logStateUpdates && typeof logStateUpdates !== 'boolean') {
-    throw new Error(`logStateUpdates option must be boolean, was ${typeof logStateUpdates}`);
+  if (logStateUpdates) {
+    throw new Error('logStateUpdates option is deprecated, use debug instead');
+  }
+  if (debug && typeof debug !== 'boolean') {
+    throw new Error(`debug option must be boolean, was ${typeof debug}`);
   }
   if (persistState && !Array.isArray(persistState)) {
     throw new Error(`persistState option must be string array, was ${typeof persistState}`);
@@ -392,6 +405,12 @@ const fabricate = (name, customProps) => {
    * @returns {FabricateComponent} Fabricate component.
    */
   el.empty = () => {
+    // No children to remove
+    if (!el.firstElementChild) return el;
+
+    const { MANY_CHILDREN_GROUP_SIZE, options } = _fabricate;
+    const { debug } = options;
+
     // TODO: Need a faster way to remove many in one go
     //       Or, apps could just not build such large lists?
 
@@ -410,24 +429,19 @@ const fabricate = (name, customProps) => {
     // };
     // nextGroup();
 
-    if (el.childElementCount > _fabricate.MANY_CHILDREN_GROUP_SIZE) {
+    if (el.childElementCount > MANY_CHILDREN_GROUP_SIZE) {
       console.warn(`Removing a large number of children (${el.childElementCount}) - could impact performance`);
     }
 
-    const { options } = _fabricate;
-    if (options.debugStateUpdates) {
-      console.log(`debugStateWatchers: before empty() ${_fabricate.stateWatchers.length}`);
-    }
-
     // Method 2 - remove each child in turn
+    const start = performance.now();
     while (el.firstElementChild) {
       // Avoid using MutationObserver - almost impossible to unit test with browser-env or jsdom
       _notifyRemovedRecursive(el.firstElementChild);
       el.firstElementChild.remove();
     }
-
-    if (options.debugStateUpdates) {
-      console.log(`debugStateWatchers: after empty() ${_fabricate.stateWatchers.length}`);
+    if (debug) {
+      console.log(`debug: empty() of ${el.componentName} took ${performance.now() - start}ms`);
     }
 
     // Alternative - remove all children in one go
@@ -583,11 +597,17 @@ const fabricate = (name, customProps) => {
  * @param {Function|object|undefined} param2 - Keyed value or update function getting old state.
  */
 fabricate.update = (param1, param2) => {
-  const { state } = _fabricate;
+  const { state, options } = _fabricate;
+  const { debug } = options;
 
   if (!param1) throw new Error('No update data provided');
 
   const keys = typeof param1 === 'object' ? Object.keys(param1) : [param1];
+
+  const { currentUpdateKeys } = _fabricate;
+  if (currentUpdateKeys.length && debug) {
+    console.warn(`debug: Update while updating ${currentUpdateKeys.join(',')}: ${JSON.stringify(param1)}`);
+  }
 
   // Only allow known state key updates
   keys

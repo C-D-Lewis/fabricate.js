@@ -48,8 +48,7 @@ setTimeout(() => {
 
 const initialState = { counter: 0, updated: false };
 const options: FabricateOptions = {
-  logStateUpdates: true,
-  debugStateUpdates: true,
+  debug: true,
   persistState: ['counter'],
   theme: {
     palette: {

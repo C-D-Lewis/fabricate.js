@@ -7,7 +7,8 @@
   "scripts": {
     "test": "nyc mocha test/unit/** --timeout 10000",
     "start": "http-server",
-    "prepublishOnly": "npm run test"
+    "test:ts": "cd test/typescript && npm run build",
+    "prepublishOnly": "npm run test && npm run test:ts"
   },
   "repository": {
     "type": "git",

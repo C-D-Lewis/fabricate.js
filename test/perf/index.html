@@ -36,13 +36,11 @@
           fabricate('Row')
             .setStyles({ flexWrap: 'wrap' })
             .onUpdate((el, { count }) => {
-              const now = Date.now();
               const children = [];
               for (let i = 0; i < count; i++) children.push(CardItem());
 
               addStart = Date.now();
               el.setChildren(children);
-              console.log(`Updated handled in ${Date.now() - now}ms`);
             }, ['count']),
         ]);
 
@@ -53,7 +51,13 @@
           ManyElementsTest(),
         ]);
 
-      fabricate.app(App, { count: 0 }, { debugStateUpdates: true });
+      fabricate.app(App,
+        { count: 0 },
+        { 
+          debug: true,
+          // disableGroupAddChildrenOptim: true,
+        },
+      );
 
       // Live monitor actual added groups
       let handle = setInterval(() => {

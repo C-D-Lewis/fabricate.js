@@ -418,10 +418,16 @@ const initialState = {
   readingList: [],
 };
 
-// Log all state updates, and persist 'readingList' state across reloads
+// Log all state updates, declare a theme, and persist 'readingList' state across reloads
 const options = {
-  logStateUpdates: true,
   persistState: ['readingList'],
+  debug: true,
+  theme: {
+    palette: {
+      text: 'white',
+      background: 'lightgrey',
+    },
+  }
 };
 
 fabricate.app(App, initialState, options);
@@ -431,9 +437,10 @@ The options available are:
 
 | Name | Type | Description |
 |------|------|-------------|
-| `logStateUpdates` | `boolean` | Log all state updates in the console. |
-| `persistState` | `Array<string>` | List of state keys to persist values in LocalStorage. |
-| `theme` | `{ palette, styles }` | Provide a palette and common styles for use in `setStyles` |
+| `debug` | `boolean` | Log more info about state updates in the console. |
+| `persistState` | `Array<string>` | List of state keys to persist values in `LocalStorage`. |
+| `theme` | `{ palette, styles }` | Provide a palette and common styles for use in `setStyles`. |
+| `disableGroupAddChildrenOptim` | `boolean` | Disable adding many children in groups optimisation. |
 
 #### `.declare()`
 
