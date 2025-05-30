@@ -343,4 +343,10 @@ export type Fabricate<StateShape> = {
    * @returns {Array<string>} Router route history, if any.
    */
   getRouteHistory: () => string[],
+  /**
+   * Get the current route, if any.
+   *
+   * @returns {string} Current route.
+   */
+  getRoute: () => string,
 };

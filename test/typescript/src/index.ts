@@ -43,6 +43,7 @@ setTimeout(() => {
   fabricate.navigate('/other');
   fabricate.goBack();
   console.log(fabricate.getRouteHistory());
+  console.log(fabricate.getRoute());
 }, 1000);
 
 const initialState = { counter: 0, updated: false };

@@ -659,6 +659,22 @@ describe('fabricate.js', () => {
 
       expect(fabricate.getRouteHistory()).to.deep.equal(['/', '/test']);
     });
+
+    it('should provide current route', () => {
+      const App = () => fabricate.router({
+        '/': () => fabricate('div'),
+        '/test': () => fabricate('div'),
+        '/foo': () => fabricate('div'),
+      });
+
+      fabricate.app(App);
+
+      fabricate.navigate('/test');
+      fabricate.navigate('/foo');
+      fabricate.navigate('/test');
+
+      expect(fabricate.getRoute()).to.equal('/test');
+    });
   });
 
   describe('Basic components', () => {

@@ -838,6 +838,16 @@ fabricate.getRouteHistory = () => {
   return [..._fabricate.routeHistory];
 };
 
+/**
+ * Get the current route, which is the last item in the route history.
+ *
+ * @returns {string} Current route if any or empty string.
+ */
+fabricate.getRoute = () => {
+  const history = fabricate.getRouteHistory().slice(-1);
+  return history ? history[0] : '';
+};
+
 /// //////////////////////////////////// Built-in Components ///////////////////////////////////////
 
 /**
