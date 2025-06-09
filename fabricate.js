@@ -218,6 +218,18 @@ const _applyStateWatchers = (el) => {
   el.stateWatchers = [];
 };
 
+/**
+ * Silently accept a state key, meaning it will not trigger any updates and be expected.
+ *
+ * @param {string} key - Key to accept.
+ */
+const _silentlyAcceptStateKey = (key) => {
+  // Allow this key by adding it, but trigger no updates
+  if (!_fabricate.ignoreStrict && typeof _fabricate.state[key] === 'undefined') {
+    _fabricate.state[key] = null;
+  }
+};
+
 /// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
 /**
@@ -648,10 +660,7 @@ fabricate.update = (param1, param2) => {
 fabricate.buildKey = (name, ...rest) => {
   const key = `${name}:${rest.join(':')}`;
 
-  // Allow this key by adding it, but trigger no updates
-  if (!_fabricate.ignoreStrict && typeof _fabricate.state[key] === 'undefined') {
-    _fabricate.state[key] = null;
-  }
+  _silentlyAcceptStateKey(key);
 
   return key;
 };
@@ -1212,6 +1221,50 @@ fabricate.declare('Select', ({ options = [] } = {}) => {
   });
 
   return root;
+});
+
+/**
+ * Horizontal progress bar component.
+ */
+fabricate.declare('HorizontalProgress', ({
+  stateKey,
+  height = '8px',
+  color = 'red',
+  backgroundColor = '#ddd',
+  borderRadius = '4px',
+}) => {
+  if (!stateKey || typeof stateKey !== 'string') {
+    throw new Error('HorizontalProgress requires a stateKey string');
+  }
+
+  const wrapper = fabricate('div')
+    .setStyles({
+      width: '100%',
+      height,
+      backgroundColor,
+      borderRadius,
+      overflow: 'hidden',
+    });
+
+  const bar = fabricate('div')
+    .setStyles({
+      height: '100%',
+      backgroundColor: color,
+      width: '0%',
+      transition: 'width 0.3s ease-in-out',
+    })
+    .onUpdate((el, state) => {
+      const progress = state[stateKey] || 0;
+      if (typeof progress !== 'number' || progress < 0 || progress > 100) {
+        throw new Error(`Invalid progress value for key "${stateKey}": ${JSON.stringify(progress)}`);
+      }
+
+      el.setStyles({ width: `${progress}%` });
+    }, [stateKey]);
+
+  wrapper.addChildren([bar]);
+
+  return wrapper;
 });
 
 /// //////////////////////////////// Convenience alias / constants /////////////////////////////////

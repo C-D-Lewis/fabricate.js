@@ -1318,6 +1318,56 @@ describe('fabricate.js', () => {
         expect(Select).to.throw('Invalid \'options\' configuration');
       });
     });
+
+    describe('HorizontalProgress', () => {
+      it('should provide HorizontalProgress with default props', () => {
+        const el = fabricate('HorizontalProgress', { stateKey: 'progress' });
+        const styles = {
+          height: '8px',
+          backgroundColor: 'rgb(221, 221, 221)',
+          borderRadius: '4px',
+          overflow: 'hidden',
+        };
+
+        expect(hasStyles(el, styles)).to.equal(true);
+      });
+
+      it('should provide HorizontalProgress with custom props', () => {
+        const el = fabricate('HorizontalProgress', {
+          stateKey: 'progress',
+          color: 'blue',
+          height: '16px',
+        });
+        const styles = {
+          height: '16px',
+          backgroundColor: 'rgb(221, 221, 221)',
+          borderRadius: '4px',
+          overflow: 'hidden',
+        };
+        const barStyles = {
+          width: '0%',
+          height: '100%',
+          backgroundColor: 'blue',
+        };
+        expect(hasStyles(el, styles)).to.equal(true);
+        expect(hasStyles(el.childNodes[0], barStyles)).to.equal(true);
+      });
+
+      it('should update HorizontalProgress bar width', () => {
+        fabricate.app(() => fabricate('HorizontalProgress', { stateKey: 'progress' }), { progress: 0 });
+
+        const el = fabricate('HorizontalProgress', { stateKey: 'progress' });
+        const barEl = el.childNodes[0];
+
+        expect(barEl.style.width).to.equal('0%');
+
+        fabricate.update('progress', 50);
+        expect(barEl.style.width).to.equal('50%');
+
+        fabricate.update('progress', 100);
+        expect(barEl.style.width).to.equal('100%');
+      });
+    });
   });
 
   describe('Options', () => {

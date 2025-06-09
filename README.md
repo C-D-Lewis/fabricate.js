@@ -618,6 +618,7 @@ See `examples/components` for a page displaying all example components.
 * [`FabricateAttribution`](#fabricateattribution)
 * [`Tabs`](#tabs)
 * [`Select`](#select)
+* [`HorizontalProgress`](#horizontalprogress)
 
 #### `Row`
 
@@ -784,7 +785,7 @@ fabricate('Tabs', {
 
 #### `Select`
 
-Slightly styles select component that provides options.
+Slightly styled `select` component that provides options.
 
 ```js
 fabricate('Select', {
@@ -794,6 +795,23 @@ fabricate('Select', {
     { label: 'Lemon', value: 'lemon' },
   ],
 })
+```
+
+#### `HorizontalProgress`
+
+Horizontal progress bar that updates according to some named state.
+
+```js
+fabricate('HorizontalProgress', {
+  stateKey: 'loadingProgress',
+  height: '3px',
+  color: 'red',
+  backgroundColor: 'black',
+  borderRadius: '2px',
+});
+
+// Set bar to 40%
+fabricate.update({ loadingProgress: 40 });
 ```
 
 ## Run tests

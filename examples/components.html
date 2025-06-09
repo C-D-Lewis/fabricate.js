@@ -84,11 +84,32 @@
               { label: 'Lemon', value: 'lemon' },
             ],
           }),
+
+          Title().setText('HorizontalProgress'),
+          fab('Column', { width: '240px'}, [
+            fabricate('HorizontalProgress', { stateKey: 'progress' })
+              .setStyles({ marginBottom: '10px' }),
+            fabricate('HorizontalProgress', {
+              stateKey: 'progress',
+              color: 'green',
+              backgroundColor: 'black',
+              height: '20px',
+              borderRadius: '0px',
+            }),
+          ])
         ]);
 
-      fabricate.app(App, { showFader: false });
+      fabricate.app(App, {
+        showFader: false,
+        progress: 0,
+      });
 
-      setInterval(() => fabricate.update('showFader', prev => !prev.showFader), 1000);
+      setInterval(() => {
+        fabricate.update('showFader', prev => !prev.showFader);
+        fabricate.update('progress', prev => {
+          return (prev.progress + 10) % 110; // Loop progress from 0 to 100
+        });
+      }, 1000);
     </script>
   </body>
 </html>
