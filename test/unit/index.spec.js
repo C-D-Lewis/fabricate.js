@@ -554,6 +554,37 @@ describe('fabricate.js', () => {
       expect(_fabricate.routeHistory).to.deep.equal(['/']);
     });
 
+    it('should use asyncReplace option', (done) => {
+      let waiting;
+
+      const App = () => fabricate.router({
+        '/': () => fabricate('div'),
+        '/test': () => fabricate('div').onCreate(() => {
+          waiting = false;
+        }),
+      }, {
+        asyncReplace: true,
+      });
+
+      fabricate.app(App);
+
+      expect(_fabricate.routeHistory).to.deep.equal(['/']);
+
+      // Replace with async
+      waiting = true;
+      fabricate.navigate('/test');
+
+      // Should not yet have replaced
+      expect(waiting).to.equal(true);
+
+      // Replace later
+      setTimeout(() => {
+        expect(_fabricate.routeHistory).to.deep.equal(['/', '/test']);
+        expect(waiting).to.equal(false);
+        done();
+      }, 200);
+    });
+
     it('should throw for bad router object', () => {
       expect(() => fabricate.router({ '/': fabricate('div'), foo: 'bar' }))
         .to.throw('Every route in router must be builder function');

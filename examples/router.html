@@ -8,28 +8,41 @@
     </style>
   </head>
   <body>
-    <script type="text/javascript" src="../../fabricate.js"></script>
+    <script type="text/javascript" src="../fabricate.js"></script>
 
     <script>
-      const HomePage = () => fabricate('Column')
+      const Page = ({
+        name,
+        buttonText,
+        nextRoute,
+      }) => fabricate('Column')
         .setChildren([
-          fabricate('h1').setText('This is HomePage'),
-          fabricate('Button', { text: 'Go to StatusPage' })
-            .onClick(() => fabricate.navigate('/status')),
-      ]);
-      const StatusPage = () => fabricate('Column')
-        .setChildren([
-          fabricate('h1').setText('This is StatusPage'),
-          fabricate('Button', { text: 'Go back' })
-            .onClick(() => fabricate.goBack()),
-      ]);
+          fabricate('h1').setText(`This is ${name}`),
+          fabricate('Button', { text: buttonText })
+            .onClick(() => fabricate.navigate(nextRoute))
+        ]);
+
+      const HomePage = () => Page({
+        name: 'HomePage',
+        buttonText: 'Go to StatusPage',
+        nextRoute: '/status',
+      });
+
+      const StatusPage = () => Page({
+        name: 'StatusPage',
+        buttonText: 'Go back',
+        nextRoute: '/',
+      });
 
       const App = () => fabricate('Column')
         .setChildren([
           fabricate.router({
             '/': HomePage,
             '/status': StatusPage,
+          }, {
+            // asyncReplace: true,
           }),
+          fabricate('Text').setText('Route History:'),
           fabricate('pre')
             .onUpdate((el) => {
               el.setText(JSON.stringify(fabricate.getRouteHistory(), null, 2));

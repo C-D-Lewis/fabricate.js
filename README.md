@@ -595,6 +595,10 @@ fabricate.app(App);
 After navigating, `goBack()` can be used to go back a step, and
 `getRouteHistory()` displays the current route history.
 
+Some options exist for `router()`:
+
+* `asyncReplace` - if `true`, use `setTimeout` to add the new page.
+
 
 ## Built-in components
 

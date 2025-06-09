@@ -45,6 +45,8 @@ const _fabricate = {
   clearState: () => {
     _fabricate.state = {};
     _fabricate.stateWatchers = [];
+    _fabricate.router = undefined;
+    _fabricate.routeHistory = undefined;
   },
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
@@ -151,7 +153,7 @@ const _notifyStateChange = (keys) => {
   const { stateWatchers, state, options } = _fabricate;
   const { persistState, debug } = options;
 
-  const updateStart = performance.now();
+  const updateStart = Date.now();
   if (persistState) _savePersistState();
 
   _fabricate.currentUpdateKeys = keys;
@@ -163,7 +165,7 @@ const _notifyStateChange = (keys) => {
     // Notify the watching component
     cb(el, _fabricate.getStateCopy(), keys);
   });
-  const msTaken = performance.now() - updateStart;
+  const msTaken = Date.now() - updateStart;
   if (debug) {
     console.log(`debug: update keys=${keys.join(',')} time=${msTaken}ms watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
   }
@@ -434,14 +436,14 @@ const fabricate = (name, customProps) => {
     }
 
     // Method 2 - remove each child in turn
-    const start = performance.now();
+    const start = Date.now();
     while (el.firstElementChild) {
       // Avoid using MutationObserver - almost impossible to unit test with browser-env or jsdom
       _notifyRemovedRecursive(el.firstElementChild);
       el.firstElementChild.remove();
     }
     if (debug) {
-      console.log(`debug: empty() of ${el.componentName} took ${performance.now() - start}ms`);
+      console.log(`debug: empty() of ${el.componentName} took ${Date.now() - start}ms`);
     }
 
     // Alternative - remove all children in one go
@@ -674,10 +676,9 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
   if (typeof rootCb !== 'function') throw new Error('App root must be a builder function');
 
   // Reset state
+  _fabricate.clearState();
   _fabricate.state = initialState;
   _fabricate.options = _getDefaultOptions();
-  _fabricate.router = undefined;
-  _fabricate.routeHistory = undefined;
 
   // Apply options
   Object.assign(_fabricate.options, opts);
@@ -723,11 +724,24 @@ fabricate.onKeyDown = (cb) => {
  *
  * @param {Function} testCb - State test callback.
  * @param {Function} builderCb - Component build callback.
+ * @param {object} [options] - Options for the conditional.
+ * @param {boolean} [options.asyncReplace] - If true, the component is replaced asynchronously.
  * @returns {FabricateComponent} Wrapper component.
  */
-fabricate.conditional = (testCb, builderCb) => {
+fabricate.conditional = (testCb, builderCb, options = {}) => {
+  const { asyncReplace } = options;
+
   const wrapper = fabricate('div');
   let lastResult;
+
+  /**
+   * Add a child component to the wrapper.
+   */
+  const addChild = () => {
+    const child = builderCb();
+    _applyStateWatchers(child);
+    wrapper.setChildren([child]);
+  };
 
   /**
    * When state updates.
@@ -739,13 +753,18 @@ fabricate.conditional = (testCb, builderCb) => {
     if (newResult === lastResult) return;
 
     lastResult = newResult;
-    if (newResult) {
-      const child = builderCb();
-      _applyStateWatchers(child);
-      wrapper.setChildren([child]);
-    } else {
+    if (!newResult) {
       wrapper.empty();
+      return;
     }
+
+    if (!asyncReplace) {
+      addChild();
+      return;
+    }
+
+    // Allow UI thread to clear the wrapper first
+    setTimeout(addChild, 50);
   };
 
   // Edge case: Assume conditional is always used straight away
@@ -764,16 +783,12 @@ fabricate.conditional = (testCb, builderCb) => {
 /**
  * Use a router to show many pages inside the parent component.
  *
- * Example:
- * {
- *   '/': HomePage,
- *   '/user': UserPage,
- * }
- *
  * @param {object} router - Object of routes and components to render.
+ * @param {object} [options] - Options for the router.
+ * @param {boolean} [options.asyncReplace] - If true, the component is replaced asynchronously.
  * @returns {void}
  */
-fabricate.router = (router) => {
+fabricate.router = (router, options = {}) => {
   // Validate
   if (!router || !router['/']) throw new Error('Must provide initial route /');
   if (!Object.entries(router).every(
@@ -782,6 +797,12 @@ fabricate.router = (router) => {
     throw new Error('Every route in router must be builder function');
   }
   if (_fabricate.router) throw new Error('There can only be one router per app');
+  if (!!options && typeof options !== 'object') throw new Error('Options must be an object');
+  if (options.asyncReplace && typeof options.asyncReplace !== 'boolean') {
+    throw new Error('asyncReplace option must be a boolean');
+  }
+
+  const { asyncReplace } = options;
 
   _fabricate.router = router;
 
@@ -793,6 +814,7 @@ fabricate.router = (router) => {
         fabricate.conditional(
           (state) => state[_fabricate.StateKeys.Route] === route,
           builderCb,
+          { asyncReplace },
         ),
       ]);
     });

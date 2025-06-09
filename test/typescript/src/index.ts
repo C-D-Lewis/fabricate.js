@@ -38,6 +38,8 @@ const TestPage = () => fabricate('Column')
 const App = (): FabricateComponent<AppState> => fabricate.router({
   '/': TestPage,
   '/other': TestPage,
+}, {
+  asyncReplace: true,
 });
 setTimeout(() => {
   fabricate.navigate('/other');

@@ -313,6 +313,9 @@ export type Fabricate<StateShape> = {
   conditional: (
     testCb: (state: StateShape) => boolean,
     builderCb: () => FabricateComponent<StateShape>,
+    options?: {
+      asyncReplace?: boolean, // If true, replaces the component when the test changes.
+    }
   ) => FabricateComponent<StateShape>;
   /**
    * Render a router that changes pages when fabricate.navigate() is used.
@@ -320,7 +323,12 @@ export type Fabricate<StateShape> = {
    * @param {FabricateRouter} router - Description of routes.
    * @returns {FabricateComponent} Wrapper component.
    */
-  router: (router: FabricateRouter) => FabricateComponent<StateShape>,
+  router: (
+    router: FabricateRouter,
+    options?: {
+      asyncReplace?: boolean, // If true, replaces the component when the test changes.
+    }
+  ) => FabricateComponent<StateShape>,
   /**
    * Navigate to a route, if it was declared.
    *
