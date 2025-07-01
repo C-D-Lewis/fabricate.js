@@ -86,6 +86,11 @@ fabricate('div')
   .addChildren([fabricate('div')])
   .setChildren([
     fabricate('div'),
+    fab('div'),
+    fab('div', { color: 'red' }),
+    fab('div', { color: 'red' }, [
+      fab('Text').setText('This is a test child'),
+    ]),
     fabricate.conditional((state) => state.counter > 0, () => fabricate('Text'))
   ], 'foo')
   .setHtml('<div/>')

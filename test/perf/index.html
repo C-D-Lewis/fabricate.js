@@ -29,7 +29,12 @@
           fabricate('Text').setAttributes({ id: 'Text-counter' }),
           fabricate('Button')
             .setText('Remove')
-            .onClick(() => fabricate.update({ count: 0 })),
+            .onClick(() => {
+              fabricate.update({ count: 0 });
+
+              const view = document.getElementById('Text-counter');
+              view.setText('Count: 0');
+            }),
           fabricate('Button')
             .setText('Add')
             .onClick(() => fabricate.update({ count: NUM_POSTS })),

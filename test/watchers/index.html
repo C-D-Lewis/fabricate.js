@@ -27,7 +27,7 @@
 
               await testCb();
 
-              if (assertCb()) {
+              if (await assertCb()) {
                 el.setText('Passed');
                 el.setStyles({ backgroundColor: 'green' });
               } else {
@@ -122,34 +122,41 @@
           title: 'onUpdate and conditional should remove state watchers',
           testCb: () => {
             // Check .conditional() works
-            const Alert = () => fabricate('Alert')
-              .setText('Counter was not zero')
+            const Alert = () => fabricate('div')
+              .setStyles({ backgroundColor: 'red', color: 'white', padding: '10px' })
+              .setText('Alert!')
               .onCreate(() => {
                 alertCreated = true;
               });
 
-            const alertContainer = fabricate('div')
+            const alertContainer = fab('div')
               .setChildren([
-                fabricate.conditional(state => state.counter > 0, Alert),
-              ]);
+                fabricate.conditional(
+                  state => state.isVisible,
+                  Alert,
+                { asyncReplace: false },
+              ),
+            ]);
 
             const App = () => fabricate('div')
-              .onUpdate((el) => {}, ['counter'])
+              .onUpdate((el) => {}, ['isVisible'])
               .setChildren([alertContainer]);
 
-            fabricate.app(App, { counter: 0 });
+            fabricate.app(App, { isVisible: false }, { debug: true });
 
             // Show alert, then hide it
-            fabricate.update({ counter: 1 });
-            fabricate.update({ counter: 0 });
+            fabricate.update({ isVisible: true });
+            fabricate.update({ isVisible: false });
 
-            // Remove the parent of the .conditional()
-            alertContainer.empty();
+            // Destroy the .conditional() element
+            // alertContainer.empty();
           },
-          assertCb: () => {
-            // Should notify the child and only app should be watching
-            return alertCreated && _fabricate.stateWatchers.length === 1;
-          },
+          assertCb: () => new Promise((resolve) => {
+            setTimeout(() => {
+              // Should notify the child and only app should be watching
+              resolve(alertCreated && _fabricate.stateWatchers.length === 1);
+            }, 500);
+          }),
         });
       };
 

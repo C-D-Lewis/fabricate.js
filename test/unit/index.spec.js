@@ -1375,13 +1375,17 @@ describe('fabricate.js', () => {
       fabricate.app(() => fabricate('div'), {}, { debug: true });
     });
 
-    it('should persist certain state', async () => {
+    it('should persist certain state', (done) => {
       fabricate.app(() => fabricate('div'), { counter: 12, name: 'foo' }, { persistState: ['counter'] });
 
       fabricate.update('counter', 64);
 
-      const stored = localStorage.getItem(_fabricate.STORAGE_KEY_STATE);
-      expect(stored).to.equal(JSON.stringify({ counter: 64 }));
+      // Small delay to allow async storage
+      setTimeout(() => {
+        const stored = localStorage.getItem(_fabricate.STORAGE_KEY_STATE);
+        expect(stored).to.equal(JSON.stringify({ counter: 64 }));
+        done();
+      }, 500);
     });
 
     it('should only allow updating known state', () => {
@@ -1438,7 +1442,7 @@ describe('fabricate.js', () => {
   });
 
   describe('Other exports', () => {
-    it('should have fab convenience alias', () => {
+    it('should have fab() convenience alias', () => {
       expect(window.fab).to.be.a('function');
 
       const el = fab('div', { color: 'red' }, [fab('div')]);
@@ -1446,6 +1450,29 @@ describe('fabricate.js', () => {
       expect(el.style.color).to.equal('red');
       expect(el.childElementCount).to.equal(1);
       expect(el.childNodes[0].tagName).to.equal('DIV');
+    });
+
+    it('should use fab() with only children', () => {
+      const el = fab('div', [fab('img')]);
+
+      expect(el.tagName).to.equal('DIV');
+      expect(el.childElementCount).to.equal(1);
+      expect(el.childNodes[0].tagName).to.equal('IMG');
+    });
+
+    it('should use fab() for only styles', () => {
+      const el = fab('div', { color: 'red' });
+
+      expect(el.tagName).to.equal('DIV');
+      expect(el.style.color).to.equal('red');
+    });
+
+    it('should use fab() with just the name', () => {
+      const el = fab('div');
+
+      expect(el.tagName).to.equal('DIV');
+      expect(el.style.color).to.equal('');
+      expect(el.childElementCount).to.equal(0);
     });
 
     it('should export StateKeys', () => {

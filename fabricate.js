@@ -48,6 +48,169 @@ const _fabricate = {
     _fabricate.router = undefined;
     _fabricate.routeHistory = undefined;
   },
+  /**
+   * Recursively check all children since only parent is reported.
+   *
+   * @param {HTMLElement} el - Element being removed.
+   */
+  notifyRemovedRecursive: (el) => {
+    if (el.onDestroyHandlers) el.onDestroyHandlers.forEach((p) => p());
+
+    el.childNodes.forEach(_fabricate.notifyRemovedRecursive);
+  },
+  /**
+   * Get a copy of default options to prevent modification.
+   *
+   * @returns {object} Default options.
+   */
+  getDefaultOptions: () => ({ ..._fabricate.DEFAULT_OPTIONS }),
+  /**
+   * Used for both kinds of conditional display/render, returning new state to remember
+   * in each case.
+   *
+   * @param {FabricateComponent} el - Element being displayed, perhaps.
+   * @param {boolean} lastResult - Last remembered result.
+   * @param {Function} testCb - State test callback.
+   * @param {Function} [changeCb] - Optional change callback.
+   * @returns {boolean} new result.
+   */
+  handleConditionalDisplay: (el, lastResult, testCb, changeCb) => {
+    const newResult = !!testCb(_fabricate.getStateCopy());
+    if (newResult === lastResult) return lastResult;
+
+    // Emit update only if not initial render
+    if (changeCb && typeof lastResult !== 'undefined') {
+      changeCb(el, _fabricate.getStateCopy(), newResult);
+    }
+
+    return newResult;
+  },
+  /**
+   * Unregister state watcher for this element to prevent leaking them.
+   *
+   * @param {FabricateComponent} el - Element to remove.
+   * @returns {void}
+   */
+  unregisterStateWatcher: (el) => {
+    const index = _fabricate.stateWatchers.findIndex((p) => p.el === el);
+    if (index < 0 && _fabricate.options.debug) {
+      console.warn('Not removing state watcher - not found');
+      console.warn(el);
+      return;
+    }
+
+    _fabricate.stateWatchers.splice(index, 1);
+  },
+  /**
+   * Save current state to LocalStorage.
+   */
+  savePersistState: () => {
+    const { STORAGE_KEY_STATE, state, options: { persistState } } = _fabricate;
+
+    // Store only those keys named for persistence
+    const toSave = Object.entries(state)
+      .filter(([k]) => persistState.includes(k))
+      .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+
+    setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(toSave));
+    }, 100);
+  },
+  /**
+   * Load persisted state if it exists.
+   */
+  loadPersistState: () => {
+    const { STORAGE_KEY_STATE } = _fabricate;
+
+    const loaded = JSON.parse(localStorage.getItem(STORAGE_KEY_STATE) || '{}');
+    _fabricate.state = {
+      ..._fabricate.state,
+      ...loaded,
+    };
+  },
+  /**
+   * Notify watchers of a state change.
+   * Watchers receive (el, state, changedKeys)
+   *
+   * @param {Array<string>} keys - Key that was updated.
+   */
+  notifyStateChange: (keys) => {
+    const { stateWatchers, state, options } = _fabricate;
+    const { persistState, debug } = options;
+
+    const updateStart = Date.now();
+    if (persistState) _fabricate.savePersistState();
+
+    _fabricate.currentUpdateKeys = keys;
+
+    stateWatchers.forEach(({ el, cb, watchKeys }) => {
+      // If watchKeys is used, filter state updates
+      if (watchKeys && watchKeys.length > 0 && !keys.some((p) => watchKeys.includes(p))) return;
+
+      // Notify the watching component
+      cb(el, _fabricate.getStateCopy(), keys);
+    });
+    const msTaken = Date.now() - updateStart;
+    if (debug) {
+      console.log(`debug: update keys=${keys.join(',')} time=${msTaken}ms watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
+    }
+
+    _fabricate.currentUpdateKeys = [];
+  },
+  /**
+   * Validate loaded options. TypeScript users won't need this.
+   */
+  validateOptions: () => {
+    const {
+      logStateUpdates, persistState, theme, disableGroupAddChildrenOptim, debug,
+    } = _fabricate.options;
+
+    if (logStateUpdates) {
+      throw new Error('logStateUpdates option is deprecated, use debug instead');
+    }
+    if (debug && typeof debug !== 'boolean') {
+      throw new Error(`debug option must be boolean, was ${typeof debug}`);
+    }
+    if (persistState && !Array.isArray(persistState)) {
+      throw new Error(`persistState option must be string array, was ${typeof persistState}`);
+    }
+    if (theme
+      && (
+        (typeof theme.palette !== 'object')
+        || (theme.styles && typeof theme.styles !== 'object')
+        || !theme.palette
+      )
+    ) {
+      throw new Error('theme option must contain .palette and/or .styles objects');
+    }
+    if (disableGroupAddChildrenOptim && typeof disableGroupAddChildrenOptim !== 'boolean') {
+      throw new Error(`disableGroupAddChildrenOptim option must be boolean, was ${typeof disableGroupAddChildrenOptim}`);
+    }
+  },
+  /**
+   * If an element has stateWatchers, add them to the global list once it is added to the DOM.
+   * Prevents leaking them if the element is created but never used.
+   *
+   * @param {FabricateComponent} el - Element to check.
+   */
+  applyStateWatchers: (el) => {
+    if (!el.stateWatchers.length) return;
+
+    el.stateWatchers.forEach((p) => _fabricate.stateWatchers.push(p));
+    // eslint-disable-next-line no-param-reassign
+    el.stateWatchers = [];
+  },
+  /**
+   * Silently accept a state key, meaning it will not trigger any updates and be expected.
+   *
+   * @param {string} key - Key to accept.
+   */
+  silentlyAcceptStateKey: (key) => {
+    // Allow this key by adding it, but trigger no updates
+    if (!_fabricate.ignoreStrict && typeof _fabricate.state[key] === 'undefined') {
+      _fabricate.state[key] = null;
+    }
+  },
 };
 _fabricate.options = _fabricate.DEFAULT_OPTIONS;
 
@@ -56,179 +219,6 @@ _fabricate.options = _fabricate.DEFAULT_OPTIONS;
  *
  * Enhanced HTMLElement with Fabricate.js methods.
  */
-
-/// ///////////////////////////////////// Internal Helpers /////////////////////////////////////////
-
-/**
- * Recursively check all children since only parent is reported.
- *
- * @param {HTMLElement} el - Element being removed.
- */
-const _notifyRemovedRecursive = (el) => {
-  if (el.onDestroyHandlers) el.onDestroyHandlers.forEach((p) => p());
-
-  el.childNodes.forEach(_notifyRemovedRecursive);
-};
-
-/**
- * Get a copy of default options to prevent modification.
- *
- * @returns {object} Default options.
- */
-const _getDefaultOptions = () => ({ ..._fabricate.DEFAULT_OPTIONS });
-
-/**
- * Used for both kinds of conditional display/render, returning new state to remember
- * in each case.
- *
- * @param {FabricateComponent} el - Element being displayed, perhaps.
- * @param {boolean} lastResult - Last remembered result.
- * @param {Function} testCb - State test callback.
- * @param {Function} [changeCb] - Optional change callback.
- * @returns {boolean} new result.
- */
-const _handleConditionalDisplay = (el, lastResult, testCb, changeCb) => {
-  const newResult = !!testCb(_fabricate.getStateCopy());
-  if (newResult === lastResult) return lastResult;
-
-  // Emit update only if not initial render
-  if (changeCb && typeof lastResult !== 'undefined') {
-    changeCb(el, _fabricate.getStateCopy(), newResult);
-  }
-
-  return newResult;
-};
-
-/**
- * Unregister state watcher for this element to prevent leaking them.
- *
- * @param {FabricateComponent} el - Element to remove.
- * @returns {void}
- */
-const _unregisterStateWatcher = (el) => {
-  const index = _fabricate.stateWatchers.findIndex((p) => p.el === el);
-  if (index < 0 && _fabricate.options.debug) {
-    console.warn('Not removing state watcher - not found');
-    console.warn(el);
-    return;
-  }
-
-  _fabricate.stateWatchers.splice(index, 1);
-};
-
-/**
- * Save current state to LocalStorage.
- */
-const _savePersistState = () => {
-  const { STORAGE_KEY_STATE, state, options: { persistState } } = _fabricate;
-
-  // Store only those keys named for persistence
-  const toSave = Object.entries(state)
-    .filter(([k]) => persistState.includes(k))
-    .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
-
-  localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(toSave));
-};
-
-/**
- * Load persisted state if it exists.
- */
-const _loadPersistState = () => {
-  const { STORAGE_KEY_STATE } = _fabricate;
-
-  const loaded = JSON.parse(localStorage.getItem(STORAGE_KEY_STATE) || '{}');
-  _fabricate.state = {
-    ..._fabricate.state,
-    ...loaded,
-  };
-};
-
-/**
- * Notify watchers of a state change.
- * Watchers receive (el, state, changedKeys)
- *
- * @param {Array<string>} keys - Key that was updated.
- */
-const _notifyStateChange = (keys) => {
-  const { stateWatchers, state, options } = _fabricate;
-  const { persistState, debug } = options;
-
-  const updateStart = Date.now();
-  if (persistState) _savePersistState();
-
-  _fabricate.currentUpdateKeys = keys;
-
-  stateWatchers.forEach(({ el, cb, watchKeys }) => {
-    // If watchKeys is used, filter state updates
-    if (watchKeys && watchKeys.length > 0 && !keys.some((p) => watchKeys.includes(p))) return;
-
-    // Notify the watching component
-    cb(el, _fabricate.getStateCopy(), keys);
-  });
-  const msTaken = Date.now() - updateStart;
-  if (debug) {
-    console.log(`debug: update keys=${keys.join(',')} time=${msTaken}ms watchers=${stateWatchers.length} state=${JSON.stringify(state)}`);
-  }
-
-  _fabricate.currentUpdateKeys = [];
-};
-
-/**
- * Validate loaded options. TypeScript users won't need this.
- */
-const _validateOptions = () => {
-  const {
-    logStateUpdates, persistState, theme, disableGroupAddChildrenOptim, debug,
-  } = _fabricate.options;
-
-  if (logStateUpdates) {
-    throw new Error('logStateUpdates option is deprecated, use debug instead');
-  }
-  if (debug && typeof debug !== 'boolean') {
-    throw new Error(`debug option must be boolean, was ${typeof debug}`);
-  }
-  if (persistState && !Array.isArray(persistState)) {
-    throw new Error(`persistState option must be string array, was ${typeof persistState}`);
-  }
-  if (theme
-    && (
-      (typeof theme.palette !== 'object')
-      || (theme.styles && typeof theme.styles !== 'object')
-      || !theme.palette
-    )
-  ) {
-    throw new Error('theme option must contain .palette and/or .styles objects');
-  }
-  if (disableGroupAddChildrenOptim && typeof disableGroupAddChildrenOptim !== 'boolean') {
-    throw new Error(`disableGroupAddChildrenOptim option must be boolean, was ${typeof disableGroupAddChildrenOptim}`);
-  }
-};
-
-/**
- * If an element has stateWatchers, add them to the global list once it is added to the DOM.
- * Prevents leaking them if the element is created but never used.
- *
- * @param {FabricateComponent} el - Element to check.
- */
-const _applyStateWatchers = (el) => {
-  if (!el.stateWatchers.length) return;
-
-  el.stateWatchers.forEach((p) => _fabricate.stateWatchers.push(p));
-  // eslint-disable-next-line no-param-reassign
-  el.stateWatchers = [];
-};
-
-/**
- * Silently accept a state key, meaning it will not trigger any updates and be expected.
- *
- * @param {string} key - Key to accept.
- */
-const _silentlyAcceptStateKey = (key) => {
-  // Allow this key by adding it, but trigger no updates
-  if (!_fabricate.ignoreStrict && typeof _fabricate.state[key] === 'undefined') {
-    _fabricate.state[key] = null;
-  }
-};
 
 /// //////////////////////////////////////// Main factory //////////////////////////////////////////
 
@@ -341,7 +331,7 @@ const fabricate = (name, customProps) => {
      */
     const addChildrenToElement = (arr) => {
       arr.forEach((p) => {
-        _applyStateWatchers(p);
+        _fabricate.applyStateWatchers(p);
         el.appendChild(p);
       });
     };
@@ -451,7 +441,7 @@ const fabricate = (name, customProps) => {
     const start = Date.now();
     while (el.firstElementChild) {
       // Avoid using MutationObserver - almost impossible to unit test with browser-env or jsdom
-      _notifyRemovedRecursive(el.firstElementChild);
+      _fabricate.notifyRemovedRecursive(el.firstElementChild);
       el.firstElementChild.remove();
     }
     if (debug) {
@@ -519,7 +509,7 @@ const fabricate = (name, customProps) => {
     }
 
     el.stateWatchers.push({ el, cb, watchKeys });
-    el.onDestroy(_unregisterStateWatcher);
+    el.onDestroy(_fabricate.unregisterStateWatcher);
 
     if (watchKeys.includes(_fabricate.StateKeys.Created)) {
       // Emulate onCreate immediately if this method is used
@@ -584,7 +574,7 @@ const fabricate = (name, customProps) => {
      * When state updates
      */
     const onStateUpdate = () => {
-      lastResult = _handleConditionalDisplay(el, lastResult, testCb, changeCb);
+      lastResult = _fabricate.handleConditionalDisplay(el, lastResult, testCb, changeCb);
       el.setStyles({ display: lastResult ? originalDisplay : 'none' });
     };
 
@@ -635,14 +625,14 @@ fabricate.update = (param1, param2) => {
   // State slice?
   if (typeof param1 === 'object') {
     _fabricate.state = { ...state, ...param1 };
-    _notifyStateChange(keys);
+    _fabricate.notifyStateChange(keys);
     return;
   }
 
   // Keyed update?
   if (typeof param1 === 'string') {
     _fabricate.state[param1] = typeof param2 === 'function' ? param2(state) : param2;
-    _notifyStateChange(keys);
+    _fabricate.notifyStateChange(keys);
     // return;
   }
 
@@ -660,7 +650,7 @@ fabricate.update = (param1, param2) => {
 fabricate.buildKey = (name, ...rest) => {
   const key = `${name}:${rest.join(':')}`;
 
-  _silentlyAcceptStateKey(key);
+  _fabricate.silentlyAcceptStateKey(key);
 
   return key;
 };
@@ -687,19 +677,19 @@ fabricate.app = (rootCb, initialState = {}, opts = {}) => {
   // Reset state
   _fabricate.clearState();
   _fabricate.state = initialState;
-  _fabricate.options = _getDefaultOptions();
+  _fabricate.options = _fabricate.getDefaultOptions();
 
   // Apply options
   Object.assign(_fabricate.options, opts);
-  _validateOptions();
-  if (opts.persistState) _loadPersistState();
+  _fabricate.validateOptions();
+  if (opts.persistState) _fabricate.loadPersistState();
 
   // Build app
   const root = rootCb();
-  _applyStateWatchers(root);
+  _fabricate.applyStateWatchers(root);
   document.body.appendChild(root);
 
-  _notifyStateChange([_fabricate.StateKeys.Init]);
+  _fabricate.notifyStateChange([_fabricate.StateKeys.Init]);
 };
 
 /**
@@ -748,7 +738,7 @@ fabricate.conditional = (testCb, builderCb, options = {}) => {
    */
   const addChild = () => {
     const child = builderCb();
-    _applyStateWatchers(child);
+    _fabricate.applyStateWatchers(child);
     wrapper.setChildren([child]);
   };
 
@@ -758,7 +748,8 @@ fabricate.conditional = (testCb, builderCb, options = {}) => {
    * @returns {void}
    */
   const onStateUpdate = () => {
-    const newResult = _handleConditionalDisplay(wrapper, lastResult, testCb);
+    const newResult = _fabricate.handleConditionalDisplay(wrapper, lastResult, testCb);
+    // console.log({ lastResult, newResult, asyncReplace });
     if (newResult === lastResult) return;
 
     lastResult = newResult;
@@ -781,7 +772,7 @@ fabricate.conditional = (testCb, builderCb, options = {}) => {
     el: wrapper,
     cb: onStateUpdate,
   });
-  wrapper.onDestroy(() => _unregisterStateWatcher(wrapper));
+  wrapper.onDestroy(() => _fabricate.unregisterStateWatcher(wrapper));
 
   // Test right away
   onStateUpdate();
@@ -1273,15 +1264,31 @@ fabricate.declare('HorizontalProgress', ({
  * Convenient alias for fabricate() function for simple components.
  *
  * @param {string} name - HTML tag name, such as 'div', or declared custom component name.
- * @param {object} [styles] - Styles to apply to the element.
- * @param {Array<HTMLElement>} [children] - Children to append inside.
+ * @param {object|Function} [param1] - Either object of styles, or list of child elements.
+ * @param {Array<HTMLElement>} [param2] - Optional list of child elements.
  * @returns {FabricateComponent} Fabricate component.
  */
-const fab = (name, styles, children) => {
+const fab = (name, param1, param2) => {
   const el = fabricate(name);
 
-  if (styles) el.setStyles(styles);
-  if (children) el.setChildren(children);
+  // Styles and children
+  if (param1 && param2) {
+    el.setStyles(param1);
+    el.setChildren(param2);
+    return el;
+  }
+
+  // Only styles
+  if (param1 && typeof param1 === 'object' && !Array.isArray(param1)) {
+    el.setStyles(param1);
+    return el;
+  }
+
+  // Only children
+  if (param1 && Array.isArray(param1)) {
+    el.setChildren(param1);
+    return el;
+  }
 
   return el;
 };
